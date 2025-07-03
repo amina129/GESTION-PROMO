@@ -1,0 +1,65 @@
+/* orange-telecom.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.orange-telecom {
+    font-family: 'Helvetica', 'Arial', sans-serif; /* Fallback if Orange Sans isn't available */
+}
+
+/* Table Styling */
+.orange-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.orange-telecom {
+    --tw-bg-opacity: 1;
+    background-color: rgb(255 247 237 / var(--tw-bg-opacity));
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+
+.orange-card {
+    background: white;
+    border-radius: 0.5rem;
+    border: 1px solid #FFD1B3;
+    box-shadow: 0 1px 3px rgba(255, 110, 0, 0.1);
+}
+
+/* Active tab indicator */
+.active-tab {
+    border-left: 3px solid #FF6E00;
+    background-color: rgba(255, 110, 0, 0.05);
+}
+/* Layout Styles */
+.orange-layout {
+    background-color: #FFF5F0;
+    min-height: 100vh;
+}
+
+/* Navigation Styling */
+.orange-nav {
+    background-color: #FF6E00;
+}
+
+.orange-nav-link {
+    color: white;
+    transition: all 0.2s ease;
+}
+
+.orange-nav-link:hover {
+    background-color: rgba(255,255,255,0.1);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .orange-layout {
+        padding: 0.5rem;
+    }
+
+    .orange-card {
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+}
