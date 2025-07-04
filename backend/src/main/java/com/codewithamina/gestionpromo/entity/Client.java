@@ -1,16 +1,21 @@
 package com.codewithamina.gestionpromo.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "client")
 public class Client {
 
+    // Getters and Setters
     @jakarta.persistence.Id
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -64,111 +69,6 @@ public class Client {
         this.dateInscription = LocalDateTime.now();
         this.solde = BigDecimal.ZERO;
         this.statut = "ACTIF";
-    }
-
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getCodeClient() {
-        return codeClient;
-    }
-
-    public void setCodeClient(String codeClient) {
-        this.codeClient = codeClient;
-    }
-
-    public String getNom() {
-        return nom;
-    }
-
-    public void setNom(String nom) {
-        this.nom = nom;
-    }
-
-    public String getPrenom() {
-        return prenom;
-    }
-
-    public void setPrenom(String prenom) {
-        this.prenom = prenom;
-    }
-
-    public String getNumeroTelephone() {
-        return numeroTelephone;
-    }
-
-    public void setNumeroTelephone(String numeroTelephone) {
-        this.numeroTelephone = numeroTelephone;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public LocalDate getDateNaissance() {
-        return dateNaissance;
-    }
-
-    public void setDateNaissance(LocalDate dateNaissance) {
-        this.dateNaissance = dateNaissance;
-    }
-
-    public String getTypeAbonnement() {
-        return typeAbonnement;
-    }
-
-    public void setTypeAbonnement(String typeAbonnement) {
-        this.typeAbonnement = typeAbonnement;
-    }
-
-    public String getStatut() {
-        return statut;
-    }
-
-    public void setStatut(String statut) {
-        this.statut = statut;
-    }
-
-    public LocalDateTime getDateInscription() {
-        return dateInscription;
-    }
-
-    public void setDateInscription(LocalDateTime dateInscription) {
-        this.dateInscription = dateInscription;
-    }
-
-    public LocalDateTime getDerniereRecharge() {
-        return derniereRecharge;
-    }
-
-    public void setDerniereRecharge(LocalDateTime derniereRecharge) {
-        this.derniereRecharge = derniereRecharge;
-    }
-
-    public BigDecimal getSolde() {
-        return solde;
-    }
-
-    public void setSolde(BigDecimal solde) {
-        this.solde = solde;
-    }
-
-    public Long getIdCategorieClient() {
-        return idCategorieClient;
-    }
-
-    public void setIdCategorieClient(Long idCategorieClient) {
-        this.idCategorieClient = idCategorieClient;
     }
 
 

@@ -44,12 +44,14 @@ public class ClientController {
     @GetMapping("/{numeroTelephone}")
     public ResponseEntity<ClientDTO> getClient(@PathVariable String numeroTelephone) {
         try {
-            logger.info("Searching for client with phone: {}", numeroTelephone);
-
             Client client = clientService.findByNumeroTelephone(numeroTelephone);
-            ClientDTO clientDTO = ClientMapper.toDTO(client);
+            logger.info("Client récupéré : {}", numeroTelephone,client);
 
-            logger.info("Client found successfully for phone: {}", numeroTelephone);
+            if (client == null) {
+                logger.warn("Client not found for phone: {}", numeroTelephone);
+                return ResponseEntity.notFound().build();
+            }
+            ClientDTO clientDTO = ClientMapper.toDTO(client);
             return ResponseEntity.ok(clientDTO);
 
         } catch (ClientNotFoundException e) {

@@ -7,6 +7,14 @@ public class ClientDTO {
     private Long id;
     private String numeroTelephone;
     private String codeClient;
+    private String nom;
+    private String prenom;
+    private String email;
+    private String typeAbonnement;
+    private String statut;
+    private BigDecimal solde;
+    private LocalDateTime derniereRecharge;
+
 
     public Long getId() {
         return id;
@@ -88,12 +96,5 @@ public class ClientDTO {
         this.derniereRecharge = derniereRecharge;
     }
 
-    private String nom;
-    private String prenom;
-    private String email;
-    private String typeAbonnement;
-    private String statut;
-    private BigDecimal solde;
-    private LocalDateTime derniereRecharge;
 
 }
