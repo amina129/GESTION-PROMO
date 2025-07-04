@@ -46,11 +46,6 @@ public class ClientController {
         try {
             Client client = clientService.findByNumeroTelephone(numeroTelephone);
             logger.info("Client récupéré : {}", numeroTelephone,client);
-
-            if (client == null) {
-                logger.warn("Client not found for phone: {}", numeroTelephone);
-                return ResponseEntity.notFound().build();
-            }
             ClientDTO clientDTO = ClientMapper.toDTO(client);
             return ResponseEntity.ok(clientDTO);
 

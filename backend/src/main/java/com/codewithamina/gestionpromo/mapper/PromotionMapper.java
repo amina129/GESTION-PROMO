@@ -13,8 +13,6 @@ public class PromotionMapper {
         dto.setDescription(promo.getDescription());
         dto.setTypePromotion(promo.getType());
 
-        // Convert BigDecimal to Double safely
-        dto.setMontant(promo.getMontantMinimum() != null ? promo.getMontantMinimum().doubleValue() : null);
 
         dto.setPointsFidelite(null);
 

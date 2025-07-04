@@ -1,12 +1,10 @@
 package com.codewithamina.gestionpromo.entity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+
+import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @Table(name = "promotions")
@@ -91,22 +89,65 @@ public class Promotion {
     private String nom;
     private String description;
     private String type; // MANUAL, AUTOMATIC
-    private BigDecimal montantMinimum;
     private BigDecimal valeur;
     private Integer dureeValidite; // in days
     private LocalDateTime dateDebut;
     private LocalDateTime dateFin;
     private Boolean active;
 
-    // getters and setters
+    private Set<String> typeAbonnementsEligibles;
+    private BigDecimal soldeMinimum;
+    private Set<String> segmentsClientsEligibles;
+    private Boolean estAutomatique;
+    private String statut;
 
-    public BigDecimal getMontantMinimum() {
-        return montantMinimum;
+
+
+
+
+
+    public Set<String> getTypeAbonnementsEligibles() {
+        return typeAbonnementsEligibles;
     }
 
-    public void setMontantMinimum(BigDecimal montantMinimum) {
-        this.montantMinimum = montantMinimum;
+    public void setTypeAbonnementsEligibles(Set<String> typeAbonnementsEligibles) {
+        this.typeAbonnementsEligibles = typeAbonnementsEligibles;
     }
 
-    // Reste des getters/setters...
+    public BigDecimal getSoldeMinimum() {
+        return soldeMinimum;
+    }
+
+    public void setSoldeMinimum(BigDecimal soldeMinimum) {
+        this.soldeMinimum = soldeMinimum;
+    }
+
+    public Set<String> getSegmentsClientsEligibles() {
+        return segmentsClientsEligibles;
+    }
+
+    public void setSegmentsClientsEligibles(Set<String> segmentsClientsEligibles) {
+        this.segmentsClientsEligibles = segmentsClientsEligibles;
+    }
+
+    public Boolean isEstAutomatique() {
+        return estAutomatique != null && estAutomatique;
+    }
+
+    public void setEstAutomatique(Boolean estAutomatique) {
+        this.estAutomatique = estAutomatique;
+    }
+
+    public String getStatut() {
+        return statut;
+    }
+
+    public void setStatut(String statut) {
+        this.statut = statut;
+    }
+
+    public boolean isActive() {
+        return active != null && active;
+    }
+
 }
