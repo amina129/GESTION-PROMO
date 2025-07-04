@@ -1,7 +1,7 @@
 package com.codewithamina.gestionpromo.service;
 
-import com.codewithamina.gestionpromo.entity.Client;
-import com.codewithamina.gestionpromo.entity.Promotion;
+import com.codewithamina.gestionpromo.model.Client;
+import com.codewithamina.gestionpromo.model.Promotion;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;

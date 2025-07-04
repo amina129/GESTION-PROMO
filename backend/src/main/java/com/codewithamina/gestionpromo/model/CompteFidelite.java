@@ -1,4 +1,4 @@
-package com.codewithamina.gestionpromo.entity;
+package com.codewithamina.gestionpromo.model;
 
 import jakarta.persistence.*;
 import org.springframework.data.annotation.Id;

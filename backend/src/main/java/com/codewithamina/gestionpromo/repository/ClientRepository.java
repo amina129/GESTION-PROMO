@@ -1,6 +1,6 @@
 package com.codewithamina.gestionpromo.repository;
 
-import com.codewithamina.gestionpromo.entity.Client;
+import com.codewithamina.gestionpromo.model.Client;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

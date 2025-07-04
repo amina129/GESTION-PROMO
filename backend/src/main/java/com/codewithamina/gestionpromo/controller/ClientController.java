@@ -2,7 +2,7 @@ package com.codewithamina.gestionpromo.controller;
 
 import com.codewithamina.gestionpromo.dto.ClientDTO;
 import com.codewithamina.gestionpromo.dto.*;
-import com.codewithamina.gestionpromo.entity.*;
+import com.codewithamina.gestionpromo.model.*;
 import com.codewithamina.gestionpromo.exception.ClientNotFoundException;
 import com.codewithamina.gestionpromo.mapper.*;
 import com.codewithamina.gestionpromo.request.BalanceUpdateRequest;

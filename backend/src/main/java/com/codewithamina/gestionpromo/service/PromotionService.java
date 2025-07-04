@@ -1,8 +1,8 @@
 package com.codewithamina.gestionpromo.service;
 
 
-import com.codewithamina.gestionpromo.entity.Client;
-import com.codewithamina.gestionpromo.entity.Promotion;
+import com.codewithamina.gestionpromo.model.Client;
+import com.codewithamina.gestionpromo.model.Promotion;
 
 import java.math.BigDecimal;
 import java.util.List;

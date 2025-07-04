@@ -1,7 +1,7 @@
 package com.codewithamina.gestionpromo.mapper;
 
 import com.codewithamina.gestionpromo.dto.ClientDTO;
-import com.codewithamina.gestionpromo.entity.Client;
+import com.codewithamina.gestionpromo.model.Client;
 
 public class ClientMapper {
     public static ClientDTO toDTO(Client client) {

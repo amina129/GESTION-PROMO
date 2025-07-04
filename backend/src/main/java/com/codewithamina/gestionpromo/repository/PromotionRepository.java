@@ -1,6 +1,6 @@
 package com.codewithamina.gestionpromo.repository;
 
-import com.codewithamina.gestionpromo.entity.Promotion;
+import com.codewithamina.gestionpromo.model.Promotion;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

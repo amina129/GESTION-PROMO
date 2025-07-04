@@ -1,4 +1,4 @@
-package com.codewithamina.gestionpromo.entity;
+package com.codewithamina.gestionpromo.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -70,6 +70,8 @@ public class Client {
         this.solde = BigDecimal.ZERO;
         this.statut = "ACTIF";
     }
-
+    @ManyToOne
+    @JoinColumn(name = "id_categorie_client")
+    private CategorieClient categorieClient;
 
 }

@@ -1,7 +1,7 @@
 package com.codewithamina.gestionpromo.mapper;
 
 import com.codewithamina.gestionpromo.dto.CompteFideliteDTO;
-import com.codewithamina.gestionpromo.entity.CompteFidelite;
+import com.codewithamina.gestionpromo.model.CompteFidelite;
 
 public class CompteFideliteMapper {
 

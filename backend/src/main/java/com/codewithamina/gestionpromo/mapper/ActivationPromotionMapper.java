@@ -1,7 +1,7 @@
 package com.codewithamina.gestionpromo.mapper;
 
 import com.codewithamina.gestionpromo.dto.ActivationPromotionDTO;
-import com.codewithamina.gestionpromo.entity.ActivationPromotion;
+import com.codewithamina.gestionpromo.model.ActivationPromotion;
 
 public class ActivationPromotionMapper {
 
