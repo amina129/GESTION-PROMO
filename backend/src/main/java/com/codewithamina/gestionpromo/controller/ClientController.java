@@ -45,7 +45,6 @@ public class ClientController {
     public ResponseEntity<ClientDTO> getClient(@PathVariable String numeroTelephone) {
         try {
             Client client = clientService.findByNumeroTelephone(numeroTelephone);
-            logger.info("Client récupéré : {}", numeroTelephone,client);
             ClientDTO clientDTO = ClientMapper.toDTO(client);
             return ResponseEntity.ok(clientDTO);
 

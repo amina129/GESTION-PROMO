@@ -6,6 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CategoriePromotionRepository extends JpaRepository<CategoriePromotion, Long> {
-    // Méthodes personnalisées peuvent être ajoutées ici, par exemple :
-    // Optional<CategoriePromotion> findByNom(String nom);
+
 }

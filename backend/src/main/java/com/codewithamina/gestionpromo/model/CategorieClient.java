@@ -1,12 +1,22 @@
 package com.codewithamina.gestionpromo.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.util.Objects;
 
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "categorie_client")
 public class CategorieClient {
 
+    // Getters and Setters
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -14,42 +24,6 @@ public class CategorieClient {
     private String nom;
 
     private String description;
-
-    // Default constructor
-    public CategorieClient() {
-    }
-
-    // Constructor with all fields (optional)
-    public CategorieClient(Long id, String nom, String description) {
-        this.id = id;
-        this.nom = nom;
-        this.description = description;
-    }
-
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getNom() {
-        return nom;
-    }
-
-    public void setNom(String nom) {
-        this.nom = nom;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
 
     // equals and hashCode
     @Override
