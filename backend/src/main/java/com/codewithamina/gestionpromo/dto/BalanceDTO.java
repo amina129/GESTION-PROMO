@@ -12,5 +12,21 @@ public class BalanceDTO {
         this.derniereRecharge = derniereRecharge;
     }
 
-    // Getters, setters
+    public BalanceDTO() {}
+
+    public BigDecimal getSolde() {
+        return solde;
+    }
+
+    public void setSolde(BigDecimal solde) {
+        this.solde = solde;
+    }
+
+    public LocalDateTime getDerniereRecharge() {
+        return derniereRecharge;
+    }
+
+    public void setDerniereRecharge(LocalDateTime derniereRecharge) {
+        this.derniereRecharge = derniereRecharge;
+    }
 }

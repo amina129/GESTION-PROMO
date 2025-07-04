@@ -3,7 +3,6 @@ package com.codewithamina.gestionpromo.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.annotation.Id;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -15,8 +14,6 @@ import java.time.LocalDateTime;
 @Table(name = "client")
 public class Client {
 
-    // Getters and Setters
-    @jakarta.persistence.Id
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -54,8 +51,9 @@ public class Client {
     @Column(name = "solde", precision = 10, scale = 2)
     private BigDecimal solde;
 
-    @Column(name = "id_categorie_client")
-    private Long idCategorieClient;
+    @ManyToOne
+    @JoinColumn(name = "id_categorie_client")
+    private CategorieClient categorieClient;
 
     // Constructors
     public Client() {
@@ -70,8 +68,4 @@ public class Client {
         this.solde = BigDecimal.ZERO;
         this.statut = "ACTIF";
     }
-    @ManyToOne
-    @JoinColumn(name = "id_categorie_client")
-    private CategorieClient categorieClient;
-
 }

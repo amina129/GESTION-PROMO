@@ -225,7 +225,6 @@ public class ClientController {
         }
     }
 
-    // Get client balance
     @GetMapping("/{numeroTelephone}/balance")
     public ResponseEntity<BalanceDTO> getClientBalance(@PathVariable String numeroTelephone) {
         try {
