@@ -7,4 +7,6 @@ import java.util.List;
 public interface EligibilityService {
     List<Promotion> getEligiblePromotions(Client client);
     boolean isEligible(Client client, Promotion promotion);
+    EligibilityResult checkEligibilityDetailed(Client client, Promotion promotion);
+
 }
