@@ -5,11 +5,13 @@ import { Home } from './pages/Home/Home';
 import { ClientList } from './components/Client/ClientList/ClientList';
 import { ClientEdit } from "./components/Client/ClientEdit/ClientEdit";
 import './styles/App.css';
-import './styles/orange-luxury-theme.css';
+import './styles/orange-telecom.css';
+import './styles/orange-theme.css';
+import './styles/luxury-clients.css';
 
 function App() {
     return (
-        <div className="luxury-app orange-luxury-theme">
+        <div styles className="luxury-app orange-luxury-theme">
             <Router>
                 <Suspense fallback={<div className="luxury-loading">Chargement...</div>}>
                     <Routes>
