@@ -1,13 +1,16 @@
 package com.codewithamina.gestionpromo.controller;
 
 import com.codewithamina.gestionpromo.dto.ActivationPromotionDTO;
+import com.codewithamina.gestionpromo.dto.EligibilityResult;
 import com.codewithamina.gestionpromo.dto.PromotionDTO;
 import com.codewithamina.gestionpromo.exception.ClientNotFoundException;
+import com.codewithamina.gestionpromo.exception.DuplicatePromotionCodeException;
 import com.codewithamina.gestionpromo.exception.PromotionNotActiveException;
 import com.codewithamina.gestionpromo.exception.PromotionNotFoundException;
 import com.codewithamina.gestionpromo.mapper.ActivationPromotionMapper;
 import com.codewithamina.gestionpromo.mapper.PromotionMapper;
 import com.codewithamina.gestionpromo.model.ActivationPromotion;
+import com.codewithamina.gestionpromo.model.Client;
 import com.codewithamina.gestionpromo.model.Promotion;
 import com.codewithamina.gestionpromo.request.*;
 import com.codewithamina.gestionpromo.service.ClientService;
@@ -15,12 +18,10 @@ import com.codewithamina.gestionpromo.service.EligibilityService;
 import com.codewithamina.gestionpromo.service.PromotionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -65,9 +66,8 @@ public class PromotionController {
             @PathVariable String code,
             @RequestBody @Valid ActivationRequest request) {
         try {
-            Client client = clientService.findByPhoneNumber(request.getPhoneNumber());
+            Client client = clientService.findByNumeroTelephone(request.getPhoneNumber());
             Promotion promotion = promotionService.findByCode(code);
-            Admin admin = getCurrentAdmin();
 
             // Check eligibility
             if (!eligibilityService.isEligible(client, promotion)) {
@@ -76,15 +76,8 @@ public class PromotionController {
                         .build();
             }
 
-            // Check usage limits
-            if (promotionService.hasExceededUsageLimit(client, promotion)) {
-                return ResponseEntity.badRequest()
-                        .header("Error-Message", "Usage limit exceeded for this promotion")
-                        .build();
-            }
-
             ActivationPromotion activation = promotionService.activatePromotion(
-                    client, promotion, admin, request.getMontantRecharge());
+                    client, promotion, request.getMontantRecharge());
 
             return ResponseEntity.ok(ActivationPromotionMapper.toDTO(activation));
 
@@ -107,7 +100,7 @@ public class PromotionController {
             @PathVariable String code,
             @RequestBody @Valid EligibilityCheckRequest request) {
         try {
-            Client client = clientService.findByPhoneNumber(request.getPhoneNumber());
+            Client client = clientService.findByNumeroTelephone(request.getPhoneNumber());
             Promotion promotion = promotionService.findByCode(code);
 
             EligibilityResult result = eligibilityService.checkEligibilityDetailed(client, promotion);
@@ -123,25 +116,8 @@ public class PromotionController {
         }
     }
 
-    // Get promotion statistics
-    @GetMapping("/{code}/statistics")
-    public ResponseEntity<PromotionStatisticsDTO> getPromotionStatistics(
-            @PathVariable String code,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateDebut,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFin) {
-        try {
-            Promotion promotion = promotionService.findByCode(code);
-            PromotionStatistics stats = statistiqueService.getPromotionStatistics(
-                    promotion, dateDebut, dateFin);
 
-            return ResponseEntity.ok(PromotionStatisticsMapper.toDTO(stats));
-
-        } catch (PromotionNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    // Create new promotion (Admin only)
+    // Create new promotion
     @PostMapping
     public ResponseEntity<PromotionDTO> createPromotion(@RequestBody @Valid CreatePromotionRequest request) {
         try {
@@ -155,7 +131,7 @@ public class PromotionController {
         }
     }
 
-    // Update promotion (Admin only)
+    // Update promotion
     @PutMapping("/{code}")
     public ResponseEntity<PromotionDTO> updatePromotion(
             @PathVariable String code,

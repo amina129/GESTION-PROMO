@@ -74,4 +74,5 @@ public class PromotionCritere {
     @JoinColumn(name = "promotion_id", nullable = false)
     private Promotion promotion;
 
+
 }

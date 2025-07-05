@@ -1,47 +1,44 @@
 package com.codewithamina.gestionpromo.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
 @Table(name = "types_promotion", schema = "public")
 public class TypePromotion {
 
+    @Setter
+    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Setter
+    @Getter
     private String nom;
 
+    @Setter
+    @Getter
     private String description;
 
 
+    @Getter
+    @Setter
     @Column(name = "est_actif")
     private Boolean estActif;
 
+    @Setter
+    @Getter
     @Column(name = "date_creation")
     private LocalDateTime dateCreation;
 
 
     public TypePromotion() {}
-
-    // Getters and setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getNom() { return nom; }
-    public void setNom(String nom) { this.nom = nom; }
-
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
-
-    public Boolean getEstActif() { return estActif; }
-    public void setEstActif(Boolean estActif) { this.estActif = estActif; }
-
-    public LocalDateTime getDateCreation() { return dateCreation; }
-    public void setDateCreation(LocalDateTime dateCreation) { this.dateCreation = dateCreation; }
 
 
     @Override
@@ -60,4 +57,7 @@ public class TypePromotion {
     public int hashCode() {
         return Objects.hash(id, nom, description, estActif, dateCreation);
     }
+
+    @OneToMany(mappedBy = "type")
+    private List<Promotion> promotions;
 }
