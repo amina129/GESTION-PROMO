@@ -2,7 +2,6 @@ package com.codewithamina.gestionpromo.service;
 
 import com.codewithamina.gestionpromo.exception.DuplicatePromotionCodeException;
 import com.codewithamina.gestionpromo.model.ActivationPromotion;
-import com.codewithamina.gestionpromo.model.Admin;
 import com.codewithamina.gestionpromo.model.Client;
 import com.codewithamina.gestionpromo.model.Promotion;
 import com.codewithamina.gestionpromo.repository.ActivationPromotionRepository;
@@ -72,11 +71,7 @@ public class PromotionServiceImpl implements PromotionService {
         return activation;
     }
 
-    @Override
-    public ActivationPromotion activatePromotion(Client client, Promotion promotion, Admin admin, BigDecimal montantRecharge) {
-        ActivationPromotion activation = activatePromotion(client, promotion, montantRecharge);
-        return activationPromotionRepository.save(activation);
-    }
+
 
     @Override
     public Promotion createPromotion(CreatePromotionRequest request) {

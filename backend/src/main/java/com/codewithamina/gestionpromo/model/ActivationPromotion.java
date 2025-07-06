@@ -39,9 +39,7 @@ public class ActivationPromotion {
     private BigDecimal montantRecharge;
     @Setter
     @Getter
-    private String statut; // ACTIVE, EXPIRED, USED
-
-
+    private String statut; // ACTIF, SUSPENDU, RESILIE
 
     @ManyToOne
     @JoinColumn(name = "utilisateur_id")

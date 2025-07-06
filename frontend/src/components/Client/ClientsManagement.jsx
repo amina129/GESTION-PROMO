@@ -76,7 +76,6 @@ const apiService = {
     },
 };
 
-// Main Component
 const ClientsManagement = () => {
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);

@@ -12,6 +12,5 @@ public class ActivationRequest {
 
     @JsonProperty("numeroTelephone")
     private String numeroTelephone;
-
     private BigDecimal montantRecharge;
 }

@@ -85,8 +85,4 @@ public class ClientServiceImpl implements ClientService {
         return clientRepository.findAllPhoneNumbers();
     }
 
-    // Pour pouvoir enregistrer un client via POST
-    public Client save(Client client) {
-        return clientRepository.save(client);
-    }
 }

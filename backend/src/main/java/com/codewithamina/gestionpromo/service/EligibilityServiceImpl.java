@@ -1,5 +1,4 @@
 package com.codewithamina.gestionpromo.service;
-
 import com.codewithamina.gestionpromo.dto.EligibilityResult;
 import com.codewithamina.gestionpromo.model.Client;
 import com.codewithamina.gestionpromo.model.Promotion;
@@ -24,28 +23,29 @@ public class EligibilityServiceImpl implements EligibilityService {
         String jpql = "SELECT p FROM Promotion p WHERE p.active = true AND p.dateDebut <= CURRENT_TIMESTAMP AND p.dateFin >= CURRENT_TIMESTAMP";
         TypedQuery<Promotion> query = entityManager.createQuery(jpql, Promotion.class);
         List<Promotion> activePromotions = query.getResultList();
-
         return activePromotions.stream()
                 .filter(promotion -> isEligible(client, promotion))
                 .toList();
     }
 
+
     @Override
     public boolean isEligible(Client client, Promotion promotion) {
-        System.out.println("Solde client: " + client.getSolde());
-        System.out.println("Solde minimum requis: " + promotion.getSoldeMinimum());
-        System.out.println("Date début: " + promotion.getDateDebut() + " | Date fin: " + promotion.getDateFin());
-        System.out.println("Aujourd'hui: " + LocalDate.now());
         if (client == null || promotion == null) {
             return false;
         }
 
-        // 1. Vérifier le statut du client
+        System.out.println("Solde client: " + client.getSolde());
+        System.out.println("Solde minimum requis: " + promotion.getSoldeMinimum());
+        System.out.println("Date début: " + promotion.getDateDebut() + " | Date fin: " + promotion.getDateFin());
+        System.out.println("Aujourd'hui: " + LocalDate.now());
+
+        //  Vérifier le statut du client
         if (!"ACTIF".equalsIgnoreCase(client.getStatut())) {
             return false;
         }
 
-        // 2. Vérifier la période de validité
+        // Vérifier la période de validité
         LocalDateTime now = LocalDateTime.now();
         if (promotion.getDateDebut() == null || promotion.getDateFin() == null ||
                 now.isBefore(promotion.getDateDebut()) || now.isAfter(promotion.getDateFin())) {
@@ -58,19 +58,13 @@ public class EligibilityServiceImpl implements EligibilityService {
             return false;
         }
 
-
-
         if (promotion.getTypeAbonnementsEligibles() != null &&
                 !promotion.getTypeAbonnementsEligibles().isEmpty() &&
                 (client.getTypeAbonnement() == null || !promotion.getTypeAbonnementsEligibles().contains(client.getTypeAbonnement()))) {
             return false;
         }
 
-        if (!"ACTIF".equalsIgnoreCase(promotion.getStatut()) && !promotion.isActive()) {
-            return false;
-        }
-
-        return true;
+        return "ACTIF".equalsIgnoreCase(promotion.getStatut()) && promotion.isActive();
     }
 
     @Override

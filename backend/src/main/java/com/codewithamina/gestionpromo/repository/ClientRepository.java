@@ -1,5 +1,4 @@
 package com.codewithamina.gestionpromo.repository;
-
 import com.codewithamina.gestionpromo.model.Client;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,7 +11,6 @@ import java.util.Optional;
 public interface ClientRepository extends JpaRepository<Client, Long> {
     Optional<Client> findByNumeroTelephone(String numeroTelephone);
     Optional<Client> findByCodeClient(String codeClient);
-
     @Query("SELECT c.numeroTelephone FROM Client c")
     List<String> findAllPhoneNumbers();
 

@@ -16,7 +16,6 @@ import java.util.Objects;
 @Table(name = "categorie_client")
 public class CategorieClient {
 
-    // Getters and Setters
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

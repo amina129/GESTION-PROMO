@@ -1,9 +1,12 @@
 package com.codewithamina.gestionpromo.model;
-
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "parametres_systeme")
 public class ParametreSysteme {
@@ -30,65 +33,6 @@ public class ParametreSysteme {
 
     public ParametreSysteme() {}
 
-    // Getters and setters
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getCle() {
-        return cle;
-    }
-
-    public void setCle(String cle) {
-        this.cle = cle;
-    }
-
-    public String getValeur() {
-        return valeur;
-    }
-
-    public void setValeur(String valeur) {
-        this.valeur = valeur;
-    }
-
-    public String getTypeDonnee() {
-        return typeDonnee;
-    }
-
-    public void setTypeDonnee(String typeDonnee) {
-        this.typeDonnee = typeDonnee;
-    }
-
-    public String getModifiablePar() {
-        return modifiablePar;
-    }
-
-    public void setModifiablePar(String modifiablePar) {
-        this.modifiablePar = modifiablePar;
-    }
-
-    public LocalDateTime getDateCreation() {
-        return dateCreation;
-    }
-
-    public void setDateCreation(LocalDateTime dateCreation) {
-        this.dateCreation = dateCreation;
-    }
-
-    public LocalDateTime getDateModification() {
-        return dateModification;
-    }
-
-    public void setDateModification(LocalDateTime dateModification) {
-        this.dateModification = dateModification;
-    }
-
-    // equals and hashCode
 
     @Override
     public boolean equals(Object o) {
@@ -103,7 +47,6 @@ public class ParametreSysteme {
                 Objects.equals(dateCreation, that.dateCreation) &&
                 Objects.equals(dateModification, that.dateModification);
     }
-
     @Override
     public int hashCode() {
         return Objects.hash(id, cle, valeur, typeDonnee, modifiablePar, dateCreation, dateModification);

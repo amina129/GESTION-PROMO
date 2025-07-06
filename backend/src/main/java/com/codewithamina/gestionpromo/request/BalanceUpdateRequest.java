@@ -11,9 +11,6 @@ import java.math.BigDecimal;
 public class BalanceUpdateRequest {
     private BigDecimal montant;
 
-    public BalanceUpdateRequest() {
-    }
-
     public BalanceUpdateRequest(BigDecimal montant) {
         this.montant = montant;
     }

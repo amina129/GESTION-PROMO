@@ -55,10 +55,9 @@ public class Client {
     @JoinColumn(name = "id_categorie_client")
     private CategorieClient categorieClient;
 
-    // Constructors
+
     public Client() {
     }
-
     public Client(String codeClient, String nom, String prenom, String numeroTelephone) {
         this.codeClient = codeClient;
         this.nom = nom;
@@ -69,3 +68,4 @@ public class Client {
         this.statut = "ACTIF";
     }
 }
+

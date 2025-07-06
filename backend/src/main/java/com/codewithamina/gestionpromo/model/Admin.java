@@ -1,9 +1,14 @@
 package com.codewithamina.gestionpromo.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "admin")
 public class Admin {
@@ -37,57 +42,6 @@ public class Admin {
     // Default constructor
     public Admin() {
     }
-
-    // Optional full constructor
-    public Admin(Long id, String email, String motDePasse, String nom, String telephone,
-                 Boolean estActif, LocalDateTime dateCreation, LocalDateTime dateModification, Role role) {
-        this.id = id;
-        this.email = email;
-        this.motDePasse = motDePasse;
-        this.nom = nom;
-        this.telephone = telephone;
-        this.estActif = estActif;
-        this.dateCreation = dateCreation;
-        this.dateModification = dateModification;
-        this.role = role;
-    }
-
-    // Getters and setters
-    public Long getId() { return id; }
-
-    public void setId(Long id) { this.id = id; }
-
-    public String getEmail() { return email; }
-
-    public void setEmail(String email) { this.email = email; }
-
-    public String getMotDePasse() { return motDePasse; }
-
-    public void setMotDePasse(String motDePasse) { this.motDePasse = motDePasse; }
-
-    public String getNom() { return nom; }
-
-    public void setNom(String nom) { this.nom = nom; }
-
-    public String getTelephone() { return telephone; }
-
-    public void setTelephone(String telephone) { this.telephone = telephone; }
-
-    public Boolean getEstActif() { return estActif; }
-
-    public void setEstActif(Boolean estActif) { this.estActif = estActif; }
-
-    public LocalDateTime getDateCreation() { return dateCreation; }
-
-    public void setDateCreation(LocalDateTime dateCreation) { this.dateCreation = dateCreation; }
-
-    public LocalDateTime getDateModification() { return dateModification; }
-
-    public void setDateModification(LocalDateTime dateModification) { this.dateModification = dateModification; }
-
-    public Role getRole() { return role; }
-
-    public void setRole(Role role) { this.role = role; }
 
     // equals and hashCode
     @Override

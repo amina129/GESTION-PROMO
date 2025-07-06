@@ -3,7 +3,6 @@ package com.codewithamina.gestionpromo.service;
 
 import com.codewithamina.gestionpromo.model.ActivationPromotion;
 import com.codewithamina.gestionpromo.model.Client;
-import com.codewithamina.gestionpromo.model.Admin;
 import com.codewithamina.gestionpromo.model.Promotion;
 import com.codewithamina.gestionpromo.request.CreatePromotionRequest;
 import com.codewithamina.gestionpromo.request.UpdatePromotionRequest;
@@ -20,6 +19,5 @@ public interface PromotionService {
     Promotion createPromotion(CreatePromotionRequest request);
     Promotion updatePromotion(String code, UpdatePromotionRequest request);
     void deactivatePromotion(String code);
-    ActivationPromotion activatePromotion(Client client, Promotion promo, Admin admin, BigDecimal montant);
 
 }

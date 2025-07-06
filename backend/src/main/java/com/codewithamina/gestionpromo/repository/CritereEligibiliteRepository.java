@@ -6,6 +6,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CritereEligibiliteRepository extends JpaRepository<CritereEligibilite, Long> {
-    // Tu peux ajouter des méthodes personnalisées si nécessaire,
-    // par exemple rechercher par nom ou par estActif.
 }

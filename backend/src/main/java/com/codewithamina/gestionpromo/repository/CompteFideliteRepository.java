@@ -8,7 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface CompteFideliteRepository extends JpaRepository<CompteFidelite, Long> {
-
-    // Recherche le compte fidélité par ID client
     Optional<CompteFidelite> findByClientId(Long clientId);
 }

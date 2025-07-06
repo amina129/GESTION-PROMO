@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Header from "../components/common/Header";
 import Sidebar from "../components/common/Sidebar";
 import Dashboard from "../components/common/Dashboard";
-import PromotionsManagement from "../components/common/PromotionsManagement";
+import PromotionsManagement from "../components/promotions/PromotionsManagement";
 import ClientsManagement from "../components/Client/ClientsManagement";
 import LoyaltyProgram from "../components/common/LoyaltyProgram";
 

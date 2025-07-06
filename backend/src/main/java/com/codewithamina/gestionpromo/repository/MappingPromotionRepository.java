@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface MappingPromotionRepository extends JpaRepository<MappingPromotion, Long> {
-    // Tu peux ajouter des méthodes spécifiques, par ex. chercher par promotionSource ou promotionCible
 }
