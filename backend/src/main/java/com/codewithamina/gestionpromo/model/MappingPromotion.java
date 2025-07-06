@@ -50,10 +50,7 @@ public class MappingPromotion {
     @Column(name = "date_creation")
     private LocalDateTime dateCreation;
 
-    public MappingPromotion() {
-    }
-
-
+    public MappingPromotion() {}
 
     @Override
     public boolean equals(Object o) {
@@ -66,16 +63,4 @@ public class MappingPromotion {
     public int hashCode() {
         return Objects.hash(id);
     }
-    @ManyToOne
-    @JoinColumn(name = "promotion_source_id")
-    private Promotion source;
-
-    @ManyToOne
-    @JoinColumn(name = "promotion_cible_id")
-    private Promotion target;
-    @ManyToOne
-    @JoinColumn(name = "promotion_cible_id")
-    private Promotion cible;
-
-
 }

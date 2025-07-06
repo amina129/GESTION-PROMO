@@ -13,7 +13,5 @@ public interface PromotionRepository extends JpaRepository<Promotion, Long> {
     List<Promotion> findAllActiveAutomaticPromotions();
     List<Promotion> findByActiveTrue();
     Optional<Promotion> findByCodePromotion(String codePromotion);
-
-    Optional<Promotion> findByCode(String code);
 }
 

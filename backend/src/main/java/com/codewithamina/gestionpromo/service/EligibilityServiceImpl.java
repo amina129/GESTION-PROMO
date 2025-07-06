@@ -1,5 +1,6 @@
 package com.codewithamina.gestionpromo.service;
 
+import com.codewithamina.gestionpromo.dto.EligibilityResult;
 import com.codewithamina.gestionpromo.model.Client;
 import com.codewithamina.gestionpromo.model.Promotion;
 import jakarta.persistence.EntityManager;
@@ -70,6 +71,11 @@ public class EligibilityServiceImpl implements EligibilityService {
 
 
         return true;
+    }
+
+    @Override
+    public EligibilityResult checkEligibilityDetailed(Client client, Promotion promotion) {
+        return null;
     }
 
 }

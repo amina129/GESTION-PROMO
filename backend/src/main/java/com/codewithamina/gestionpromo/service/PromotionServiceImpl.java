@@ -80,14 +80,14 @@ public class PromotionServiceImpl implements PromotionService {
 
     @Override
     public Promotion createPromotion(CreatePromotionRequest request) {
-        Optional<Promotion> existing = promotionRepository.findByCode(request.getCode());
+        Optional<Promotion> existing = promotionRepository.findByCodePromotion(request.getCodePromotion());
 
         if (existing.isPresent()) {
-            throw new DuplicatePromotionCodeException("Code promotion déjà utilisé : " + request.getCode());
+            throw new DuplicatePromotionCodeException("Code promotion déjà utilisé : " + request.getCodePromotion());
         }
 
         Promotion promotion = new Promotion();
-        promotion.setCodePromotion(request.getCode());
+        promotion.setCodePromotion(request.getCodePromotion());
         promotion.setDescription(request.getDescription());
         promotion.setDateDebut(request.getDateDebut());
         promotion.setDateFin(request.getDateFin());
@@ -98,7 +98,7 @@ public class PromotionServiceImpl implements PromotionService {
 
     @Override
     public Promotion findByCode(String code) {
-        return promotionRepository.findByCode(code)
+        return promotionRepository.findByCodePromotion(code)
                 .orElseThrow(() -> new RuntimeException("Promotion non trouvée avec le code : " + code));
     }
 

@@ -1,96 +1,69 @@
 package com.codewithamina.gestionpromo.request;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
+@Getter
+@Setter
 public class CreatePromotionRequest {
 
     @NotBlank
-    private String code;
+    private String codePromotion;
 
     private String nom;
 
     @NotBlank
     private String description;
 
-    private BigDecimal valeur;
+    private BigDecimal soldeMinimum;
 
-    private Integer dureeValidite;
+    private BigDecimal soldeMaximum;
 
-    @NotNull
+    private List<String> segmentsClientsEligibles;
+
+    private Double montantBonus;
+
+    private Double pourcentageBonus;
+
+    private Integer minutesBonus;
+
+    private Integer smsBonus;
+
+    private Integer dataBonusMb;
+
+    private Integer pointsFidelite;
+
     private LocalDateTime dateDebut;
 
-    @NotNull
     private LocalDateTime dateFin;
+
+    private Integer utilisationsMaxParClient;
+
+    private Integer utilisationsMaxGlobales;
+
+    private Integer priorite;
+
+    private Boolean estAutomatique;
+
+    private Boolean necessiteCode;
+
+    private Integer creePar;
+
+    private Integer approuvePar;
+
+    private LocalDateTime dateModification;
 
     private Boolean active;
 
-    // === Getters ===
-    public String getCode() {
-        return code;
-    }
+    private Integer dureeValidite;
 
-    public String getNom() {
-        return nom;
-    }
+    private String type;
 
-    public String getDescription() {
-        return description;
-    }
+    private Integer idCategoriePromotion;
 
-    public BigDecimal getValeur() {
-        return valeur;
-    }
-
-    public Integer getDureeValidite() {
-        return dureeValidite;
-    }
-
-    public LocalDateTime getDateDebut() {
-        return dateDebut;
-    }
-
-    public LocalDateTime getDateFin() {
-        return dateFin;
-    }
-
-    public Boolean getActive() {
-        return active;
-    }
-
-    // === Setters ===
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public void setNom(String nom) {
-        this.nom = nom;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public void setValeur(BigDecimal valeur) {
-        this.valeur = valeur;
-    }
-
-    public void setDureeValidite(Integer dureeValidite) {
-        this.dureeValidite = dureeValidite;
-    }
-
-    public void setDateDebut(LocalDateTime dateDebut) {
-        this.dateDebut = dateDebut;
-    }
-
-    public void setDateFin(LocalDateTime dateFin) {
-        this.dateFin = dateFin;
-    }
-
-    public void setActive(Boolean active) {
-        this.active = active;
-    }
 }

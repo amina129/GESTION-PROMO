@@ -66,12 +66,12 @@ public class Promotion {
     }
 
 
-    // All mapping rows where this promotion is the source
-    @OneToMany(mappedBy = "source", cascade = CascadeType.ALL)
+    // mapping rows where this promotion is the source
+    @OneToMany(mappedBy = "promotionSource", cascade = CascadeType.ALL)
     private List<MappingPromotion> relationsAsSource;
 
-    // All mapping rows where this promotion is the cible/target
-    @OneToMany(mappedBy = "cible", cascade = CascadeType.ALL)
+    // mapping rows where this promotion is the cible/target
+    @OneToMany(mappedBy = "promotionCible", cascade = CascadeType.ALL)
     private List<MappingPromotion> relationsAsTarget;
 
 }
