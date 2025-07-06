@@ -8,7 +8,9 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -30,6 +32,10 @@ public class EligibilityServiceImpl implements EligibilityService {
 
     @Override
     public boolean isEligible(Client client, Promotion promotion) {
+        System.out.println("Solde client: " + client.getSolde());
+        System.out.println("Solde minimum requis: " + promotion.getSoldeMinimum());
+        System.out.println("Date début: " + promotion.getDateDebut() + " | Date fin: " + promotion.getDateFin());
+        System.out.println("Aujourd'hui: " + LocalDate.now());
         if (client == null || promotion == null) {
             return false;
         }
@@ -60,22 +66,70 @@ public class EligibilityServiceImpl implements EligibilityService {
             return false;
         }
 
-        if (!"ACTIVE".equalsIgnoreCase(promotion.getStatut()) && !promotion.isActive()) {
+        if (!"ACTIF".equalsIgnoreCase(promotion.getStatut()) && !promotion.isActive()) {
             return false;
         }
-
-        // 8. Vérifier si la promotion nécessite un code, ici on suppose qu’on ne considère que les promotions automatiques
-        if (!promotion.isEstAutomatique()) {
-            return false;
-        }
-
 
         return true;
     }
 
     @Override
     public EligibilityResult checkEligibilityDetailed(Client client, Promotion promotion) {
-        return null;
+        List<String> failedCriteria = new ArrayList<>();
+        List<String> reasons = new ArrayList<>();
+
+        if (client == null) {
+            failedCriteria.add("client");
+            reasons.add("Client introuvable.");
+            return new EligibilityResult(false, failedCriteria, reasons);
+        }
+
+        if (promotion == null) {
+            failedCriteria.add("promotion");
+            reasons.add("Promotion introuvable.");
+            return new EligibilityResult(false, failedCriteria, reasons);
+        }
+
+        if (!"ACTIF".equalsIgnoreCase(client.getStatut())) {
+            failedCriteria.add("statut_client");
+            reasons.add("Le statut du client n'est pas ACTIF.");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        if (promotion.getDateDebut() == null || promotion.getDateFin() == null ||
+                now.isBefore(promotion.getDateDebut()) || now.isAfter(promotion.getDateFin())) {
+            failedCriteria.add("periode");
+            reasons.add("La promotion n'est pas valide à cette date.");
+        }
+
+        if (promotion.getSoldeMinimum() != null &&
+                client.getSolde() != null &&
+                client.getSolde().compareTo(promotion.getSoldeMinimum()) < 0) {
+            failedCriteria.add("solde");
+            reasons.add("Le solde du client est insuffisant.");
+        }
+
+        if (promotion.getTypeAbonnementsEligibles() != null &&
+                !promotion.getTypeAbonnementsEligibles().isEmpty() &&
+                (client.getTypeAbonnement() == null ||
+                        !promotion.getTypeAbonnementsEligibles().contains(client.getTypeAbonnement()))) {
+            failedCriteria.add("type_abonnement");
+            reasons.add("Le type d'abonnement du client n'est pas éligible.");
+        }
+
+        if (!"ACTIF".equalsIgnoreCase(promotion.getStatut()) || !promotion.isActive()) {
+            failedCriteria.add("statut_promotion");
+            reasons.add("La promotion est désactivée.");
+        }
+
+        if (!promotion.isEstAutomatique()) {
+            failedCriteria.add("est_automatique");
+            reasons.add("La promotion nécessite un code manuel.");
+        }
+
+        boolean eligible = failedCriteria.isEmpty();
+        return new EligibilityResult(eligible, failedCriteria, reasons);
     }
+
 
 }

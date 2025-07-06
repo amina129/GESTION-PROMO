@@ -65,11 +65,14 @@ public class PromotionController {
     public ResponseEntity<ActivationPromotionDTO> activatePromotion(
             @PathVariable String code,
             @RequestBody @Valid ActivationRequest request) {
+
         try {
-            Client client = clientService.findByNumeroTelephone(request.getPhoneNumber());
+            Client client = clientService.findByNumeroTelephone(request.getNumeroTelephone());
             Promotion promotion = promotionService.findByCode(code);
 
-            // Check eligibility
+            System.out.println("Client: " + client.getNumeroTelephone());
+            System.out.println("Promotion: " + promotion.getCodePromotion());
+            System.out.println("Éligible: " + eligibilityService.isEligible(client, promotion));
             if (!eligibilityService.isEligible(client, promotion)) {
                 return ResponseEntity.badRequest()
                         .header("Error-Message", "Client not eligible for this promotion")
