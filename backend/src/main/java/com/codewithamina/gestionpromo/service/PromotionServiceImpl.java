@@ -84,12 +84,25 @@ public class PromotionServiceImpl implements PromotionService {
         Promotion promotion = new Promotion();
         promotion.setCodePromotion(request.getCodePromotion());
         promotion.setDescription(request.getDescription());
-        promotion.setDateDebut(request.getDateDebut());
-        promotion.setDateFin(request.getDateFin());
+
+        // Conversion LocalDate (request) -> LocalDateTime (model), à minuit
+        if (request.getDateDebut() != null) {
+            promotion.setDateDebut(request.getDateDebut().atStartOfDay());
+        } else {
+            promotion.setDateDebut(null);
+        }
+
+        if (request.getDateFin() != null) {
+            promotion.setDateFin(request.getDateFin().atStartOfDay());
+        } else {
+            promotion.setDateFin(null);
+        }
+
         promotion.setActive(true);
 
         return promotionRepository.save(promotion);
     }
+
 
     @Override
     public Promotion findByCode(String code) {

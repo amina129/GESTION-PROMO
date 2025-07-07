@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -26,8 +27,8 @@ public class CreatePromotionRequest {
     private Integer smsBonus;
     private Integer dataBonusMb;
     private Integer pointsFidelite;
-    private LocalDateTime dateDebut;
-    private LocalDateTime dateFin;
+    private LocalDate dateDebut;
+    private LocalDate dateFin;
     private Integer utilisationsMaxParClient;
     private Integer utilisationsMaxGlobales;
     private Integer priorite;

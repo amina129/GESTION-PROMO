@@ -14,33 +14,35 @@ public class PromotionMapper {
         dto.setNom(promo.getNom());
         dto.setDescription(promo.getDescription());
         dto.setTypePromotion(promo.getType());
-        dto.setDateDebut(LocalDate.from(promo.getDateDebut()));
-        dto.setDateFin(LocalDate.from(promo.getDateFin()));
-        dto.setTypePromotion(promo.getType());
 
+        // Conversion sécurisée des dates
+        LocalDate dateDebut = promo.getDateDebut() != null ? promo.getDateDebut().toLocalDate() : null;
+        LocalDate dateFin = promo.getDateFin() != null ? promo.getDateFin().toLocalDate() : null;
+
+        dto.setDateDebut(dateDebut);
+        dto.setDateFin(dateFin);
+
+        // Code promotion
         if (promo.getCodePromotion() == null || promo.getCodePromotion().isEmpty()) {
             dto.setCodePromotion("PROMO" + promo.getId());
         } else {
             dto.setCodePromotion(promo.getCodePromotion());
         }
 
-        // Determine status
-        String status = "UNKNOWN";
+        // Statut
+        String status;
         LocalDate today = LocalDate.now();
-        LocalDate dateFin = LocalDate.from(promo.getDateFin());
 
-        if (promo.getActive() != null && promo.getActive()) {
+        if (Boolean.TRUE.equals(promo.getActive())) {
             status = "ACTIVE";
         } else if (dateFin != null && dateFin.isBefore(today)) {
             status = "EXPIRED";
         } else {
             status = "UNKNOWN";
         }
-        dto.setPointsFidelite(null);
-        dto.setStatut(status);
 
-        dto.setDateDebut(promo.getDateDebut() != null ? promo.getDateDebut().toLocalDate() : null);
-        dto.setDateFin(promo.getDateFin() != null ? promo.getDateFin().toLocalDate() : null);
+        dto.setStatut(status);
+        dto.setPointsFidelite(null); // à adapter si nécessaire
 
         return dto;
     }

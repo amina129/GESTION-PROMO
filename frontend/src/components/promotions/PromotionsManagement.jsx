@@ -617,6 +617,25 @@ const PromotionsManagement = () => {
                                             required
                                         />
                                     </div>
+                                    <div className="form-group">
+                                        <label>Date début *</label>
+                                        <input
+                                            type="date"
+                                            value={newPromotion.dateDebut || ''}
+                                            onChange={e => handleInputChange('dateDebut', e.target.value)}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Date fin *</label>
+                                        <input
+                                            type="date"
+                                            value={newPromotion.dateFin || ''}
+                                            onChange={e => handleInputChange('dateFin', e.target.value)}
+                                            required
+                                        />
+                                    </div>
 
                                     <div className="form-group">
                                         <label>Minutes bonus</label>

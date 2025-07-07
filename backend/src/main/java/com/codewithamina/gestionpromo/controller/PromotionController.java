@@ -123,6 +123,7 @@ public class PromotionController {
     // Create new promotion
     @PostMapping
     public ResponseEntity<PromotionDTO> createPromotion(@RequestBody @Valid CreatePromotionRequest request) {
+        System.out.println("Received request: " + request);
         try {
             Promotion promotion = promotionService.createPromotion(request);
             return ResponseEntity.status(HttpStatus.CREATED)
