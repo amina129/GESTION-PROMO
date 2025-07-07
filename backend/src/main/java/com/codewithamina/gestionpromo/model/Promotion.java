@@ -48,4 +48,5 @@ public class Promotion {
     @OneToMany(mappedBy = "promotionCible", cascade = CascadeType.ALL)
     private List<MappingPromotion> relationsAsTarget;
 
+
 }

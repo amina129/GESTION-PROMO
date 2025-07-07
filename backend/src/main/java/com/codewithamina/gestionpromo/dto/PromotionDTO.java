@@ -43,6 +43,7 @@ public class PromotionDTO {
     private Boolean active;
     private Integer dureeValidite;
     private Long idCategoriePromotion;
+    private String statut;
 
     @Override
     public String toString() {
