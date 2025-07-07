@@ -99,126 +99,376 @@ const Dashboard = () => {
     const formatPercentage = (num) => `${Number(num).toFixed(1)}%`;
 
     const kpis = [
-        { title: 'Promotions actives', value: safeStats.promotionsActives, icon: Gift },
-        { title: 'Clients éligibles', value: formatNumber(safeStats.clientsEligibles), icon: Users },
-        { title: 'Activations / jour', value: formatNumber(safeStats.activationsAujourdhui), icon: Zap },
-        { title: 'Chiffre d\'affaires', value: formatCurrency(safeStats.chiffreAffaires), icon: TrendingUp },
-        { title: 'Taux de conversion', value: formatPercentage(safeStats.tauxConversion), icon: Target },
-        { title: 'Points fidélité', value: formatNumber(safeStats.pointsFidelite), icon: Star },
+        { title: 'Promotions actives', value: safeStats.promotionsActives, icon: Gift, color: '#FF7900' },
+        { title: 'Clients éligibles', value: formatNumber(safeStats.clientsEligibles), icon: Users, color: '#00B2FF' },
+        { title: 'Activations / jour', value: formatNumber(safeStats.activationsAujourdhui), icon: Zap, color: '#FF7900' },
+        { title: 'Chiffre d\'affaires', value: formatCurrency(safeStats.chiffreAffaires), icon: TrendingUp, color: '#00B2FF' },
+        { title: 'Taux de conversion', value: formatPercentage(safeStats.tauxConversion), icon: Target, color: '#FF7900' },
+        { title: 'Points fidélité', value: formatNumber(safeStats.pointsFidelite), icon: Star, color: '#00B2FF' },
     ];
 
     const activePromotions = promotions?.filter(p => p?.statut === 'ACTIVE') || [];
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-                <div className="text-white text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-                    <p>Chargement du tableau de bord...</p>
+            <div style={{
+                minHeight: '100vh',
+                backgroundColor: '#f5f5f5',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+            }}>
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{
+                        animation: 'spin 1s linear infinite',
+                        borderRadius: '9999px',
+                        height: '3rem',
+                        width: '3rem',
+                        border: '4px solid #FF7900',
+                        borderTopColor: 'transparent',
+                        margin: '0 auto 1rem auto'
+                    }}></div>
+                    <p style={{ color: '#333', fontSize: '1.125rem' }}>Chargement du tableau de bord...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
-            <div className="max-w-7xl mx-auto">
-                {/* Header */}
-                <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold text-white">Tableau de bord des promotions</h1>
+        <div style={{
+            minHeight: '100vh',
+            backgroundColor: '#f5f5f5',
+            fontFamily: '"Helvetica Neue", Arial, sans-serif'
+        }}>
+            {/* Header */}
+            <header style={{
+                backgroundColor: 'white',
+                boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+                padding: '1rem 0',
+                borderBottom: '3px solid #FF7900'
+            }}>
+                <div style={{
+                    maxWidth: '1200px',
+                    margin: '0 auto',
+                    padding: '0 1.5rem',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <div style={{
+                            width: '40px',
+                            height: '40px',
+                            backgroundColor: '#FF7900',
+                            borderRadius: '4px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginRight: '1rem'
+                        }}>
+                            <Gift color="white" size={24} />
+                        </div>
+                        <h1 style={{
+                            fontSize: '1.5rem',
+                            fontWeight: '600',
+                            color: '#333',
+                            margin: 0
+                        }}>Tableau de bord des promotions</h1>
+                    </div>
                     <button
                         onClick={refreshData}
                         disabled={refreshing}
-                        className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            padding: '0.5rem 1rem',
+                            backgroundColor: '#FF7900',
+                            color: 'white',
+                            borderRadius: '4px',
+                            border: 'none',
+                            cursor: 'pointer',
+                            fontWeight: '500',
+                            opacity: refreshing ? '0.7' : '1',
+                            transition: 'all 0.2s'
+                        }}
                     >
-                        <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+                        <RefreshCw size={18} style={{
+                            animation: refreshing ? 'spin 1s linear infinite' : 'none'
+                        }} />
                         Actualiser
                     </button>
                 </div>
+            </header>
 
+            {/* Main Content */}
+            <main style={{
+                maxWidth: '1200px',
+                margin: '2rem auto',
+                padding: '0 1.5rem'
+            }}>
                 {/* Error Alert */}
                 {error && (
-                    <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-lg flex items-center gap-2 text-red-200">
-                        <AlertCircle className="h-5 w-5" />
-                        <span>{error}</span>
+                    <div style={{
+                        backgroundColor: '#FFEBEE',
+                        borderLeft: '4px solid #F44336',
+                        padding: '1rem',
+                        marginBottom: '2rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.75rem'
+                    }}>
+                        <AlertCircle color="#F44336" size={20} />
+                        <span style={{ color: '#D32F2F', fontWeight: '500' }}>{error}</span>
                     </div>
                 )}
 
-                {/* KPI Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                {/* KPI Cards */}
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                    gap: '1.5rem',
+                    marginBottom: '2rem'
+                }}>
                     {kpis.map((kpi, index) => (
-                        <div key={index} className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 bg-purple-600 rounded-lg">
-                                    <kpi.icon size={24} className="text-white" />
+                        <div key={index} style={{
+                            backgroundColor: 'white',
+                            borderRadius: '6px',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                            padding: '1.5rem',
+                            borderTop: `4px solid ${kpi.color}`,
+                            transition: 'transform 0.2s, box-shadow 0.2s',
+                            ':hover': {
+                                transform: 'translateY(-2px)',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.12)'
+                            }
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                <div style={{
+                                    width: '48px',
+                                    height: '48px',
+                                    backgroundColor: `${kpi.color}20`,
+                                    borderRadius: '6px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    <kpi.icon color={kpi.color} size={24} />
                                 </div>
                                 <div>
-                                    <div className="text-2xl font-bold text-white">{kpi.value}</div>
-                                    <div className="text-gray-300 text-sm">{kpi.title}</div>
+                                    <div style={{
+                                        fontSize: '1.25rem',
+                                        fontWeight: '600',
+                                        color: '#333',
+                                        marginBottom: '0.25rem'
+                                    }}>{kpi.value}</div>
+                                    <div style={{
+                                        color: '#666',
+                                        fontSize: '0.875rem',
+                                        fontWeight: '500'
+                                    }}>{kpi.title}</div>
                                 </div>
                             </div>
                         </div>
                     ))}
                 </div>
 
-                {/* Content Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Content Sections */}
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                    gap: '1.5rem',
+                    marginBottom: '2rem'
+                }}>
                     {/* Promotions Performance */}
-                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-                        <h3 className="text-xl font-semibold text-white mb-4">Performances des promotions</h3>
-                        <div className="space-y-4">
+                    <div style={{
+                        backgroundColor: 'white',
+                        borderRadius: '6px',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                        overflow: 'hidden'
+                    }}>
+                        <div style={{
+                            padding: '1.25rem 1.5rem',
+                            borderBottom: '1px solid #eee',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                        }}>
+                            <h3 style={{
+                                fontSize: '1.125rem',
+                                fontWeight: '600',
+                                color: '#333',
+                                margin: 0
+                            }}>Performances des promotions</h3>
+                            <div style={{
+                                fontSize: '0.875rem',
+                                color: '#666'
+                            }}>{activePromotions.length} active(s)</div>
+                        </div>
+                        <div style={{ padding: '1rem' }}>
                             {activePromotions.length > 0 ? (
-                                activePromotions.map((promo) => (
-                                    <div key={promo.id} className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
-                                        <div>
-                                            <div className="text-white font-medium">{promo.nom}</div>
-                                            <div className="text-gray-400 text-sm">{promo.codePromotion}</div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                    {activePromotions.map((promo) => (
+                                        <div key={promo.id} style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            padding: '0.75rem 1rem',
+                                            backgroundColor: '#f9f9f9',
+                                            borderRadius: '4px',
+                                            transition: 'background-color 0.2s',
+                                            ':hover': {
+                                                backgroundColor: '#f0f0f0'
+                                            }
+                                        }}>
+                                            <div>
+                                                <div style={{
+                                                    color: '#333',
+                                                    fontWeight: '500',
+                                                    marginBottom: '0.25rem'
+                                                }}>{promo.nom}</div>
+                                                <div style={{
+                                                    color: '#666',
+                                                    fontSize: '0.75rem',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '0.5rem'
+                                                }}>
+                                                    <span>{promo.codePromotion}</span>
+                                                    <span style={{
+                                                        display: 'inline-block',
+                                                        width: '4px',
+                                                        height: '4px',
+                                                        backgroundColor: '#999',
+                                                        borderRadius: '50%'
+                                                    }}></span>
+                                                    <span>Créé le {new Date(promo.dateCreation).toLocaleDateString('fr-FR')}</span>
+                                                </div>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                                <div style={{ textAlign: 'right' }}>
+                                                    <div style={{
+                                                        color: '#333',
+                                                        fontWeight: '600'
+                                                    }}>{formatNumber(promo.activations || 0)}</div>
+                                                    <div style={{
+                                                        color: '#666',
+                                                        fontSize: '0.75rem'
+                                                    }}>activations</div>
+                                                </div>
+                                                <div style={{
+                                                    width: '12px',
+                                                    height: '12px',
+                                                    borderRadius: '50%',
+                                                    backgroundColor:
+                                                        (promo.taux || 0) > 70 ? '#4CAF50' :
+                                                            (promo.taux || 0) > 50 ? '#FFC107' : '#F44336'
+                                                }}></div>
+                                            </div>
                                         </div>
-                                        <div className="text-right">
-                                            <div className="text-white font-semibold">{formatNumber(promo.activations || 0)}</div>
-                                            <div className="text-gray-400 text-sm">{formatPercentage(promo.taux || 0)} taux</div>
-                                        </div>
-                                        <div
-                                            className="w-3 h-3 rounded-full ml-4"
-                                            style={{
-                                                backgroundColor:
-                                                    (promo.taux || 0) > 70 ? '#00C853' :
-                                                        (promo.taux || 0) > 50 ? '#FFA000' : '#FF5252'
-                                            }}
-                                        />
-                                    </div>
-                                ))
+                                    ))}
+                                </div>
                             ) : (
-                                <div className="text-center py-8 text-gray-400">
-                                    <Gift className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                                    <p>Aucune promotion active</p>
+                                <div style={{
+                                    textAlign: 'center',
+                                    padding: '2rem 1rem',
+                                    color: '#666'
+                                }}>
+                                    <Gift size={48} color="#999" style={{ marginBottom: '1rem', opacity: 0.5 }} />
+                                    <p style={{ margin: 0 }}>Aucune promotion active</p>
+                                    <p style={{ margin: '0.5rem 0 0', fontSize: '0.875rem' }}>Créez une nouvelle promotion pour commencer</p>
                                 </div>
                             )}
                         </div>
                     </div>
 
                     {/* Recent Activity */}
-                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-                        <h3 className="text-xl font-semibold text-white mb-4">Activités récentes</h3>
-                        <div className="space-y-4">
+                    <div style={{
+                        backgroundColor: 'white',
+                        borderRadius: '6px',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                        overflow: 'hidden'
+                    }}>
+                        <div style={{
+                            padding: '1.25rem 1.5rem',
+                            borderBottom: '1px solid #eee',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                        }}>
+                            <h3 style={{
+                                fontSize: '1.125rem',
+                                fontWeight: '600',
+                                color: '#333',
+                                margin: 0
+                            }}>Activités récentes</h3>
+                            <div style={{
+                                fontSize: '0.875rem',
+                                color: '#666'
+                            }}>Aujourd'hui</div>
+                        </div>
+                        <div style={{ padding: '1rem' }}>
                             {activePromotions.length > 0 ? (
-                                activePromotions.slice(0, 5).map((promo, index) => (
-                                    <div key={index} className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
-                                        <div className="p-2 bg-green-500/20 rounded-lg">
-                                            <CheckCircle className="h-4 w-4 text-green-400" />
-                                        </div>
-                                        <div>
-                                            <div className="text-white text-sm">Promotion "{promo.nom}" activée</div>
-                                            <div className="text-gray-400 text-xs">
-                                                {promo.activations || 0} activations au total
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                    {activePromotions.slice(0, 5).map((promo, index) => (
+                                        <div key={index} style={{
+                                            display: 'flex',
+                                            alignItems: 'flex-start',
+                                            gap: '1rem',
+                                            padding: '0.75rem',
+                                            backgroundColor: '#f9f9f9',
+                                            borderRadius: '4px'
+                                        }}>
+                                            <div style={{
+                                                flexShrink: 0,
+                                                width: '32px',
+                                                height: '32px',
+                                                backgroundColor: '#E8F5E9',
+                                                borderRadius: '50%',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                            }}>
+                                                <CheckCircle size={16} color="#4CAF50" />
+                                            </div>
+                                            <div>
+                                                <div style={{
+                                                    color: '#333',
+                                                    fontSize: '0.875rem',
+                                                    marginBottom: '0.25rem'
+                                                }}>
+                                                    Promotion <strong>"{promo.nom}"</strong> activée par un client
+                                                </div>
+                                                <div style={{
+                                                    color: '#666',
+                                                    fontSize: '0.75rem',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '0.5rem'
+                                                }}>
+                                                    <span>{new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+                                                    <span style={{
+                                                        display: 'inline-block',
+                                                        width: '4px',
+                                                        height: '4px',
+                                                        backgroundColor: '#999',
+                                                        borderRadius: '50%'
+                                                    }}></span>
+                                                    <span>{promo.activations || 0} activations totales</span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                ))
+                                    ))}
+                                </div>
                             ) : (
-                                <div className="text-center py-8 text-gray-400">
-                                    <Zap className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                                    <p>Aucune activité récente</p>
+                                <div style={{
+                                    textAlign: 'center',
+                                    padding: '2rem 1rem',
+                                    color: '#666'
+                                }}>
+                                    <Zap size={48} color="#999" style={{ marginBottom: '1rem', opacity: 0.5 }} />
+                                    <p style={{ margin: 0 }}>Aucune activité récente</p>
+                                    <p style={{ margin: '0.5rem 0 0', fontSize: '0.875rem' }}>Les activités apparaîtront ici</p>
                                 </div>
                             )}
                         </div>
@@ -226,10 +476,30 @@ const Dashboard = () => {
                 </div>
 
                 {/* Footer */}
-                <div className="mt-8 text-center text-gray-400 text-sm">
-                    Dernière mise à jour: {new Date().toLocaleString('fr-FR')}
+                <div style={{
+                    textAlign: 'center',
+                    color: '#666',
+                    fontSize: '0.875rem',
+                    padding: '1rem 0',
+                    borderTop: '1px solid #eee',
+                    marginTop: '2rem'
+                }}>
+                    Dernière mise à jour: {new Date().toLocaleString('fr-FR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })}
                 </div>
-            </div>
+            </main>
+
+            <style>{`
+                @keyframes spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+            `}</style>
         </div>
     );
 };
