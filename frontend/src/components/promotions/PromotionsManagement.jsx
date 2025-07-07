@@ -19,15 +19,49 @@ import {
 
 const API_BASE_URL = "http://localhost:8080/api/promotions";
 const normalizePromotion = (promo) => {
-    const code = promo.code || promo.codePromotion || promo.codepromotion || "u";
-    const name = promo.name || promo.nom || "";
-    let status = promo.status || "";
-    if (status.toUpperCase() === "ACTIF") status = "ACTIVE";
-    else if (status.toUpperCase() === "BROUILLON") status = "DRAFT";
-    else if (status.toUpperCase() === "EXPIRÉ" || status.toUpperCase() === "EXPIRE") status = "EXPIRED";
-    else status = "UNKNOWN";
+    console.log('Normalizing promotion:', promo);
 
-    return { ...promo, code, name, status };
+    // Handle different possible field names for code
+// Put the API field names first in the fallback chain
+    const code = promo.codePromotion || promo.code || promo.codePromotion || "N/A";
+    const name = promo.nom || promo.name || promo.codePromotion || "N/A";
+
+    // Handle different possible field names for description
+    const description = promo.description || promo.desc || "";
+
+    // Handle status mapping - check what your API actually returns
+    let status = promo.status || promo.statut || promo.active || "";
+
+    // Convert boolean active field to status if needed
+    if (typeof promo.active === 'boolean') {
+        status = promo.active ? "ACTIVE" : "DRAFT";
+    } else if (typeof status === 'string') {
+
+        // Normalize string status values
+        const upperStatus = status.toUpperCase();
+        if (upperStatus === "ACTIF" || upperStatus === "ACTIVE") {
+            status = "ACTIVE";
+        } else if (upperStatus === "BROUILLON" || upperStatus === "DRAFT") {
+            status = "DRAFT";
+        } else if (upperStatus === "EXPIRÉ" || upperStatus === "EXPIRE" || upperStatus === "EXPIRED") {
+            status = "EXPIRÉ";
+        } else {
+            status = "non defini";
+        }
+    } else {
+        status = "non defini";
+    }
+
+    const normalized = {
+        ...promo,
+        code,
+        name,
+        description,
+        status
+    };
+
+    console.log('Normalized promotion:', normalized);
+    return normalized;
 };
 
 const PromotionsManagement = () => {
@@ -41,17 +75,32 @@ const PromotionsManagement = () => {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [creating, setCreating] = useState(false);
     const [newPromotion, setNewPromotion] = useState({
-        code: '',
-        name: '',
+        codePromotion: '',
+        nom: '',
         description: '',
-        discountType: 'percentage',
-        discountValue: '',
-        minRechargeAmount: '',
-        maxUsage: '',
-        startDate: '',
-        endDate: '',
-        targetAudience: 'all'
+        soldeMinimum: '',
+        soldeMaximum: '',
+        segmentsClientsEligibles: [],  // On gérera comme input texte séparé par virgule
+        montantBonus: null,
+        pourcentageBonus: null,
+        minutesBonus: '',
+        smsBonus: '',
+        dataBonusMb: '',
+        pointsFidelite: '',
+        utilisationsMaxParClient: '',
+        utilisationsMaxGlobales: '',
+        priorite: 1,
+        estAutomatique: false,
+        necessiteCode: true,
+        creePar: null,
+        approuvePar: null,
+        dateModification: null,
+        active: false,
+        dureeValidite: '',
+        type: 'percentage', // ou 'fixed'
+        idCategoriePromotion: ''
     });
+
 
     useEffect(() => {
         fetchPromotions();
@@ -60,6 +109,7 @@ const PromotionsManagement = () => {
     const fetchPromotions = async () => {
         setLoading(true);
         setError(null);
+
         console.log("Fetching promotions with searchTerm:", searchTerm, "and filterStatus:", filterStatus);
 
         try {
@@ -72,8 +122,10 @@ const PromotionsManagement = () => {
 
             if (!Array.isArray(data)) throw new Error("Invalid data format");
 
-            // Normalize the data here
-            const normalizedData = data.map(normalizePromotion);
+            const normalizedData = data.map((promo) => {
+                console.log("Raw promo from API:", promo);  // <-- ✅ Add this line
+                return normalizePromotion(promo);           // <-- Normalize afterward
+            });
 
             // Filter normalized promotions
             const filtered = normalizedData.filter((promo) => {
@@ -130,74 +182,53 @@ const PromotionsManagement = () => {
         setError(null);
 
         try {
-            // Prepare the payload to match CreatePromotionRequest
-            const payload = {
-                codePromotion: newPromotion.code,
-                nom: newPromotion.name,
-                description: newPromotion.description,
-                dateDebut: newPromotion.startDate ? new Date(newPromotion.startDate).toISOString() : null,
-                dateFin: newPromotion.endDate ? new Date(newPromotion.endDate).toISOString() : null,
-                // Map discount values based on type
-                ...(newPromotion.discountType === 'percentage' && newPromotion.discountValue ? {
-                    pourcentageBonus: parseFloat(newPromotion.discountValue)
-                } : {}),
-                ...(newPromotion.discountType === 'fixed' && newPromotion.discountValue ? {
-                    montantBonus: parseFloat(newPromotion.discountValue)
-                } : {}),
-                // Optional fields
-                ...(newPromotion.minRechargeAmount ? {
-                    soldeMinimum: parseFloat(newPromotion.minRechargeAmount)
-                } : {}),
-                ...(newPromotion.maxUsage ? {
-                    utilisationsMaxGlobales: parseInt(newPromotion.maxUsage)
-                } : {}),
-                // Set default values
-                active: false, // Start as inactive (draft)
-                necessiteCode: true,
-                estAutomatique: false,
-                priorite: 1
+            // Prepare dates in correct format
+            const formatDate = (dateString) => {
+                if (!dateString) return null;
+                const date = new Date(dateString);
+                return date.toISOString().slice(0, 19).replace('T', ' ');
             };
 
-            console.log('Sending payload:', JSON.stringify(payload, null, 2));
+            const payload = {
+                codePromotion: newPromotion.codePromotion,
+                nom: newPromotion.nom,
+                description: newPromotion.description,
+                soldeMinimum: newPromotion.soldeMinimum || null,
+                soldeMaximum: newPromotion.soldeMaximum || null,
+                segmentsClientsEligibles: newPromotion.segmentsClientsEligibles,
+                montantBonus: newPromotion.type === 'fixed' ? newPromotion.montantBonus : null,
+                pourcentageBonus: newPromotion.type === 'percentage' ? newPromotion.pourcentageBonus : null,
+                minutesBonus: newPromotion.minutesBonus || null,
+                smsBonus: newPromotion.smsBonus || null,
+                dataBonusMb: newPromotion.dataBonusMb || null,
+                pointsFidelite: newPromotion.pointsFidelite || null,
+                utilisationsMaxParClient: newPromotion.utilisationsMaxParClient || null,
+                utilisationsMaxGlobales: newPromotion.utilisationsMaxGlobales || null,
+                priorite: newPromotion.priorite || 1,
+                estAutomatique: Boolean(newPromotion.estAutomatique),
+                necessiteCode: Boolean(newPromotion.necessiteCode),
+                active: Boolean(newPromotion.active),
+                dureeValidite: newPromotion.dureeValidite || null,
+                type: newPromotion.type,
+                idCategoriePromotion: newPromotion.idCategoriePromotion || null
+            };
 
+            console.log("Final payload being sent:", JSON.stringify(payload, null, 2));
             const response = await fetch(API_BASE_URL, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
             });
 
-            console.log('Response status:', response.status);
-            console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
             if (!response.ok) {
-                let errorMessage = `HTTP error! status: ${response.status}`;
-
-                // Try to get error details from response
+                let errorDetails = '';
                 try {
-                    const errorText = await response.text();
-                    console.log('Error response body:', errorText);
-
-                    // Try to parse as JSON
-                    try {
-                        const errorData = JSON.parse(errorText);
-                        if (errorData.message) {
-                            errorMessage = errorData.message;
-                        } else if (errorData.error) {
-                            errorMessage = errorData.error;
-                        }
-                    } catch (parseError) {
-                        // If not JSON, use the text as is
-                        if (errorText) {
-                            errorMessage = errorText;
-                        }
-                    }
-                } catch (textError) {
-                    console.log('Could not read error response body');
+                    const errorData = await response.json();
+                    errorDetails = errorData.message || JSON.stringify(errorData);
+                } catch (e) {
+                    errorDetails = await response.text();
                 }
-
-                throw new Error(errorMessage);
+                throw new Error(`Server error: ${response.status} - ${errorDetails}`);
             }
 
             const result = await response.json();
@@ -205,20 +236,35 @@ const PromotionsManagement = () => {
 
             // Reset form
             setNewPromotion({
-                code: '',
-                name: '',
+                codePromotion: '',
+                nom: '',
                 description: '',
-                discountType: 'percentage',
-                discountValue: '',
-                minRechargeAmount: '',
-                maxUsage: '',
-                startDate: '',
-                endDate: '',
-                targetAudience: 'all'
+                soldeMinimum: '',
+                soldeMaximum: '',
+                segmentsClientsEligibles: [],
+                montantBonus: null,
+                pourcentageBonus: null,
+                minutesBonus: '',
+                smsBonus: '',
+                dataBonusMb: '',
+                pointsFidelite: '',
+                dateDebut: '',
+                dateFin: '',
+                utilisationsMaxParClient: '',
+                utilisationsMaxGlobales: '',
+                priorite: 1,
+                estAutomatique: false,
+                necessiteCode: true,
+                active: false,
+                dureeValidite: '',
+                type: 'percentage',
+                idCategoriePromotion: '',
+                valeurReduction: ''
             });
 
             setShowCreateModal(false);
-            fetchPromotions(); // Refresh the list
+            fetchPromotions();
+            alert('Promotion créée avec succès!');
 
         } catch (error) {
             console.error('Create error:', error);
@@ -227,12 +273,46 @@ const PromotionsManagement = () => {
             setCreating(false);
         }
     };
-
     const handleInputChange = (field, value) => {
+        // Cast numérique si besoin
+        if ([
+            "soldeMinimum", "soldeMaximum", "minutesBonus", "smsBonus", "dataBonusMb", "pointsFidelite",
+            "utilisationsMaxParClient", "utilisationsMaxGlobales", "priorite", "dureeValidite", "idCategoriePromotion"
+        ].includes(field)) {
+            value = value === '' ? '' : Number(value);
+        }
+
         setNewPromotion(prev => ({
             ...prev,
             [field]: value
         }));
+    };
+    const validateForm = () => {
+        const errors = [];
+
+        if (!newPromotion.codePromotion) errors.push("Code promotion est requis");
+        if (!newPromotion.nom) errors.push("Nom est requis");
+        if (!newPromotion.description) errors.push("Description est requise");
+
+        if (newPromotion.type === 'percentage' && !newPromotion.pourcentageBonus) {
+            errors.push("Pourcentage bonus est requis");
+        }
+        if (newPromotion.type === 'fixed' && !newPromotion.montantBonus) {
+            errors.push("Montant bonus est requis");
+        }
+
+        if (errors.length > 0) {
+            setError(errors.join(", "));
+            return false;
+        }
+        return true;
+    };
+
+    const formatDateForServer = (dateString) => {
+        if (!dateString) return null;
+        const date = new Date(dateString);
+        // Format as YYYY-MM-DD HH:MM:SS
+        return date.toISOString().slice(0, 19).replace('T', ' ');
     };
 
 
@@ -240,13 +320,20 @@ const PromotionsManagement = () => {
     const toggleDebug = () => setShowDebug(!showDebug);
 
     return (
-        <div className="container">
+        <div  className="min-h-screen bg-gray-900 text-white p-6">
             {/* Header Section */}
 
             {/* Filters Section */}
-            <div className="filters-section">
-                <div className="filters-header" onClick={toggleFilters}>
-                    <h2 style={{color : "white"}}>Recherche & Filtrage </h2>
+            <div className="bg-gray-800 rounded-lg p-4 mb-6">
+                <div  className="flex items-center justify-between cursor-pointer" onClick={toggleFilters}>
+                    <h1
+                        style={{
+                            color: 'black',
+                            fontSize: '1.25rem',
+                            lineHeight: '1.75rem',
+                            fontWeight: 600
+                        }}
+                    >Recherche & Filtrage </h1>
                     {showFilters ? <FiChevronUp /> : <FiChevronDown />}
                 </div>
 
@@ -256,7 +343,7 @@ const PromotionsManagement = () => {
                             <FiSearch className="search-icon" />
                             <input
                                 type="text"
-                                placeholder="Search promotions..."
+                                placeholder="taper le code de votre promo ..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="search-input"
@@ -278,7 +365,7 @@ const PromotionsManagement = () => {
                             <button
                                 onClick={fetchPromotions}
                                 disabled={loading}
-                                className="btn btn-primary"
+                                style={{backgroundColor: '#f07c00'}}
                             >
                                 Appliquer les filtres
                             </button>
@@ -302,9 +389,9 @@ const PromotionsManagement = () => {
             )}
 
             {/* Promotions Table */}
-            <div className="promotions-section">
-                <div className="promotions-header">
-                    <h2 style={{color :'white'}}>Promotions ({promotions.length})</h2>
+            <div className="bg-gray-800 rounded-lg overflow-hidden">
+                <div className="flex items-center justify-between p-4 border-b border-gray-700">
+                    <h2 className="text-xl font-semibold">Promotions ({promotions.length})</h2>
                     <button
                         onClick={() => setShowCreateModal(true)}
                         className="btn btn-success"
@@ -313,14 +400,14 @@ const PromotionsManagement = () => {
                     </button>
                 </div>
 
-                <div className="table-wrapper">
-                    <table>
+                <div className="overflow-x-auto">
+                    <table  className="w-full" style={{color : "black"}}>
                         <thead>
-                        <tr>
-                            <th>Code</th>
-                            <th>Nom</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                        <tr className="bg-gray-700">
+                            <th className="px-4 py-3 text-left" >Code</th>
+                            <th className="px-4 py-3 text-left" >Nom</th>
+                            <th className="px-4 py-3 text-left" >Status</th>
+                            <th className="px-4 py-3 text-left" >Actions</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -349,8 +436,8 @@ const PromotionsManagement = () => {
                       >
                         {promotion.status || "UNKNOWN"}
                       </span>
-                                    </td>
-                                    <td className="actions-cell">
+                                    </td >
+                                    <td  className="px-4 py-3">
                                         <button
                                             onClick={() => {
                                                 const phoneNumber = prompt("Client phone number:");
@@ -369,12 +456,6 @@ const PromotionsManagement = () => {
                                             }`}
                                         >
                                             Activer
-                                        </button>
-                                        <button
-                                            onClick={() => alert("Check eligibility")}
-                                            className="btn btn-check"
-                                        >
-                                            Vérifier
                                         </button>
                                     </td>
                                 </tr>
@@ -430,7 +511,7 @@ const PromotionsManagement = () => {
                 {showCreateModal && (
                     <div className="modal-overlay">
                         <div className="modal-container">
-                            <div className="modal-header">
+                            <div className="modal-header" >
                                 <h2>
                                     <FiPlus className="modal-icon" />
                                     Créer une nouvelle promotion
@@ -445,55 +526,71 @@ const PromotionsManagement = () => {
 
                             <form onSubmit={handleCreatePromotion} className="modal-form">
                                 <div className="form-grid">
+
                                     <div className="form-group">
-                                        <label>
-                                            <FiHash className="form-icon" />
-                                            Code promotion *
-                                        </label>
+                                        <label>Code promotion *</label>
                                         <input
                                             type="text"
-                                            value={newPromotion.code}
-                                            onChange={(e) => handleInputChange('code', e.target.value)}
-                                            placeholder="Ex: PROMO2024"
+                                            value={newPromotion.codePromotion}
+                                            onChange={e => handleInputChange('codePromotion', e.target.value)}
                                             required
                                         />
                                     </div>
 
                                     <div className="form-group">
-                                        <label>
-                                            <FiFileText className="form-icon" />
-                                            Nom *
-                                        </label>
+                                        <label>Nom *</label>
                                         <input
                                             type="text"
-                                            value={newPromotion.name}
-                                            onChange={(e) => handleInputChange('name', e.target.value)}
-                                            placeholder="Ex: Promotion d'été"
+                                            value={newPromotion.nom}
+                                            onChange={e => handleInputChange('nom', e.target.value)}
                                             required
                                         />
                                     </div>
 
                                     <div className="form-group full-width">
-                                        <label>
-                                            <FiFileText className="form-icon" />
-                                            Description
-                                        </label>
+                                        <label>Description *</label>
                                         <textarea
                                             value={newPromotion.description}
-                                            onChange={(e) => handleInputChange('description', e.target.value)}
-                                            placeholder="Décrivez la promotion..."
-                                            rows="3"
+                                            onChange={e => handleInputChange('description', e.target.value)}
+                                            rows={3}
+                                            required
                                         />
                                     </div>
 
                                     <div className="form-group">
-                                        <label>
-                                            <FiPercent className="form-icon" />
-                                            Type de réduction *
-                                        </label>
+                                        <label>Solde minimum</label>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            value={newPromotion.soldeMinimum}
+                                            onChange={e => handleInputChange('soldeMinimum', e.target.value)}
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Solde maximum</label>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            value={newPromotion.soldeMaximum}
+                                            onChange={e => handleInputChange('soldeMaximum', e.target.value)}
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Segments clients éligibles (séparés par une virgule)</label>
+                                        <input
+                                            type="text"
+                                            value={newPromotion.segmentsClientsEligibles.join(', ')}
+                                            onChange={e => handleInputChange('segmentsClientsEligibles', e.target.value.split(',').map(s => s.trim()))}
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Type de réduction *</label>
                                         <select
-                                            value={newPromotion.discountType}
-                                            onChange={(e) => handleInputChange('discountType', e.target.value)}
+                                            value={newPromotion.type}
+                                            onChange={e => handleInputChange('type', e.target.value)}
                                             required
                                         >
                                             <option value="percentage">Pourcentage</option>
@@ -502,71 +599,139 @@ const PromotionsManagement = () => {
                                     </div>
 
                                     <div className="form-group">
-                                        <label>
-                                            <FiDollarSign className="form-icon" />
-                                            Valeur de réduction *
-                                        </label>
+                                        <label>Valeur de réduction *</label>
                                         <input
                                             type="number"
                                             step="0.01"
-                                            value={newPromotion.discountValue}
-                                            onChange={(e) => handleInputChange('discountValue', e.target.value)}
-                                            placeholder={newPromotion.discountType === 'percentage' ? '10' : '5.00'}
+                                            value={newPromotion.type === 'percentage' ? newPromotion.pourcentageBonus ?? '' : newPromotion.montantBonus ?? ''}
+                                            onChange={e => {
+                                                const val = e.target.value;
+                                                if(newPromotion.type === 'percentage'){
+                                                    handleInputChange('pourcentageBonus', val ? parseFloat(val) : null);
+                                                    handleInputChange('montantBonus', null);
+                                                } else {
+                                                    handleInputChange('montantBonus', val ? parseFloat(val) : null);
+                                                    handleInputChange('pourcentageBonus', null);
+                                                }
+                                            }}
                                             required
                                         />
                                     </div>
 
                                     <div className="form-group">
-                                        <label>
-                                            <FiDollarSign className="form-icon" />
-                                            Solde minimum
-                                        </label>
+                                        <label>Minutes bonus</label>
                                         <input
                                             type="number"
-                                            step="0.01"
-                                            value={newPromotion.minRechargeAmount}
-                                            onChange={(e) => handleInputChange('minRechargeAmount', e.target.value)}
-                                            placeholder="10.00"
+                                            value={newPromotion.minutesBonus}
+                                            onChange={e => handleInputChange('minutesBonus', e.target.value)}
                                         />
                                     </div>
 
                                     <div className="form-group">
-                                        <label>
-                                            <FiUser className="form-icon" />
-                                            Utilisations max globales
-                                        </label>
+                                        <label>SMS bonus</label>
                                         <input
                                             type="number"
-                                            value={newPromotion.maxUsage}
-                                            onChange={(e) => handleInputChange('maxUsage', e.target.value)}
-                                            placeholder="100"
+                                            value={newPromotion.smsBonus}
+                                            onChange={e => handleInputChange('smsBonus', e.target.value)}
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Data bonus (Mb)</label>
+                                        <input
+                                            type="number"
+                                            value={newPromotion.dataBonusMb}
+                                            onChange={e => handleInputChange('dataBonusMb', e.target.value)}
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Points fidélité</label>
+                                        <input
+                                            type="number"
+                                            value={newPromotion.pointsFidelite}
+                                            onChange={e => handleInputChange('pointsFidelite', e.target.value)}
+                                        />
+                                    </div>
+
+
+
+                                    <div className="form-group">
+                                        <label>Utilisations max par client</label>
+                                        <input
+                                            type="number"
+                                            value={newPromotion.utilisationsMaxParClient}
+                                            onChange={e => handleInputChange('utilisationsMaxParClient', e.target.value)}
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Utilisations max globales</label>
+                                        <input
+                                            type="number"
+                                            value={newPromotion.utilisationsMaxGlobales}
+                                            onChange={e => handleInputChange('utilisationsMaxGlobales', e.target.value)}
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Priorité</label>
+                                        <input
+                                            type="number"
+                                            value={newPromotion.priorite}
+                                            onChange={e => handleInputChange('priorite', e.target.value)}
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Durée validité (jours)</label>
+                                        <input
+                                            type="number"
+                                            value={newPromotion.dureeValidite}
+                                            onChange={e => handleInputChange('dureeValidite', e.target.value)}
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Catégorie promotion (ID)</label>
+                                        <input
+                                            type="number"
+                                            value={newPromotion.idCategoriePromotion}
+                                            onChange={e => handleInputChange('idCategoriePromotion', e.target.value)}
                                         />
                                     </div>
 
                                     <div className="form-group">
                                         <label>
-                                            <FiCalendar className="form-icon" />
-                                            Date de début *
+                                            <input
+                                                type="checkbox"
+                                                checked={newPromotion.estAutomatique}
+                                                onChange={e => handleInputChange('estAutomatique', e.target.checked)}
+                                            />
+                                            Est automatique
                                         </label>
-                                        <input
-                                            type="datetime-local"
-                                            value={newPromotion.startDate}
-                                            onChange={(e) => handleInputChange('startDate', e.target.value)}
-                                            required
-                                        />
                                     </div>
 
                                     <div className="form-group">
                                         <label>
-                                            <FiCalendar className="form-icon" />
-                                            Date de fin *
+                                            <input
+                                                type="checkbox"
+                                                checked={newPromotion.necessiteCode}
+                                                onChange={e => handleInputChange('necessiteCode', e.target.checked)}
+                                            />
+                                            Nécessite code
                                         </label>
-                                        <input
-                                            type="datetime-local"
-                                            value={newPromotion.endDate}
-                                            onChange={(e) => handleInputChange('endDate', e.target.value)}
-                                            required
-                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>
+                                            <input
+                                                type="checkbox"
+                                                checked={newPromotion.active}
+                                                onChange={e => handleInputChange('active', e.target.checked)}
+                                            />
+                                            Active
+                                        </label>
                                     </div>
 
                                 </div>
@@ -599,33 +764,19 @@ const PromotionsManagement = () => {
                                     </button>
                                 </div>
                             </form>
+
                         </div>
                     </div>
                 )}
             </div>
-        
+
 
             <style>{`
   /* Container */
-  .container {
-    background-color: #121212;
-    color: #eee;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    padding: 30px 40px;
-    max-width: 1100px;
-    margin: auto;
-    border-radius: 10px;
-    box-shadow: 0 0 15px rgba(255, 124, 0, 0.3);
-  }
+
 
   /* Filters Section */
-  .filters-section {
-    background-color: #1f1f1f;
-    border-radius: 10px;
-    margin-bottom: 30px;
-    box-shadow: inset 0 0 10px rgba(255, 124, 0, 0.2);
-    border: 1px solid #444;
-  }
+
 
   .filters-header {
     display: flex;
@@ -776,20 +927,7 @@ const PromotionsManagement = () => {
     color: #c7a867;
     cursor: not-allowed;
   }
-  .btn-check {
-    padding: 6px 16px;
-    background: #555555;
-    color: #e6b77a;
-    font-weight: 600;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    border: none;
-    box-shadow: none;
-  }
-  .btn-check:hover {
-    background: #666666;
-  }
+
 
   /* Error Box */
   .error-box {
@@ -820,12 +958,7 @@ const PromotionsManagement = () => {
   }
 
   /* Promotions Section */
-  .promotions-section {
-    background-color: #1f1f1f;
-    border-radius: 10px;
-    box-shadow: inset 0 0 12px rgba(240, 124, 0, 0.15);
-    padding-bottom: 30px;
-  }
+
   .promotions-header {
     padding: 18px 30px;
     display: flex;
@@ -838,10 +971,7 @@ const PromotionsManagement = () => {
     border-bottom: 1px solid #b35a00;
   }
 
-  .table-wrapper {
-    overflow-x: auto;
-    padding: 0 30px 30px 30px;
-  }
+
 
   table {
     width: 100%;
@@ -894,9 +1024,7 @@ const PromotionsManagement = () => {
     color: #bbb;
   }
 
-  .actions-cell button {
-    margin-right: 12px;
-  }
+ 
 
   .loading-cell {
     text-align: center;
@@ -982,7 +1110,6 @@ const PromotionsManagement = () => {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.75);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -992,11 +1119,8 @@ const PromotionsManagement = () => {
 }
 
 .modal-container {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 20px;
-    width: 90%;
-    max-width: 800px;
-    max-height: 90vh;
+background: linear-gradient(135deg, #1C1C1C 0%, #3a4143 100%);
+border: 1px solid #e67e22; /* orange border for contrast */    max-height: 90vh;
     overflow-y: auto;
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
     animation: slideIn 0.3s ease;
@@ -1156,14 +1280,7 @@ const PromotionsManagement = () => {
     transform: translateY(-1px);
 }
 
-.spinner-small {
-    width: 16px;
-    height: 16px;
-    border: 2px solid rgba(45, 55, 72, 0.3);
-    border-top: 2px solid #2d3748;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
+
 
 @keyframes fadeIn {
     from { opacity: 0; }
