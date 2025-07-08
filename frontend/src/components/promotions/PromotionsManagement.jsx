@@ -20,24 +20,36 @@ import {
 const API_BASE_URL = "http://localhost:8080/api/promotions";
 const normalizePromotion = (promo) => {
     console.log('Normalizing promotion:', promo);
-
     // Handle different possible field names for code
-// Put the API field names first in the fallback chain
-    const code = promo.codePromotion || promo.code || promo.codePromotion || "N/A";
+    const code = promo.codePromotion || promo.code || promo.code_promotion || "N/A";
     const name = promo.nom || promo.name || promo.codePromotion || "N/A";
-
-    // Handle different possible field names for description
     const description = promo.description || promo.desc || "";
-
-    // Handle status mapping - check what your API actually returns
     let status = promo.status || promo.statut || promo.active || "";
 
-    // Convert boolean active field to status if needed
+    const formatDate = (dateString) => {
+        if (!dateString) return null;
+        try {
+            const date = new Date(dateString);
+            return isNaN(date.getTime()) ? null : date;
+        } catch (error) {
+            console.error('Date parsing error:', error);
+            return null;
+        }
+    };
+
+    const dateDebut = formatDate(promo.date_debut || promo.dateDebut);
+    const dateFin = formatDate(promo.date_fin || promo.dateFin);
+
+    const soldeMinimum = promo.solde_minimum || promo.soldeMinimum || 0;
+    const soldeMaximum = promo.solde_maximum || promo.soldeMaximum || null;
+    const dureeValidite = promo.duree_validite || promo.dureeValidite || 0;
+    const montantBonus = promo.montant_bonus || promo.montantBonus || 0;
+    const pourcentageBonus = promo.pourcentage_bonus || promo.pourcentageBonus || 0;
+
+    // Normalize status
     if (typeof promo.active === 'boolean') {
         status = promo.active ? "ACTIVE" : "DRAFT";
     } else if (typeof status === 'string') {
-
-        // Normalize string status values
         const upperStatus = status.toUpperCase();
         if (upperStatus === "ACTIF" || upperStatus === "ACTIVE") {
             status = "ACTIVE";
@@ -52,18 +64,43 @@ const normalizePromotion = (promo) => {
         status = "non defini";
     }
 
+    const now = new Date();
+    const isDateValid = dateDebut && dateFin && now >= dateDebut && now <= dateFin;
+    const isEligible = status === "ACTIVE" && isDateValid;
+
     const normalized = {
         ...promo,
         code,
         name,
         description,
-        status
+        status,
+        dateDebut,
+        dateFin,
+        soldeMinimum,
+        soldeMaximum,
+        dureeValidite,
+        montantBonus,
+        pourcentageBonus,
+        isEligible,
+        // Add formatted display values
+        displayValidite: dureeValidite > 0 ? `${dureeValidite} jours` : 'Illimitée',
+        displayMinimum: soldeMinimum > 0 ? `${soldeMinimum} DT min` : 'Aucun minimum',
+        displayExpiry: dateFin ? dateFin.toLocaleDateString('fr-FR') : 'Non définie'
     };
 
     console.log('Normalized promotion:', normalized);
     return normalized;
 };
-
+const checkUserEligibility = async (phoneNumber) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/eligible/${phoneNumber}`);
+        const eligiblePromotions = await response.json();
+        return eligiblePromotions.map(normalizePromotion);
+    } catch (error) {
+        console.error('Error checking eligibility:', error);
+        return [];
+    }
+};
 const PromotionsManagement = () => {
     const [promotions, setPromotions] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -119,6 +156,8 @@ const PromotionsManagement = () => {
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
             const data = await response.json();
+            console.log("Raw API response:", JSON.stringify(data, null, 2)); // Add this line
+
 
             if (!Array.isArray(data)) throw new Error("Invalid data format");
 
