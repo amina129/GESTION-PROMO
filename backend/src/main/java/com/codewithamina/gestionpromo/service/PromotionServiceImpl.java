@@ -55,20 +55,24 @@ public class PromotionServiceImpl implements PromotionService {
 
     @Override
     public ActivationPromotion activatePromotion(Client client, Promotion promotion, BigDecimal montantRecharge) {
+        if (promotion.getDureeValidite() == null && promotion.getDateFin() == null) {
+            throw new IllegalArgumentException("Promotion must have either duration or end date");
+        }
+
         ActivationPromotion activation = new ActivationPromotion();
         activation.setClient(client);
         activation.setPromotion(promotion);
         activation.setDateActivation(LocalDateTime.now());
-
-        if (promotion.getDureeValidite() != null) {
-            activation.setDateExpiration(LocalDateTime.now().plusDays(promotion.getDureeValidite()));
-        }
-
         activation.setMontantRecharge(montantRecharge);
         activation.setStatut("ACTIVE");
 
-        activationPromotionRepository.save(activation);
-        return activation;
+        // Set expiration date
+        LocalDateTime expirationDate = promotion.getDureeValidite() != null
+                ? LocalDateTime.now().plusDays(promotion.getDureeValidite())
+                : promotion.getDateFin();
+        activation.setDateExpiration(expirationDate);
+
+        return activationPromotionRepository.save(activation);
     }
 
 
@@ -125,5 +129,6 @@ public class PromotionServiceImpl implements PromotionService {
         promotion.setActive(false);
         promotionRepository.save(promotion);
     }
+
 
 }

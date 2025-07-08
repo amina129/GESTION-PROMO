@@ -91,16 +91,7 @@ const normalizePromotion = (promo) => {
     console.log('Normalized promotion:', normalized);
     return normalized;
 };
-const checkUserEligibility = async (phoneNumber) => {
-    try {
-        const response = await fetch(`${API_BASE_URL}/eligible/${phoneNumber}`);
-        const eligiblePromotions = await response.json();
-        return eligiblePromotions.map(normalizePromotion);
-    } catch (error) {
-        console.error('Error checking eligibility:', error);
-        return [];
-    }
-};
+
 const PromotionsManagement = () => {
     const [promotions, setPromotions] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -156,9 +147,7 @@ const PromotionsManagement = () => {
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
             const data = await response.json();
-            console.log("Raw API response:", JSON.stringify(data, null, 2)); // Add this line
-
-
+            
             if (!Array.isArray(data)) throw new Error("Invalid data format");
 
             const normalizedData = data.map((promo) => {
