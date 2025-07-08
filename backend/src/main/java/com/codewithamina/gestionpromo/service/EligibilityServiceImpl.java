@@ -1,4 +1,5 @@
 package com.codewithamina.gestionpromo.service;
+
 import com.codewithamina.gestionpromo.dto.EligibilityResult;
 import com.codewithamina.gestionpromo.model.Client;
 import com.codewithamina.gestionpromo.model.Promotion;
@@ -7,7 +8,6 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,14 +20,17 @@ public class EligibilityServiceImpl implements EligibilityService {
 
     @Override
     public List<Promotion> getEligiblePromotions(Client client) {
-        String jpql = "SELECT p FROM Promotion p WHERE p.active = true AND p.dateDebut <= CURRENT_TIMESTAMP AND p.dateFin >= CURRENT_TIMESTAMP";
+        String jpql = "SELECT p FROM Promotion p WHERE p.active = true " +
+                "AND p.statut = 'ACTIVE' " +
+                "AND p.dateDebut <= CURRENT_TIMESTAMP " +
+                "AND p.dateFin >= CURRENT_TIMESTAMP";
         TypedQuery<Promotion> query = entityManager.createQuery(jpql, Promotion.class);
         List<Promotion> activePromotions = query.getResultList();
+
         return activePromotions.stream()
                 .filter(promotion -> isEligible(client, promotion))
                 .toList();
     }
-
 
     @Override
     public boolean isEligible(Client client, Promotion promotion) {
@@ -35,12 +38,12 @@ public class EligibilityServiceImpl implements EligibilityService {
             return false;
         }
 
-        System.out.println("Solde client: " + client.getSolde());
-        System.out.println("Solde minimum requis: " + promotion.getSoldeMinimum());
-        System.out.println("Date début: " + promotion.getDateDebut() + " | Date fin: " + promotion.getDateFin());
-        System.out.println("Aujourd'hui: " + LocalDate.now());
+        // Vérifier d'abord si la promotion est active et a le bon statut
+        if (!"ACTIVE".equals(promotion.getStatut()) || !promotion.isActive()) {
+            return false;
+        }
 
-        //  Vérifier le statut du client
+        // Vérifier le statut du client
         if (!"ACTIF".equalsIgnoreCase(client.getStatut())) {
             return false;
         }
@@ -52,19 +55,22 @@ public class EligibilityServiceImpl implements EligibilityService {
             return false;
         }
 
+        // Vérifier le solde minimum
         if (promotion.getSoldeMinimum() != null &&
                 client.getSolde() != null &&
                 client.getSolde().compareTo(promotion.getSoldeMinimum()) < 0) {
             return false;
         }
 
+        // Vérifier le type d'abonnement
         if (promotion.getTypeAbonnementsEligibles() != null &&
                 !promotion.getTypeAbonnementsEligibles().isEmpty() &&
-                (client.getTypeAbonnement() == null || !promotion.getTypeAbonnementsEligibles().contains(client.getTypeAbonnement()))) {
+                (client.getTypeAbonnement() == null ||
+                        !promotion.getTypeAbonnementsEligibles().contains(client.getTypeAbonnement()))) {
             return false;
         }
 
-        return "ACTIF".equalsIgnoreCase(promotion.getStatut()) && promotion.isActive();
+        return true;
     }
 
     @Override
