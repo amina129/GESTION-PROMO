@@ -35,7 +35,8 @@ public class PromotionServiceImpl implements PromotionService {
     @Override
     public List<Promotion> getAllPromotions(boolean activeOnly) {
         if (activeOnly) {
-            return promotionRepository.findByActiveTrue();
+            LocalDateTime now = LocalDateTime.now();
+            return promotionRepository.findActivePromotions(now);
         } else {
             return promotionRepository.findAll();
         }

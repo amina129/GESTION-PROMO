@@ -96,7 +96,6 @@ public class PromotionController {
                     .build();
         }
     }
-
     // Check promotion eligibility for a client
     @PostMapping("/{code}/check-eligibility")
     public ResponseEntity<EligibilityCheckResponse> checkEligibility(
