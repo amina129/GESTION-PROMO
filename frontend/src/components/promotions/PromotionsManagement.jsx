@@ -1,718 +1,636 @@
-import { useEffect, useState } from "react";
-import {FiSearch, FiPlus, FiChevronDown, FiChevronUp, FiX, FiSave,} from "react-icons/fi";
-
-
-const API_BASE_URL = "http://localhost:8080/api/promotions";
-const normalizePromotion = (promo) => {
-    console.log('Normalizing promotion:', promo);
-    const name = promo.nom || promo.name || promo.codePromotion || "N/A";
-    const description = promo.description || promo.desc || "";
-    let status = promo.status || promo.statut || "";
-
-    const formatDate = (dateString) => {
-        if (!dateString) return null;
-        try {
-            const date = new Date(dateString);
-            return isNaN(date.getTime()) ? null : date;
-        } catch (error) {
-            console.error('Date parsing error:', error);
-            return null;
-        }
-    };
-
-    const dateDebut = formatDate(promo.date_debut || promo.dateDebut);
-    const dateFin = formatDate(promo.date_fin || promo.dateFin);
-    const dureeValidite = promo.duree_validite || promo.dureeValidite || 0;
-    if (typeof promo.active === 'boolean') {
-        status = promo.active ? "ACTIVE" : "DRAFT";
-    } else if (typeof status === 'string') {
-        const upperStatus = status.toUpperCase();
-        if (upperStatus === "ACTIF" || upperStatus === "ACTIVE") {
-            status = "ACTIVE";
-        } else if (upperStatus === "BROUILLON" || upperStatus === "DRAFT") {
-            status = "DRAFT";
-        } else if (upperStatus === "EXPIRÉ" || upperStatus === "EXPIRE" || upperStatus === "EXPIRED") {
-            status = "EXPIRÉ";
-        } else {
-            status = "non defini";
-        }
-    } else {
-        status = "non defini";
-    }
-
-    const now = new Date();
-    const isDateValid = dateDebut && dateFin && now >= dateDebut && now <= dateFin;
-    const isEligible = status === "ACTIVE" && isDateValid;
-
-    const normalized = {
-        ...promo,
-        name,
-        description,
-        status,
-        dateDebut,
-        dateFin,
-        dureeValidite,
-        displayValidite: dureeValidite > 0 ? `${dureeValidite} jours` : 'Illimitée',
-    };
-    return normalized;
-};
+import React, { useState } from 'react';
+import { Search, Plus, RotateCcw } from 'lucide-react';
 
 const PromotionsManagement = () => {
     const [promotions, setPromotions] = useState([]);
+    const [searchFields, setSearchFields] = useState({
+        nom: '',
+        type: '',
+        sousType: '',
+        dateDebut: '',
+        dateFin: '',
+        categorieClient: ''
+    });
+    const [showSearchFields, setShowSearchFields] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [filterStatus, setFilterStatus] = useState("all");
-    const [showFilters, setShowFilters] = useState(false);
-    const [showDebug, setShowDebug] = useState(false);
-    const [showCreateModal, setShowCreateModal] = useState(false);
-    const [creating, setCreating] = useState(false);
-    const [newPromotion, setNewPromotion] = useState({
-        codePromotion: '',
+    const [showCreateForm, setShowCreateForm] = useState(false);
+    const [formData, setFormData] = useState({
         nom: '',
         description: '',
-        segmentsClientsEligibles: [],
+        valeur: '',
+        dateDebut: '',
+        dateFin: '',
+        type: '',
+        sousType: '',
+        categorieClient: '',
+        uniteMesure: '',
+        typeUnite: '' // nouveau champ pour DATA/SMS/APPEL
     });
 
-    useEffect(() => {
-        fetchPromotions();
-    }, [filterStatus]);
+    const API_BASE_URL = 'http://localhost:8080/api';
 
-    const fetchPromotions = async () => {
+    // Options pour les catégories client
+    const categoriesClient = [
+        { value: 'VIP', label: 'VIP' },
+        { value: 'B2B', label: 'B2B' },
+        { value: 'JP', label: 'JP' },
+        { value: 'privé', label: 'Privé' }
+    ];
+
+    // Types de promotion principaux
+    const typesPromotion = [
+        { value: 'relatif', label: 'Relatif' },
+        { value: 'absolu', label: 'Absolu' }
+    ];
+
+    // Sous-types selon le type principal
+    const sousTypesPromotion = {
+        relatif: [
+            { value: 'remise', label: 'Remise' }
+        ],
+        absolu: [
+            { value: 'unite_gratuite', label: 'Unité gratuite' },
+            { value: 'point_bonus', label: 'Point bonus' }
+        ]
+    };
+
+    // Pourcentages prédéfinis pour les remises
+    const pourcentagesRemise = [
+        { value: '10', label: '10%' },
+        { value: '20', label: '20%' },
+        { value: '30', label: '30%' },
+        { value: '40', label: '40%' },
+        { value: '50', label: '50%' },
+        { value: '60', label: '60%' },
+        { value: '70', label: '70%' }
+    ];
+
+    // Types d'unités pour les unités gratuites
+    const typesUnite = [
+        { value: 'DATA', label: 'DATA' },
+        { value: 'SMS', label: 'SMS' },
+        { value: 'APPEL', label: 'APPEL' }
+    ];
+
+    // Options pour les unités de mesure selon le type d'unité
+    const unitesMesureParType = {
+        DATA: [
+            { value: 'MO', label: 'MO' },
+            { value: 'GO', label: 'GO' }
+        ],
+        APPEL: [
+            { value: 'minutes', label: 'Minutes' },
+            { value: 'heures', label: 'Heures' }
+        ]
+        // SMS n'a pas d'unité de mesure
+    };
+
+    const searchPromotions = async () => {
         setLoading(true);
         setError(null);
-
-        console.log("Fetching promotions with searchTerm:", searchTerm, "and filterStatus:", filterStatus);
-
         try {
-            const activeOnly = filterStatus === "ACTIVE";
-            const response = await fetch(`${API_BASE_URL}?activeOnly=${activeOnly}`);
+            const queryParams = new URLSearchParams();
+            if (searchFields.nom) queryParams.append("nom", searchFields.nom);
+            if (searchFields.type) queryParams.append("type", searchFields.type);
+            if (searchFields.sousType) queryParams.append("sousType", searchFields.sousType);
+            if (searchFields.dateDebut) queryParams.append("dateDebut", searchFields.dateDebut);
+            if (searchFields.dateFin) queryParams.append("dateFin", searchFields.dateFin);
+            if (searchFields.categorieClient) queryParams.append("categorieClient", searchFields.categorieClient);
 
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
+            const response = await fetch(`${API_BASE_URL}/promotions/search?${queryParams.toString()}`);
+            if (!response.ok) throw new Error("Erreur lors du chargement des promotions");
             const data = await response.json();
-
-            if (!Array.isArray(data)) throw new Error("Invalid data format");
-
-            const normalizedData = data.map((promo) => {
-                console.log("Raw promo from API:", promo);  // <-- ✅ Add this line
-                return normalizePromotion(promo);           // <-- Normalize afterward
-            });
-
-            // Filter normalized promotions
-            const filtered = normalizedData.filter((promo) => {
-                const matchesSearch =
-                    promo.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    promo.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    (promo.id?.toString() || "").includes(searchTerm);
-
-                if (["DRAFT", "EXPIRED", "ACTIVE"].includes(filterStatus)) {
-                    return matchesSearch && promo.status === filterStatus;
-                }
-                return matchesSearch;
-            });
-
-            setPromotions(filtered);
-        } catch (error) {
-            console.error("Fetch error:", error);
-            setError(error.message);
-            setPromotions([]);
+            setPromotions(data);
+        } catch (err) {
+            setError(err.message);
         } finally {
             setLoading(false);
         }
     };
-    const handleInputChange = (field, value) => {
-        if ([
-            "soldeMinimum", "soldeMaximum", "minutesBonus", "smsBonus", "dataBonusMb", "pointsFidelite",
-            "utilisationsMaxParClient", "utilisationsMaxGlobales", "priorite", "dureeValidite", "idCategoriePromotion"
-        ].includes(field)) {
-            value = value === '' ? '' : Number(value);
+
+    const createPromotion = async (promotionData) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await fetch(`${API_BASE_URL}/promotions`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(promotionData),
+            });
+            if (!response.ok) throw new Error('Erreur lors de la création de la promotion');
+            const newPromotion = await response.json();
+            setPromotions([...promotions, newPromotion]);
+            setShowCreateForm(false);
+            resetForm();
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const resetForm = () => {
+        setFormData({
+            nom: '',
+            description: '',
+            valeur: '',
+            dateDebut: '',
+            dateFin: '',
+            type: '',
+            sousType: '',
+            categorieClient: '',
+            uniteMesure: '',
+            typeUnite: ''
+        });
+        setShowCreateForm(false);
+    };
+
+    const resetAll = () => {
+        setPromotions([]);
+        setSearchFields({
+            nom: '',
+            type: '',
+            sousType: '',
+            dateDebut: '',
+            dateFin: '',
+            categorieClient: ''
+        });
+        setError(null);
+        resetForm();
+        setShowSearchFields(false);
+    };
+
+    const validateForm = () => {
+        if (!formData.nom || !formData.type || !formData.sousType || !formData.categorieClient) {
+            setError('Nom, type, sous-type et catégorie client sont obligatoires');
+            return false;
         }
 
-        setNewPromotion(prev => ({
-            ...prev,
-            [field]: value
-        }));
+        if (formData.sousType === 'remise' && !formData.valeur) {
+            setError('Pour une remise, la valeur est obligatoire');
+            return false;
+        }
+
+        if (formData.sousType === 'unite_gratuite') {
+            if (!formData.typeUnite) {
+                setError('Pour une unité gratuite, le type d\'unité est obligatoire');
+                return false;
+            }
+            if (!formData.valeur) {
+                setError('Pour une unité gratuite, la quantité est obligatoire');
+                return false;
+            }
+            if (formData.typeUnite !== 'SMS' && !formData.uniteMesure) {
+                setError('L\'unité de mesure est obligatoire pour ce type d\'unité');
+                return false;
+            }
+        }
+
+        if (formData.sousType === 'point_bonus' && !formData.valeur) {
+            setError('Pour les points bonus, la valeur est obligatoire');
+            return false;
+        }
+
+        if (!formData.dateDebut || !formData.dateFin) {
+            setError('Les dates de début et fin sont obligatoires');
+            return false;
+        }
+
+        if (new Date(formData.dateDebut) >= new Date(formData.dateFin)) {
+            setError('La date de début doit être antérieure à la date de fin');
+            return false;
+        }
+
+        return true;
     };
-    const toggleFilters = () => setShowFilters(!showFilters);
+
+    const handleSubmit = () => {
+        if (validateForm()) {
+            createPromotion(formData);
+        }
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => {
+            const newData = { ...prev, [name]: value };
+
+            // Réinitialiser les champs dépendants
+            if (name === 'type') {
+                newData.sousType = '';
+                newData.valeur = '';
+                newData.uniteMesure = '';
+                newData.typeUnite = '';
+            }
+
+            if (name === 'sousType') {
+                newData.valeur = '';
+                newData.uniteMesure = '';
+                newData.typeUnite = '';
+            }
+
+            if (name === 'typeUnite') {
+                newData.uniteMesure = '';
+            }
+
+            return newData;
+        });
+
+        // Réinitialiser l'erreur quand l'utilisateur modifie les champs
+        if (error) setError(null);
+    };
+
+    const handleSearchChange = (field, value) => {
+        setSearchFields(prev => {
+            const newFields = { ...prev, [field]: value };
+
+            // Réinitialiser le sous-type si le type principal change
+            if (field === 'type') {
+                newFields.sousType = '';
+            }
+
+            return newFields;
+        });
+    };
+
+    const formatValeur = (promotion) => {
+        if (promotion.sousType === 'remise') {
+            return `${promotion.valeur}%`;
+        } else if (promotion.sousType === 'unite_gratuite') {
+            return `${promotion.valeur} ${promotion.uniteMesure || ''}`;
+        } else if (promotion.sousType === 'point_bonus') {
+            return `${promotion.valeur} points`;
+        }
+        return promotion.valeur;
+    };
+
+    const formatTypePromotion = (promotion) => {
+        const typeLabel = promotion.type === 'relatif' ? 'Relatif' : 'Absolu';
+        let sousTypeLabel = '';
+
+        if (promotion.sousType === 'remise') sousTypeLabel = 'Remise';
+        else if (promotion.sousType === 'unite_gratuite') sousTypeLabel = 'Unité gratuite';
+        else if (promotion.sousType === 'point_bonus') sousTypeLabel = 'Point bonus';
+
+        return `${typeLabel} - ${sousTypeLabel}`;
+    };
+
+    const shouldShowValeurField = () => {
+        return formData.sousType && ['remise', 'unite_gratuite', 'point_bonus'].includes(formData.sousType);
+    };
+
+    const shouldShowTypeUniteField = () => {
+        return formData.sousType === 'unite_gratuite';
+    };
+
+    const shouldShowUniteMesureField = () => {
+        return formData.sousType === 'unite_gratuite' && formData.typeUnite && formData.typeUnite !== 'SMS';
+    };
+
     return (
-        <div  className="min-h-screen bg-gray-900 text-white p-6">
-            {/* Header Section */}
-            {/* Filters Section */}
-            <div className="bg-gray-800 rounded-lg p-4 mb-6">
-                <div  className="flex items-center justify-between cursor-pointer" onClick={toggleFilters}>
-                    <h1 style={{color: 'black', fontSize: '1.25rem', lineHeight: '1.75rem', fontWeight: 600}}>
-                        Recherche & Filtrage
-                    </h1>
-                    {showFilters ? <FiChevronUp /> : <FiChevronDown />}
-                </div>
-
-                {showFilters && (
-                    <div className="filters-content">
-                        <div className="search-input-wrapper">
-                            <FiSearch className="search-icon" />
-                            <input type="text" placeholder="taper le code de votre promo ..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="search-input"/>
+        <div>
+            {/* Champs de recherche */}
+            {showSearchFields && (
+                <div >
+                    <h2 >Rechercher une promotion</h2>
+                    <div >
+                        <div>
+                            <label >Nom</label>
+                            <input
+                                type="text"
+                                placeholder="Nom de la promotion"
+                                value={searchFields.nom}
+                                onChange={(e) => handleSearchChange('nom', e.target.value)}
+                            />
                         </div>
-
-                        <select
-                            value={filterStatus}
-                            onChange={(e) => setFilterStatus(e.target.value)}
-                            className="status-select"
+                        <div>
+                            <label >Type principal</label>
+                            <select
+                                value={searchFields.type}
+                                onChange={(e) => handleSearchChange('type', e.target.value)}
+                            >
+                                <option value="">Tous les types</option>
+                                {typesPromotion.map(type => (
+                                    <option key={type.value} value={type.value}>{type.label}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label>Sous-type</label>
+                            <select
+                                value={searchFields.sousType}
+                                onChange={(e) => handleSearchChange('sousType', e.target.value)}
+                                disabled={!searchFields.type}
+                            >
+                                <option value="">Tous les sous-types</option>
+                                {searchFields.type && sousTypesPromotion[searchFields.type] &&
+                                    sousTypesPromotion[searchFields.type].map(sousType => (
+                                        <option key={sousType.value} value={sousType.value}>{sousType.label}</option>
+                                    ))
+                                }
+                            </select>
+                        </div>
+                        <div>
+                            <label>Date début</label>
+                            <input
+                                type="date"
+                                value={searchFields.dateDebut}
+                                onChange={(e) => handleSearchChange('dateDebut', e.target.value)}
+                            />
+                        </div>
+                        <div>
+                            <label >Date fin</label>
+                            <input
+                                type="date"
+                                value={searchFields.dateFin}
+                                onChange={(e) => handleSearchChange('dateFin', e.target.value)}
+                            />
+                        </div>
+                        <div>
+                            <label >Catégorie client</label>
+                            <select
+                                value={searchFields.categorieClient}
+                                onChange={(e) => handleSearchChange('categorieClient', e.target.value)}
+                            >
+                                <option value="">Toutes les catégories</option>
+                                {categoriesClient.map(cat => (
+                                    <option key={cat.value} value={cat.value}>{cat.label}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                    <div >
+                        <button
+                            onClick={searchPromotions}
                         >
-                            <option value="all">Toutes</option>
-                            <option value="ACTIVE">Actives</option>
-                            <option value="DRAFT">Broullions</option>
-                            <option value="EXPIRED">Expirées</option>
-                        </select>
-
-                        <div className="filters-buttons">
-                            <button onClick={fetchPromotions} disabled={loading} style={{backgroundColor: '#f07c00'}}>
-                                Appliquer les filtres
-                            </button>
-                            <button onClick={() => {setSearchTerm("");setFilterStatus("all");}} className="btn btn-secondary">
-                                Réinitialiser
-                            </button>
-                        </div>
+                            Rechercher
+                        </button>
+                        <button
+                            onClick={() => setSearchFields({
+                                nom: '', type: '', sousType: '', dateDebut: '', dateFin: '', categorieClient: ''
+                            })}
+                        >
+                            Réinitialiser filtres
+                        </button>
                     </div>
-                )}
-            </div>
-            {/* Promotions Table */}
-            <div className="bg-gray-800 rounded-lg overflow-hidden">
-                <div className="flex items-center justify-between p-4 border-b border-gray-700">
-                    <h2 className="text-xl font-semibold">Promotions ({promotions.length})</h2>
-                    <button onClick={() => setShowCreateModal(true)} className="btn btn-success">
-                        <FiPlus />Nouvelle promotion
-                    </button>
                 </div>
+            )}
 
+            {/* Boutons d'action */}
+            <div >
+                <button
+                    onClick={() => setShowSearchFields(!showSearchFields)}
+                >
+                    <Search size={20} />
+                    {showSearchFields ? 'Masquer la recherche' : 'Rechercher une promotion'}
+                </button>
+                <button
+                    onClick={() => setShowCreateForm(true)}
+                >
+                    <Plus size={20} />
+                    Créer une promotion
+                </button>
+                <button
+                    onClick={resetAll}
+                >
+                    <RotateCcw size={20} />
+                    Réinitialiser tout
+                </button>
             </div>
-            {showCreateModal && (
-                <div className="modal-overlay">
-                        <div className="modal-container">
-                            <div className="modal-header" >
-                                <h2>
-                                    <FiPlus className="modal-icon" />
-                                    Créer une nouvelle promotion
-                                </h2>
-                                <button onClick={() => setShowCreateModal(false)} className="modal-close">
-                                    <FiX />
-                                </button>
-                            </div>
 
-                            <form  className="modal-form">
-                                <div className="form-grid">
-                                    <div className="form-group">
-                                        <label>Nom </label>
-                                        <input
-                                            type="text"
-                                            value={newPromotion.nom}
-                                            onChange={e => handleInputChange('nom', e.target.value)}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="form-group full-width">
-                                        <label>Description</label>
-                                        <textarea
-                                            value={newPromotion.description}
-                                            onChange={e => handleInputChange('description', e.target.value)}
-                                            rows={3}
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Date début </label>
-                                        <input
-                                            type="date"
-                                            value={newPromotion.dateDebut || ''}
-                                            onChange={e => handleInputChange('dateDebut', e.target.value)}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Date fin </label>
-                                        <input
-                                            type="date"
-                                            value={newPromotion.dateFin || ''}
-                                            onChange={e => handleInputChange('dateFin', e.target.value)}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Categorie</label>
-                                        <select
-                                            value={newPromotion.segmentsClientsEligibles.join(', ')}
-                                            onChange={e => handleInputChange('segmentsClientsEligibles', e.target.value.split(',').map(s => s.trim()))}
-                                            className="status-selFect"
-                                            required>
-                                            <option value="1" >Remise</option>
-                                            <option value="2">Unité Gratuite</option>
-                                            <option value="3">Points Bonus</option>
+            {/* Messages d'erreur */}
+            {error && (
+                <div >
+                    {error}
+                </div>
+            )}
 
-                                        </select>
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Clients visés</label>
-                                        <select
-                                            value={newPromotion.segmentsClientsEligibles.join(', ')}
-                                            onChange={e => handleInputChange('segmentsClientsEligibles', e.target.value.split(',').map(s => s.trim()))}
-                                            className="status-select"
-                                            required>
-                                            <option value="1">VIP</option>
-                                            <option value="2">Particulier</option>
-                                            <option value="3">Grande entreprise</option>
-
-                                        </select>
-                                    </div>
-                                </div>
-                                <div className="modal-actions">
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowCreateModal(false)}
-                                        className="btn btn-secondary"
-                                        disabled={creating}
-                                    >
-                                        Annuler
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        className="btn btn-primary"
-                                        disabled={creating}
-                                    >
-                                        {creating ? (
-                                            <>
-                                                <div className="spinner-small"></div>
-                                                Création...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <FiSave />
-                                                Créer la promotion
-                                            </>
-                                        )}
-                                    </button>
-                                </div>
-                            </form>
+            {/* Formulaire de création */}
+            {showCreateForm && (
+                <div >
+                    <h2 >Créer une nouvelle promotion</h2>
+                    <div >
+                        <div>
+                            <label>Nom *</label>
+                            <input
+                                type="text"
+                                name="nom"
+                                placeholder="Nom de la promotion"
+                                value={formData.nom}
+                                onChange={handleInputChange}
+                            />
                         </div>
+                        <div >
+                            <label >Description</label>
+                            <textarea
+                                name="description"
+                                placeholder="Description de la promotion"
+                                rows="3"
+                                value={formData.description}
+                                onChange={handleInputChange}
+                            />
+                        </div>
+                        <div>
+                            <label >Type principal *</label>
+                            <select
+                                name="type"
+                                value={formData.type}
+                                onChange={handleInputChange}
+                            >
+                                <option value="">Sélectionner un type</option>
+                                {typesPromotion.map(type => (
+                                    <option key={type.value} value={type.value}>{type.label}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label >Sous-type *</label>
+                            <select
+                                name="sousType"
+                                value={formData.sousType}
+                                onChange={handleInputChange}
+                                disabled={!formData.type}
+                            >
+                                <option value="">Sélectionner un sous-type</option>
+                                {formData.type && sousTypesPromotion[formData.type] &&
+                                    sousTypesPromotion[formData.type].map(sousType => (
+                                        <option key={sousType.value} value={sousType.value}>{sousType.label}</option>
+                                    ))
+                                }
+                            </select>
+                        </div>
+
+                        {/* Champ Type d'unité - affiché seulement pour unité gratuite */}
+                        {shouldShowTypeUniteField() && (
+                            <div>
+                                <label >Type d'unité *</label>
+                                <select
+                                    name="typeUnite"
+                                    value={formData.typeUnite}
+                                    onChange={handleInputChange}
+                                >
+                                    <option value="">Sélectionner un type</option>
+                                    {typesUnite.map(type => (
+                                        <option key={type.value} value={type.value}>{type.label}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+
+                        {/* Champ Valeur - affiché seulement si un sous-type est sélectionné */}
+                        {shouldShowValeurField() && (
+                            <div>
+                                <label >
+                                    Valeur *
+                                    {formData.sousType === 'remise' && ' (%)'}
+                                    {formData.sousType === 'unite_gratuite' && ' (quantité)'}
+                                    {formData.sousType === 'point_bonus' && ' (points)'}
+                                </label>
+                                {formData.sousType === 'remise' ? (
+                                    <select
+                                        name="valeur"
+                                        value={formData.valeur}
+                                        onChange={handleInputChange}
+                                    >
+                                        <option value="">Sélectionner un pourcentage</option>
+                                        {pourcentagesRemise.map(pct => (
+                                            <option key={pct.value} value={pct.value}>{pct.label}</option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <input
+                                        type="number"
+                                        name="valeur"
+                                        placeholder={
+                                            formData.sousType === 'unite_gratuite' ? 'Quantité' :
+                                                formData.sousType === 'point_bonus' ? 'Points' : 'Valeur'
+                                        }
+                                        value={formData.valeur}
+                                        onChange={handleInputChange}
+                                        min="0"
+                                    />
+                                )}
+                            </div>
+                        )}
+
+                        {/* Champ Unité de mesure - affiché selon le type d'unité */}
+                        {shouldShowUniteMesureField() && (
+                            <div>
+                                <label>Unité de mesure *</label>
+                                <select
+                                    name="uniteMesure"
+                                    value={formData.uniteMesure}
+                                    onChange={handleInputChange}
+                                >
+                                    <option value="">Sélectionner une unité</option>
+                                    {unitesMesureParType[formData.typeUnite] &&
+                                        unitesMesureParType[formData.typeUnite].map(unite => (
+                                            <option key={unite.value} value={unite.value}>{unite.label}</option>
+                                        ))
+                                    }
+                                </select>
+                            </div>
+                        )}
+                        <div>
+                            <label >Catégorie Client *</label>
+                            <select
+                                name="categorieClient"
+                                value={formData.categorieClient}
+                                onChange={handleInputChange}
+                            >
+                                <option value="">Sélectionner une catégorie</option>
+                                {categoriesClient.map(cat => (
+                                    <option key={cat.value} value={cat.value}>{cat.label}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label >Date de début *</label>
+                            <input
+                                type="date"
+                                name="dateDebut"
+                                value={formData.dateDebut}
+                                onChange={handleInputChange}
+                            />
+                        </div>
+                        <div>
+                            <label >Date de fin *</label>
+                            <input
+                                type="date"
+                                name="dateFin"
+                                value={formData.dateFin}
+                                onChange={handleInputChange}
+                            />
+                        </div>
+
+                    </div>
+
+                    <div>
+                        <button
+                            onClick={handleSubmit}
+                            disabled={loading}
+                        >
+                            {loading ? 'Création...' : 'Créer la promotion'}
+                        </button>
+                        <button
+                            onClick={resetForm}
+                        >
+                            Annuler
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Tableau des résultats */}
+            <div >
+                {loading && <div >Chargement...</div>}
+
+                {!loading && promotions.length > 0 && (
+                    <div >
+                        <table >
+                            <thead >
+                            <tr>
+                                <th >Nom</th>
+                                <th >Description</th>
+                                <th >Valeur</th>
+                                <th >Période</th>
+                                <th >Type</th>
+                                <th >Catégorie</th>
+                            </tr>
+                            </thead>
+                            <tbody >
+                            {promotions.map(p => (
+                                <tr key={p.id} >
+                                    <td >{p.nom}</td>
+                                    <td >{p.description}</td>
+                                    <td >{formatValeur(p)}</td>
+                                    <td >{p.dateDebut} → {p.dateFin}</td>
+                                    <td >{formatTypePromotion(p)}</td>
+                                    <td >
+                                        <span className={`px-2 py-1 rounded-full text-xs ${
+                                            p.categorieClient === 'VIP' ? 'bg-yellow-100 text-yellow-800' :
+                                                p.categorieClient === 'B2B' ? 'bg-indigo-100 text-indigo-800' :
+                                                    p.categorieClient === 'JP' ? 'bg-pink-100 text-pink-800' :
+                                                        'bg-gray-100 text-gray-800'
+                                        }`}>
+                                            {p.categorieClient}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </table>
                     </div>
                 )}
 
-
-            <style>{`
-  /* Container */
-
-
-  /* Filters Section */
-
-  .search-input-wrapper {
-    position: relative;
-    flex-grow: 1;
-    max-width: 350px;
-  }
-  .search-input {
-    width: 100%;
-    padding: 10px 15px 10px 40px;
-    border-radius: 8px;
-    border: 1.5px solid #555;
-    background-color: #2a2a2a;
-    color: #eee;
-    font-size: 1rem;
-    outline-offset: 2px;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  }
-  .search-input::placeholder {
-    color: #bbb;
-  }
-  .search-input:focus {
-    border-color: #f07c00;
-    box-shadow: 0 0 5px rgba(240, 124, 0, 0.5);
-    background-color: #333;
-  }
-
-  .status-select {
-    padding: 10px 16px;
-    font-size: 1rem;
-    border-radius: 8px;
-    border: 1.5px solid #555;
-    background-color: #2a2a2a;
-    color: #eee;
-    cursor: pointer;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  }
-  .status-select:hover,
-  .status-select:focus {
-    border-color: #f07c00;
-    box-shadow: 0 0 5px rgba(240, 124, 0, 0.5);
-    outline: none;
-  }
-
-  .filters-buttons {
-    display: flex;
-    gap: 15px;
-  }
-
-  .btn {
-    padding: 10px 24px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
-    transition: all 0.3s ease;
-    user-select: none;
-    box-shadow: none;
-  }
-  .btn-primary {
-    background: #f07c00;
-    color: #121212;
-    box-shadow: none;
-  }
-  .btn-primary:hover:not(:disabled) {
-    background: #d66a00;
-  }
-  .btn-primary:disabled {
-    background: #7a4a00;
-    cursor: not-allowed;
-    color: #c7a867;
-  }
-  .btn-secondary {
-    background: #444444;
-    color: #f07c00;
-    font-weight: 600;
-    box-shadow: none;
-    border: 1.5px solid #f07c00;
-  }
-  .btn-secondary:hover {
-    background: #555555;
-  }
-  .btn-success {
-    background: #f07c00;
-    color: #121212;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    border-radius: 8px;
-  }
-  .btn-success:hover {
-    background: #d66a00;
-  }
-  .btn-activate {
-    padding: 6px 16px;
-    font-weight: 600;
-    border-radius: 8px;
-    transition: background-color 0.3s ease;
-    border: none;
-    cursor: pointer;
-    background-color: #f07c00;
-    color: #121212;
-    box-shadow: none;
-  }
-  .btn-activate:hover:not(:disabled) {
-    background-color: #d66a00;
-  }
-  .btn-activate.disabled,
-  .btn-activate:disabled {
-    background-color: #664400;
-    color: #c7a867;
-    cursor: not-allowed;
-  }
-
-
-  /* Error Box */
-
-
-  /* Promotions Section */
-
-
-
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    color: #eee;
-    font-size: 0.95rem;
-  }
-  th,
-
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-
-  .no-results {
-    text-align: center;
-    color: #aaa;
-    padding: 50px 0;
-    font-style: italic;
-    font-weight: 600;
-  }
-
-  /* Debug Section */
-  
-  .debug-header {
-    padding: 18px 30px;
-    display: flex;
-    justify-content: space-between;
-    cursor: pointer;
-    font-weight: 700;
-    font-size: 1.2rem;
-    align-items: center;
-    border-bottom: 1px solid #b35a00;
-    user-select: none;
-  }
-  .debug-content {
-    padding: 20px 30px;
-    background-color: #3b2a00;
-    color: #e6b77a;
-  }
-  .debug-content pre {
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    color: #f0d487;
-    font-size: 0.85rem;
-    margin-bottom: 15px;
-  }
-  .btn-debug-test {
-    background-color: #f07c00;
-    color: #3b2400;
-    font-weight: 700;
-    padding: 10px 24px;
-    border-radius: 8px;
-    cursor: pointer;
-    border: none;
-    box-shadow: none;
-    transition: background-color 0.3s ease;
-  }
-  .btn-debug-test:hover {
-    background-color: #d66a00;
-  }
-  /* Modal Styles */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    backdrop-filter: blur(4px);
-    animation: fadeIn 0.3s ease;
-}
-
-.modal-container {
-background: linear-gradient(135deg, #1C1C1C 0%, #3a4143 100%);
-border: 1px solid #e67e22; /* orange border for contrast */    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-    animation: slideIn 0.3s ease;
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 24px 32px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    color: white;
-}
-
-.modal-header h2 {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 0;
-    font-size: 1.5rem;
-    font-weight: 600;
-}
-
-.modal-icon {
-    font-size: 1.5rem;
-    color: #ffd700;
-}
-
-.modal-close {
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.modal-close:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.1);
-}
-
-.modal-form {
-    padding: 32px;
-}
-
-.form-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    margin-bottom: 32px;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.form-group.full-width {
-    grid-column: 1 / -1;
-}
-
-.form-group label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-    color: white;
-    font-weight: 500;
-    font-size: 0.9rem;
-}
-
-.form-icon {
-    font-size: 1rem;
-    color: #ffd700;
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-    padding: 12px 16px;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    font-size: 0.95rem;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-}
-
-.form-group input::placeholder,
-.form-group textarea::placeholder {
-    color: rgba(255, 255, 255, 0.6);
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-    outline: none;
-    border-color: #ffd700;
-    background: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
-}
-
-.form-group select option {
-    background: #4a5568;
-    color: white;
-}
-
-.form-group textarea {
-    resize: vertical;
-    min-height: 80px;
-}
-
-.modal-actions {
-    display: flex;
-    gap: 16px;
-    justify-content: flex-end;
-    padding-top: 24px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.modal-actions .btn {
-    padding: 12px 24px;
-    border-radius: 12px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.2s ease;
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, #ffd700, #ffed4a);
-    color: #2d3748;
-    border: none;
-}
-
-.btn-primary:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(255, 215, 0, 0.3);
-}
-
-.btn-secondary {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-}
-
-.btn-secondary:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-1px);
-}
-
-
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px) scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .modal-container {
-        width: 95%;
-        margin: 20px;
-    }
-    
-    .form-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .modal-header {
-        padding: 20px;
-    }
-    
-    .modal-form {
-        padding: 20px;
-    }
-    
-    .modal-actions {
-        flex-direction: column;
-    }
-}
-`}</style>
-
+                {!loading && promotions.length === 0 && (
+                    <div >
+                        Aucune promotion trouvée. Utilisez la recherche ou créez une nouvelle promotion.
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
