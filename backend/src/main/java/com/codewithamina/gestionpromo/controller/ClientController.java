@@ -5,7 +5,6 @@ import com.codewithamina.gestionpromo.dto.*;
 import com.codewithamina.gestionpromo.model.*;
 import com.codewithamina.gestionpromo.exception.ClientNotFoundException;
 import com.codewithamina.gestionpromo.mapper.*;
-import com.codewithamina.gestionpromo.request.BalanceUpdateRequest;
 import com.codewithamina.gestionpromo.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
