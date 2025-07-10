@@ -138,7 +138,6 @@ const PromotionsManagement = () => {
     return (
         <div  className="min-h-screen bg-gray-900 text-white p-6">
             {/* Header Section */}
-
             {/* Filters Section */}
             <div className="bg-gray-800 rounded-lg p-4 mb-6">
                 <div  className="flex items-center justify-between cursor-pointer" onClick={toggleFilters}>
@@ -177,18 +176,6 @@ const PromotionsManagement = () => {
                     </div>
                 )}
             </div>
-
-            {/* Error Display */}
-            {error && (
-                <div className="error-box">
-                    <FiX className="error-icon" />
-                    <div>
-                        <h3>Erreur</h3>
-                        <p>{error}</p>
-                    </div>
-                </div>
-            )}
-
             {/* Promotions Table */}
             <div className="bg-gray-800 rounded-lg overflow-hidden">
                 <div className="flex items-center justify-between p-4 border-b border-gray-700">
@@ -315,49 +302,11 @@ const PromotionsManagement = () => {
 
   /* Filters Section */
 
-
-  .filters-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    padding: 18px 30px;
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: #f07c00; /* softer orange */
-    user-select: none;
-    transition: background-color 0.3s ease;
-  }
-  .filters-header:hover {
-    background-color: #2b2b2b;
-  }
-
-  .filters-content {
-    padding: 20px 30px 30px 30px;
-    border-top: 1px solid #b35a00;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    align-items: center;
-    justify-content: flex-start;
-  }
-
   .search-input-wrapper {
     position: relative;
     flex-grow: 1;
     max-width: 350px;
   }
-
-  .search-icon {
-    position: absolute;
-    top: 50%;
-    left: 12px;
-    transform: translateY(-50%);
-    color: #f07c00;
-    font-size: 1.2rem;
-    pointer-events: none;
-  }
-
   .search-input {
     width: 100%;
     padding: 10px 15px 10px 40px;
@@ -468,46 +417,10 @@ const PromotionsManagement = () => {
 
 
   /* Error Box */
-  .error-box {
-    display: flex;
-    align-items: center;
-    background-color: #2b0000;
-    border-left: 5px solid #d94a00;
-    padding: 15px 20px;
-    border-radius: 8px;
-    margin-bottom: 25px;
-    color: #e59e80;
-    box-shadow: none;
-  }
-  .error-icon {
-    font-size: 1.8rem;
-    margin-right: 12px;
-    color: #d94a00;
-  }
-  .error-box h3 {
-    margin: 0;
-    font-weight: 700;
-    font-size: 1.1rem;
-    margin-bottom: 5px;
-  }
-  .error-box p {
-    margin: 0;
-    font-weight: 500;
-  }
+
 
   /* Promotions Section */
 
-  .promotions-header {
-    padding: 18px 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: #f07c00;
-    font-weight: 700;
-    font-size: 1.35rem;
-    user-select: none;
-    border-bottom: 1px solid #b35a00;
-  }
 
 
 
@@ -518,65 +431,7 @@ const PromotionsManagement = () => {
     font-size: 0.95rem;
   }
   th,
-  td {
-    padding: 14px 20px;
-    text-align: left;
-    border-bottom: 1px solid #444;
-  }
-  thead tr {
-    background-color: #2d2d2d;
-    color: #f07c00;
-    letter-spacing: 0.05em;
-  }
-  tbody tr {
-    transition: background-color 0.2s ease;
-  }
-  tbody tr:hover {
-    background-color: #323232;
-  }
 
-  .status-badge {
-    padding: 6px 14px;
-    font-weight: 700;
-    border-radius: 12px;
-    font-size: 0.85rem;
-    user-select: none;
-    display: inline-block;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-  }
-  .status-badge.active {
-    background-color: #d66a00;
-    color: #fff;
-  }
-  .status-badge.draft {
-    background-color: #666666;
-    color: #ccc;
-  }
-  .status-badge.expired {
-    background-color: #a15e00;
-    color: #f0e1b9;
-  }
-  .status-badge.unknown {
-    background-color: #444444;
-    color: #bbb;
-  }
-
- 
-
-  .loading-cell {
-    text-align: center;
-    padding: 50px 0;
-  }
-  .spinner {
-    border: 4px solid #f07c00;
-    border-top: 4px solid #3b2400;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-    animation: spin 1.2s linear infinite;
-    margin: auto;
-  }
   @keyframes spin {
     0% {
       transform: rotate(0deg);
@@ -595,15 +450,7 @@ const PromotionsManagement = () => {
   }
 
   /* Debug Section */
-  .debug-section {
-    background-color: #2b2b2b;
-    border-radius: 10px;
-    box-shadow: inset 0 0 15px rgba(240, 124, 0, 0.15);
-    margin-top: 40px;
-    color: #f07c00;
-    font-family: monospace;
-    user-select: none;
-  }
+  
   .debug-header {
     padding: 18px 30px;
     display: flex;
@@ -865,7 +712,6 @@ border: 1px solid #e67e22; /* orange border for contrast */    max-height: 90vh;
     }
 }
 `}</style>
-
 
         </div>
     );

@@ -1,7 +1,6 @@
 package com.codewithamina.gestionpromo.controller;
 
 import com.codewithamina.gestionpromo.dto.ActivationPromotionDTO;
-import com.codewithamina.gestionpromo.dto.EligibilityResult;
 import com.codewithamina.gestionpromo.dto.PromotionDTO;
 import com.codewithamina.gestionpromo.exception.ClientNotFoundException;
 import com.codewithamina.gestionpromo.exception.DuplicatePromotionCodeException;
@@ -14,14 +13,12 @@ import com.codewithamina.gestionpromo.model.Client;
 import com.codewithamina.gestionpromo.model.Promotion;
 import com.codewithamina.gestionpromo.request.*;
 import com.codewithamina.gestionpromo.service.ClientService;
-import com.codewithamina.gestionpromo.service.EligibilityService;
 import com.codewithamina.gestionpromo.service.PromotionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.stream.Collectors;
 

@@ -4,45 +4,39 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "activations_promotion")
 public class ActivationPromotion {
-    @Setter
-    @Getter
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Setter
-    @Getter
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "client_id")
-    private Client client;
-
-    @Setter
-    @Getter
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "promotion_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "promotion_id", referencedColumnName = "id")
     private Promotion promotion;
 
-    @Setter
-    @Getter
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "client_id", referencedColumnName = "id")
+    private Client client;
+
+    @Column(name = "date_activation", nullable = false)
     private LocalDateTime dateActivation;
-    @Setter
-    @Getter
+
+    @Column(name = "date_expiration")
     private LocalDateTime dateExpiration;
-    @Setter
-    @Getter
-    private BigDecimal montantRecharge;
-    @Setter
-    @Getter
-    private String statut; // ACTIF, SUSPENDU, RESILIE
 
-    @ManyToOne
-    @JoinColumn(name = "utilisateur_id")
-    private Client utilisateur;
+    public ActivationPromotion() {
+    }
 
+    public ActivationPromotion(Promotion promotion, Client client, LocalDateTime dateActivation, LocalDateTime dateExpiration) {
+        this.promotion = promotion;
+        this.client = client;
+        this.dateActivation = dateActivation;
+        this.dateExpiration = dateExpiration;
+    }
 }

@@ -144,27 +144,6 @@ public class ClientController {
         }
     }
 
-    // Get client's loyalty account
-    @GetMapping("/{numeroTelephone}/loyalty")
-    public ResponseEntity<CompteFideliteDTO> getLoyaltyAccount(@PathVariable String numeroTelephone) {
-        try {
-            logger.info("Fetching loyalty account for client: {}", numeroTelephone);
-
-            CompteFidelite compte = clientService.getLoyaltyAccount(numeroTelephone);
-            CompteFideliteDTO compteDTO = CompteFideliteMapper.toDTO(compte);
-
-            logger.info("Loyalty account found for client: {}", numeroTelephone);
-            return ResponseEntity.ok(compteDTO);
-
-        } catch (ClientNotFoundException e) {
-            logger.warn("Client not found for loyalty account request: {}", numeroTelephone);
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            logger.error("Error fetching loyalty account for client {}: {}", numeroTelephone, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
     // Search clients with flexible phone number matching
     @GetMapping("/search")
     public ResponseEntity<List<ClientDTO>> searchClients(
@@ -220,26 +199,6 @@ public class ClientController {
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
             logger.error("Error finding client with code {}: {}", codeClient, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    @GetMapping("/{numeroTelephone}/balance")
-    public ResponseEntity<BalanceDTO> getClientBalance(@PathVariable String numeroTelephone) {
-        try {
-            logger.info("Fetching balance for client: {}", numeroTelephone);
-
-            Client client = clientService.findByNumeroTelephone(numeroTelephone);
-            BalanceDTO balanceDTO = new BalanceDTO(client.getSolde(), client.getDerniereRecharge());
-
-            logger.info("Balance found for client: {}", numeroTelephone);
-            return ResponseEntity.ok(balanceDTO);
-
-        } catch (ClientNotFoundException e) {
-            logger.warn("Client not found for balance request: {}", numeroTelephone);
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            logger.error("Error fetching balance for client {}: {}", numeroTelephone, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

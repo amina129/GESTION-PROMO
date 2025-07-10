@@ -4,10 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-
 @Setter
 @Getter
 @Entity
@@ -18,54 +14,24 @@ public class Client {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "code_client", unique = true, nullable = false)
-    private String codeClient;
-
-    @Column(name = "nom", nullable = false)
+    @Column(nullable = false)
     private String nom;
 
-    @Column(name = "prenom", nullable = false)
+    @Column(nullable = false)
     private String prenom;
 
-    @Column(name = "numero_telephone", unique = true, nullable = false)
-    private String numeroTelephone;
-
-    @Column(name = "email")
+    @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(name = "date_naissance")
-    private LocalDate dateNaissance;
-
-    @Column(name = "type_abonnement")
-    private String typeAbonnement;
-
-    @Column(name = "statut")
-    private String statut;
-
-    @Column(name = "date_inscription")
-    private LocalDateTime dateInscription;
-
-    @Column(name = "derniere_recharge")
-    private LocalDateTime derniereRecharge;
-
-    @Column(name = "solde", precision = 10, scale = 2)
-    private BigDecimal solde;
-
-    @ManyToOne
-    @JoinColumn(name = "id_categorie_client")
-    private CategorieClient categorieClient;
-
+    private String fonction;
 
     public Client() {
     }
-    public Client(String codeClient, String nom, String prenom, String numeroTelephone) {
-        this.codeClient = codeClient;
+
+    public Client(String nom, String prenom, String email, String motDePasse, String fonction) {
         this.nom = nom;
         this.prenom = prenom;
-        this.numeroTelephone = numeroTelephone;
-        this.dateInscription = LocalDateTime.now();
-        this.solde = BigDecimal.ZERO;
-        this.statut = "ACTIF";
+        this.email = email;
+        this.fonction = fonction;
     }
 }
-

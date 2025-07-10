@@ -1,7 +1,6 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import TelecomPromotionInterface from "./pages/TelecomPromotionInterface";
-import { Home } from './pages/Home/Home';
 import './styles/App.css';
 import './styles/orange-telecom.css';
 import './styles/orange-theme.css';
@@ -15,7 +14,6 @@ function App() {
                     <Routes>
                         <Route path="/" element={<Navigate to="/telecom" replace />} />
                         <Route path="/telecom" element={<TelecomPromotionInterface />} />
-                        <Route path="/home" element={<Home />} />
                         <Route path="*" element={<div className="luxury-error">404 - Page non trouvée</div>} />
                     </Routes>
                 </Suspense>

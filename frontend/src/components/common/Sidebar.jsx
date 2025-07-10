@@ -12,9 +12,7 @@ const Sidebar = ({ activeTab, setActiveTab, sidebarCollapsed, setSidebarCollapse
                 { id: 'dashboard', icon: Home, label: 'Tableau de Bord' },
                 { id: 'promotions', icon: Gift, label: 'Promotions' },
                 { id: 'clients', icon: Users, label: 'Clients' },
-                { id: 'fidelite', icon: Award, label: 'Fidélité' },
                 { id: 'statistiques', icon: BarChart3, label: 'Statistiques' },
-                { id: 'parametres', icon: Settings, label: 'Paramètres' }
             ].map(item => (
                 <button
                     key={item.id}

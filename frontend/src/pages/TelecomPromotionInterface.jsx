@@ -4,7 +4,6 @@ import Sidebar from "../components/common/Sidebar";
 import Dashboard from "../components/common/Dashboard";
 import PromotionsManagement from "../components/promotions/PromotionsManagement";
 import ClientsManagement from "../components/Client/ClientsManagement";
-import LoyaltyProgram from "../components/common/LoyaltyProgram";
 
 const TelecomPromotionInterface = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -57,21 +56,14 @@ const TelecomPromotionInterface = () => {
                             clients={clients}
                         />
                     )}
-                    {activeTab === 'fidelite' && (
-                        <LoyaltyProgram />
-                    )}
+
                     {activeTab === 'statistiques' && (
                         <div className="orange-card p-4">
                             <h3 className="text-lg font-semibold text-orange-800 mb-4">Analytics Dashboard</h3>
                             {/* Analytics content would go here */}
                         </div>
                     )}
-                    {activeTab === 'parametres' && (
-                        <div className="orange-card p-4">
-                            <h3 className="text-lg font-semibold text-orange-800 mb-4">System Settings</h3>
-                            {/* Settings content would go here */}
-                        </div>
-                    )}
+
                 </main>
             </div>
         </div>

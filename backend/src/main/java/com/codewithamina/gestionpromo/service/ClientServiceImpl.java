@@ -2,7 +2,6 @@ package com.codewithamina.gestionpromo.service;
 
 import com.codewithamina.gestionpromo.model.ActivationPromotion;
 import com.codewithamina.gestionpromo.model.Client;
-import com.codewithamina.gestionpromo.model.CompteFidelite;
 import com.codewithamina.gestionpromo.exception.ClientNotFoundException;
 import com.codewithamina.gestionpromo.repository.ActivationPromotionRepository;
 import com.codewithamina.gestionpromo.repository.ClientRepository;

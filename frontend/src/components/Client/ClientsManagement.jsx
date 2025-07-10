@@ -1,27 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import {
-    Search,
-    Filter,
-    Plus,
-    Phone,
-    Gift,
-    BarChart3,
-    CheckCircle,
-    User,
-    CreditCard,
-    Award,
-    Loader2,
-    AlertCircle,
-    X
-} from 'lucide-react';
+import React, { useState } from 'react';
+import {Search, X} from 'lucide-react';
 import styled from 'styled-components';
 
-// API Configuration
 const API_BASE_URL = 'http://localhost:8080/api';
 
-// API Service
 const apiService = {
-    // Search clients
     searchClients: async (filters = {}) => {
         const params = new URLSearchParams();
         Object.entries(filters).forEach(([key, value]) => {
@@ -29,41 +12,23 @@ const apiService = {
                 params.append(key, value);
             }
         });
-
         const response = await fetch(`${API_BASE_URL}/clients/search?${params}`);
         if (!response.ok) throw new Error('Failed to search clients');
         return response.json();
     },
 
-    // Get client by phone number
-    getClient: async (numeroTelephone) => {
-        const response = await fetch(`${API_BASE_URL}/clients/${numeroTelephone}`);
-        if (!response.ok) throw new Error('Client not found');
-        return response.json();
-    },
-
-    // Get client by code
-    getClientByCode: async (codeClient) => {
-        const response = await fetch(`${API_BASE_URL}/clients/code/${codeClient}`);
-        if (!response.ok) throw new Error('Client not found');
-        return response.json();
-    },
-
-    // Get eligible promotions
     getEligiblePromotions: async (numeroTelephone) => {
         const response = await fetch(`${API_BASE_URL}/clients/${numeroTelephone}/eligible-promotions`);
         if (!response.ok) throw new Error('Failed to fetch eligible promotions');
         return response.json();
     },
 
-    // Get active promotions
     getActivePromotions: async (numeroTelephone) => {
         const response = await fetch(`${API_BASE_URL}/clients/${numeroTelephone}/active-promotions`);
         if (!response.ok) throw new Error('Failed to fetch active promotions');
         return response.json();
     },
 
-    // Update balance
     updateBalance: async (numeroTelephone, montant) => {
         const response = await fetch(`${API_BASE_URL}/clients/${numeroTelephone}/balance`, {
             method: 'PUT',
@@ -76,12 +41,6 @@ const apiService = {
         return response.json();
     },
 
-    // Get client balance
-    getClientBalance: async (numeroTelephone) => {
-        const response = await fetch(`${API_BASE_URL}/clients/${numeroTelephone}/balance`);
-        if (!response.ok) throw new Error('Failed to fetch balance');
-        return response.json();
-    },
 
     // Get loyalty account
     getLoyaltyAccount: async (numeroTelephone) => {
@@ -91,7 +50,6 @@ const apiService = {
     },
 };
 
-// Styled components with Orange corporate style
 const OrangeContainer = styled.div`
   font-family: 'Open Sans', Arial, sans-serif;
   background-color: #f8f8f8;
@@ -161,45 +119,6 @@ const OrangeButton = styled.button`
   }
 `;
 
-const OrangeTable = styled.table`
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  background-color: #ffffff;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-`;
-
-const OrangeTableHeader = styled.thead`
-  background-color: #f5f5f5;
-`;
-
-const OrangeTableHeaderCell = styled.th`
-  padding: 12px 16px;
-  text-align: left;
-  font-size: 13px;
-  font-weight: 600;
-  color: #666;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid #e0e0e0;
-`;
-
-const OrangeTableRow = styled.tr`
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background-color: #fafafa;
-  }
-`;
-
-const OrangeTableCell = styled.td`
-  padding: 16px;
-  font-size: 14px;
-  color: #333;
-  border-bottom: 1px solid #f0f0f0;
-`;
 
 const OrangeBadge = styled.span`
   display: inline-block;
@@ -315,7 +234,6 @@ const ClientsManagement = () => {
         typeAbonnement: '',
         statut: ''
     });
-    const [showFilters, setShowFilters] = useState(false);
     const [selectedClient, setSelectedClient] = useState(null);
     const [eligiblePromotions, setEligiblePromotions] = useState([]);
     const [activePromotions, setActivePromotions] = useState([]);
@@ -324,11 +242,6 @@ const ClientsManagement = () => {
     const [showBalance, setShowBalance] = useState(false);
     const [balanceUpdate, setBalanceUpdate] = useState('');
     const [clientBalance, setClientBalance] = useState(null);
-
-    // Load clients on component mount
-    useEffect(() => {
-        loadClients();
-    }, []);
 
     const loadClients = async () => {
         try {
@@ -354,17 +267,7 @@ const ClientsManagement = () => {
         }));
     };
 
-    const clearFilters = () => {
-        setSearchFilters({
-            numeroTelephone: '',
-            nom: '',
-            prenom: '',
-            email: '',
-            codeClient: '',
-            typeAbonnement: '',
-            statut: ''
-        });
-    };
+
 
     const handleClientClick = async (client) => {
         setSelectedClient(client);
@@ -396,46 +299,11 @@ const ClientsManagement = () => {
         }
     };
 
-    const handleGetBalance = async (client) => {
-        try {
-            const balance = await apiService.getClientBalance(client.numeroTelephone);
-            setClientBalance(balance);
-            setShowBalance(true);
-        } catch (err) {
-            setError(err.message);
-        }
-    };
 
-    if (loading) {
-        return (
-            <OrangeContainer className="flex justify-center items-center min-h-screen">
-                <div className="text-center">
-                    <Loader2 className="w-8 h-8 animate-spin text-orange-600 mx-auto mb-4" />
-                    <p className="text-gray-600">Chargement des clients...</p>
-                </div>
-            </OrangeContainer>
-        );
-    }
 
     return (
         <OrangeContainer>
             <div className="max-w-7xl mx-auto px-4 py-8">
-                {/* Error Display */}
-                {error && (
-                    <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
-                        <div className="flex items-center">
-                            <AlertCircle className="w-5 h-5 text-red-500 mr-3" />
-                            <span className="text-red-700">{error}</span>
-                            <button
-                                onClick={() => setError(null)}
-                                className="ml-auto text-red-500 hover:text-red-700"
-                            >
-                                <X className="w-4 h-4" />
-                            </button>
-                        </div>
-                    </div>
-                )}
-
                 <OrangeHeader>
                     <OrangeTitle>Recherche</OrangeTitle>
 
@@ -453,130 +321,6 @@ const ClientsManagement = () => {
                         </OrangeButton>
                     </OrangeSearchBox>
                 </OrangeHeader>
-
-                {/* Clients Table */}
-                <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <OrangeTable>
-                            <OrangeTableHeader>
-                                <tr>
-                                    <OrangeTableHeaderCell>Nom</OrangeTableHeaderCell>
-                                    <OrangeTableHeaderCell>Téléphone</OrangeTableHeaderCell>
-                                    <OrangeTableHeaderCell>Type</OrangeTableHeaderCell>
-                                    <OrangeTableHeaderCell>Segment</OrangeTableHeaderCell>
-                                    <OrangeTableHeaderCell>Statut</OrangeTableHeaderCell>
-                                    <OrangeTableHeaderCell>Solde</OrangeTableHeaderCell>
-                                    <OrangeTableHeaderCell>Actions</OrangeTableHeaderCell>
-                                </tr>
-                            </OrangeTableHeader>
-                            <tbody>
-                            {loading ? (
-                                <tr>
-                                    <td colSpan="7" className="px-6 py-4 text-center">
-                                        <div className="flex justify-center">
-                                            <Loader2 className="w-8 h-8 animate-spin text-orange-600" />
-                                        </div>
-                                    </td>
-                                </tr>
-                            ) : clients.length > 0 ? (
-                                clients.map((client) => (
-                                    <OrangeTableRow key={client.id} onClick={() => handleClientClick(client)}>
-                                        <OrangeTableCell>
-                                            <div className="flex items-center">
-                                                <div className="flex-shrink-0 h-10 w-10 bg-orange-100 text-orange-800 rounded-full flex items-center justify-center font-medium">
-                                                    {client.nom ? client.nom.charAt(0) : 'N'}
-                                                </div>
-                                                <div className="ml-4">
-                                                    <div className="text-sm font-medium text-gray-900">{client.nom} {client.prenom}</div>
-                                                    <div className="text-sm text-gray-500">{client.email || 'N/A'}</div>
-                                                </div>
-                                            </div>
-                                        </OrangeTableCell>
-                                        <OrangeTableCell>
-                                            <div className="text-sm text-gray-900">{client.numeroTelephone}</div>
-                                        </OrangeTableCell>
-                                        <OrangeTableCell>
-                                            <OrangeBadge variant={
-                                                client.typeAbonnement === 'PREPAYE' ? 'success' : 'info'
-                                            }>
-                                                {client.typeAbonnement || 'N/A'}
-                                            </OrangeBadge>
-                                        </OrangeTableCell>
-                                        <OrangeTableCell>
-                                            <OrangeBadge variant={
-                                                client.segment === 'VIP' ? 'warning' :
-                                                    client.segment === 'PROFESSIONNEL' ? 'info' : ''
-                                            }>
-                                                {client.segment || 'Standard'}
-                                            </OrangeBadge>
-                                        </OrangeTableCell>
-                                        <OrangeTableCell>
-                                            <OrangeBadge variant={
-                                                client.statut === 'ACTIF' ? 'success' : 'error'
-                                            }>
-                                                {client.statut || 'N/A'}
-                                            </OrangeBadge>
-                                        </OrangeTableCell>
-                                        <OrangeTableCell>
-                                            {client.solde ? client.solde.toFixed(2) : '0.00'} DT
-                                        </OrangeTableCell>
-                                        <OrangeTableCell>
-                                            <div className="flex space-x-2">
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        window.open(`tel:${client.numeroTelephone}`, '_self');
-                                                    }}
-                                                    className="text-orange-600 hover:text-orange-800 p-1 rounded"
-                                                    title="Appeler"
-                                                >
-                                                    <Phone className="w-5 h-5" />
-                                                </button>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleGetBalance(client);
-                                                    }}
-                                                    className="text-blue-600 hover:text-blue-800 p-1 rounded"
-                                                    title="Voir solde"
-                                                >
-                                                    <CreditCard className="w-5 h-5" />
-                                                </button>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setSelectedClient(client);
-                                                        setShowPromotions(true);
-                                                    }}
-                                                    className="text-purple-600 hover:text-purple-800 p-1 rounded"
-                                                    title="Promotions"
-                                                >
-                                                    <Gift className="w-5 h-5" />
-                                                </button>
-                                            </div>
-                                        </OrangeTableCell>
-                                    </OrangeTableRow>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="7" className="px-6 py-4 text-center text-sm text-gray-500">
-                                        Aucun client ne correspond à vos critères
-                                    </td>
-                                </tr>
-                            )}
-                            </tbody>
-                        </OrangeTable>
-                    </div>
-                </div>
-
-                {/* Empty State */}
-                {clients.length === 0 && !loading && (
-                    <div className="text-center py-12 bg-white rounded-lg shadow-sm mt-4">
-                        <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun client trouvé</h3>
-                        <p className="text-gray-600">Essayez de modifier vos critères de recherche</p>
-                    </div>
-                )}
 
                 {/* Promotions Modal */}
                 {showPromotions && selectedClient && (
@@ -695,7 +439,6 @@ const ClientsManagement = () => {
                         </OrangeModalContent>
                     </OrangeModal>
                 )}
-
                 {/* Balance Modal */}
                 {showBalance && clientBalance && (
                     <OrangeModal>
