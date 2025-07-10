@@ -11,12 +11,12 @@ import java.util.List;
 public interface PromotionRepository extends JpaRepository<Promotion, Long> {
 
     @Query("SELECT p FROM Promotion p WHERE " +
-            "(:nom IS NULL OR p.nom LIKE %:nom%) AND " +
-            "(:type IS NULL OR p.type = :type) AND " +
-            "(:sousType IS NULL OR p.sousType = :sousType) AND " +
-            "(:dateDebut IS NULL OR p.dateDebut >= :dateDebut) AND " +
-            "(:dateFin IS NULL OR p.dateFin <= :dateFin) AND " +
-            "(:categorieClient IS NULL OR p.categorieClient = :categorieClient)")
+            "(:#{#nom == null} = true OR p.nom LIKE %:nom%) AND " +
+            "(:#{#type == null} = true OR p.type = :type) AND " +
+            "(:#{#sousType == null} = true OR p.sousType = :sousType) AND " +
+            "(:#{#dateDebut == null} = true OR p.dateDebut >= :dateDebut) AND " +
+            "(:#{#dateFin == null} = true OR p.dateFin <= :dateFin) AND " +
+            "(:#{#categorieClient == null} = true OR p.categorieClient = :categorieClient)")
     List<Promotion> searchPromotions(
             @Param("nom") String nom,
             @Param("type") String type,

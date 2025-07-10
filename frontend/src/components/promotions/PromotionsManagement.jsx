@@ -28,7 +28,7 @@ const PromotionsManagement = () => {
         typeUnite: '' // nouveau champ pour DATA/SMS/APPEL
     });
 
-    const API_BASE_URL = 'http://localhost:8080/api/promotions';
+    const API_BASE_URL = 'http://localhost:8080/api';
     // Options pour les catégories client
     const categoriesClient = [
         { value: 'VIP', label: 'VIP' },
@@ -97,8 +97,7 @@ const PromotionsManagement = () => {
             if (searchFields.dateFin) queryParams.append("dateFin", searchFields.dateFin);
             if (searchFields.categorieClient) queryParams.append("categorieClient", searchFields.categorieClient);
 
-            const response = await fetch(`${API_BASE_URL}/promotions/search?${queryParams.toString()}`);
-            if (!response.ok) throw new Error("Erreur lors du chargement des promotions");
+            const response = await fetch(`${API_BASE_URL}/promotions/search?${queryParams.toString()}`);            if (!response.ok) throw new Error("Erreur lors du chargement des promotions");
             const data = await response.json();
             setPromotions(data);
         } catch (err) {
@@ -111,19 +110,55 @@ const PromotionsManagement = () => {
     const createPromotion = async (promotionData) => {
         setLoading(true);
         setError(null);
+
         try {
+            // Préparer les données à envoyer
+            const dataToSend = {
+                nom: promotionData.nom,
+                description: promotionData.description,
+                dateDebut: promotionData.dateDebut,
+                dateFin: promotionData.dateFin,
+                type: promotionData.type,
+                sousType: promotionData.sousType,
+                valeur: promotionData.valeur,
+                categorieClient: promotionData.categorieClient,
+                // Seulement inclure si nécessaire
+                ...(promotionData.sousType === 'unite_gratuite' && {
+                    typeUnite: promotionData.typeUnite,
+                    ...(promotionData.typeUnite !== 'SMS' && {
+                        uniteMesure: promotionData.uniteMesure
+                    })
+                })
+            };
+
             const response = await fetch(`${API_BASE_URL}/promotions`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(promotionData),
+                body: JSON.stringify(dataToSend),
             });
-            if (!response.ok) throw new Error('Erreur lors de la création de la promotion');
+
+            if (!response.ok) {
+                // Essayer d'extraire le message d'erreur du backend
+                const errorResponse = await response.json();
+                throw new Error(
+                    errorResponse.message ||
+                    errorResponse.error ||
+                    'Erreur lors de la création de la promotion'
+                );
+            }
+
             const newPromotion = await response.json();
             setPromotions([...promotions, newPromotion]);
             setShowCreateForm(false);
             resetForm();
+
         } catch (err) {
-            setError(err.message);
+            // Gestion améliorée des erreurs
+            if (err.message.includes('Validation failed')) {
+                setError('Données invalides : veuillez vérifier les champs du formulaire');
+            } else {
+                setError(err.message || 'Une erreur inattendue est survenue');
+            }
         } finally {
             setLoading(false);
         }

@@ -4,6 +4,7 @@ import com.codewithamina.gestionpromo.dto.PromotionDTO;
 import com.codewithamina.gestionpromo.mapper.PromotionMapper;
 import com.codewithamina.gestionpromo.model.Promotion;
 import com.codewithamina.gestionpromo.repository.PromotionRepository;
+import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,9 +14,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/promotions")
-@CrossOrigin(origins = "http://localhost:3000")
 public class PromotionController {
 
     private final PromotionRepository promotionRepository;
@@ -47,7 +48,7 @@ public class PromotionController {
     }
 
     @PostMapping
-    public ResponseEntity<PromotionDTO> createPromotion(@RequestBody PromotionDTO promotionDTO) {
+    public ResponseEntity<PromotionDTO> createPromotion(@Valid @RequestBody PromotionDTO promotionDTO) {
         Promotion promotion = promotionMapper.toEntity(promotionDTO);
         Promotion savedPromotion = promotionRepository.save(promotion);
         PromotionDTO savedDto = promotionMapper.toDto(savedPromotion);

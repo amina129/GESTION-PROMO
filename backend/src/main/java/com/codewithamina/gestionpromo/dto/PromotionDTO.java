@@ -43,13 +43,9 @@ public class PromotionDTO {
             message = "La catégorie client doit être 'VIP', 'B2B', 'JP' ou 'privé'")
     private String categorieClient;
 
-    @Pattern(regexp = "DATA|SMS|APPEL",
-            message = "Le type d'unité doit être 'DATA', 'SMS' ou 'APPEL'")
-    private String typeUnite;
+    @Pattern(regexp = "DATA|SMS|APPEL", message = "Le type d'unité doit être 'DATA', 'SMS' ou 'APPEL'")
+    private String typeUnite; // Peut être null
 
-    @Pattern(regexp = "MO|GO|minutes|heures",
-            message = "L'unité de mesure doit être 'MO', 'GO', 'minutes' ou 'heures'")
-    private String uniteMesure;
-
-    // Constructeurs...
+    @Pattern(regexp = "MO|GO|minutes|heures", message = "L'unité de mesure doit être 'MO', 'GO', 'minutes' ou 'heures'")
+    private String uniteMesure; // Peut être null
 }
