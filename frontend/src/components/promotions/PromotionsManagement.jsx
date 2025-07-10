@@ -28,8 +28,7 @@ const PromotionsManagement = () => {
         typeUnite: '' // nouveau champ pour DATA/SMS/APPEL
     });
 
-    const API_BASE_URL = 'http://localhost:8080/api';
-
+    const API_BASE_URL = 'http://localhost:8080/api/promotions';
     // Options pour les catégories client
     const categoriesClient = [
         { value: 'VIP', label: 'VIP' },

@@ -12,30 +12,37 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "promotions")
 public class Promotion {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "nom")
+    @Column(nullable = false)
     private String nom;
 
-    @Column(name = "description")
     private String description;
 
-    @Column(name = "date_debut")
+    @Column(name = "date_debut", nullable = false)
     private LocalDate dateDebut;
 
-    @Column(name = "date_fin")
+    @Column(name = "date_fin", nullable = false)
     private LocalDate dateFin;
 
-    @Column(name = "type")
-    private String type;
+    @Column(nullable = false)
+    private String type; // 'relatif' or 'absolu'
 
-    @Column(name = "valeur")
+    @Column(name = "sous_type", nullable = false)
+    private String sousType; // 'remise', 'unite_gratuite', 'point_bonus'
+
+    @Column(nullable = false)
     private BigDecimal valeur;
 
-    @Column(name = "categorie_client")
+    @Column(name = "categorie_client", nullable = false)
     private String categorieClient;
+
+    @Column(name = "type_unite")
+    private String typeUnite; // 'DATA', 'SMS', 'APPEL'
+
+    @Column(name = "unite_mesure")
+    private String uniteMesure; // 'MO', 'GO', 'minutes', 'heures'
 
 }

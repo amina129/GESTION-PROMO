@@ -5,19 +5,23 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 public interface PromotionRepository extends JpaRepository<Promotion, Long> {
 
-    @Query("SELECT p FROM Promotion p WHERE p.active = true AND p.estAutomatique = true AND p.dateDebut <= CURRENT_TIMESTAMP AND p.dateFin >= CURRENT_TIMESTAMP")
-    List<Promotion> findAllActiveAutomaticPromotions();
-    List<Promotion> findByActiveTrue();
-    Optional<Promotion> findByCodePromotion(String codePromotion);
-    @Query("SELECT p FROM Promotion p WHERE p.active = true " +
-            "AND p.dateDebut <= :currentDate " +
-            "AND (p.dateFin IS NULL OR p.dateFin >= :currentDate)")
-    List<Promotion> findActivePromotions(@Param("currentDate") LocalDateTime currentDate);
+    @Query("SELECT p FROM Promotion p WHERE " +
+            "(:nom IS NULL OR p.nom LIKE %:nom%) AND " +
+            "(:type IS NULL OR p.type = :type) AND " +
+            "(:sousType IS NULL OR p.sousType = :sousType) AND " +
+            "(:dateDebut IS NULL OR p.dateDebut >= :dateDebut) AND " +
+            "(:dateFin IS NULL OR p.dateFin <= :dateFin) AND " +
+            "(:categorieClient IS NULL OR p.categorieClient = :categorieClient)")
+    List<Promotion> searchPromotions(
+            @Param("nom") String nom,
+            @Param("type") String type,
+            @Param("sousType") String sousType,
+            @Param("dateDebut") LocalDate dateDebut,
+            @Param("dateFin") LocalDate dateFin,
+            @Param("categorieClient") String categorieClient);
 }
-
