@@ -1,5 +1,7 @@
 package com.codewithamina.gestionpromo.controller;
 
+import com.codewithamina.gestionpromo.dto.PromotionDTO;
+import com.codewithamina.gestionpromo.mapper.PromotionMapper;
 import com.codewithamina.gestionpromo.model.Promotion;
 import com.codewithamina.gestionpromo.repository.PromotionRepository;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -9,20 +11,24 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/promotions")
-@CrossOrigin(origins = "http://localhost:3000") // Autoriser les requêtes depuis React
+@CrossOrigin(origins = "http://localhost:3000")
 public class PromotionController {
 
     private final PromotionRepository promotionRepository;
+    private final PromotionMapper promotionMapper;
 
-    public PromotionController(PromotionRepository promotionRepository) {
+    public PromotionController(PromotionRepository promotionRepository,
+                               PromotionMapper promotionMapper) {
         this.promotionRepository = promotionRepository;
+        this.promotionMapper = promotionMapper;
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<Promotion>> searchPromotions(
+    public ResponseEntity<List<PromotionDTO>> searchPromotions(
             @RequestParam(required = false) String nom,
             @RequestParam(required = false) String type,
             @RequestParam(required = false) String sousType,
@@ -33,12 +39,18 @@ public class PromotionController {
         List<Promotion> promotions = promotionRepository.searchPromotions(
                 nom, type, sousType, dateDebut, dateFin, categorieClient);
 
-        return ResponseEntity.ok(promotions);
+        List<PromotionDTO> dtos = promotions.stream()
+                .map(promotionMapper::toDto)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(dtos);
     }
 
     @PostMapping
-    public ResponseEntity<Promotion> createPromotion(@RequestBody Promotion promotion) {
+    public ResponseEntity<PromotionDTO> createPromotion(@RequestBody PromotionDTO promotionDTO) {
+        Promotion promotion = promotionMapper.toEntity(promotionDTO);
         Promotion savedPromotion = promotionRepository.save(promotion);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedPromotion);
+        PromotionDTO savedDto = promotionMapper.toDto(savedPromotion);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedDto);
     }
 }
