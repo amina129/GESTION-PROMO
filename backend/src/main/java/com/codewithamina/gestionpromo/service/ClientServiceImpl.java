@@ -39,6 +39,12 @@ public class ClientServiceImpl implements ClientService {
         );
     }
 
+    public String getCategorieClientById(Long clientId) {
+        return clientRepository.findById(clientId)
+                .map(Client::getCategorieClient)
+                .orElse(null);
+    }
+
     @Override
     public Client getClientById(Long clientId) {
         return clientRepository.findById(clientId)
@@ -50,24 +56,20 @@ public class ClientServiceImpl implements ClientService {
     public void assignPromotionToClient(Long clientId, Long promotionId,
                                         LocalDate dateDebut, LocalDate dateFin) {
 
-        // Vérifier que dateFin est non nulle
         if (dateFin == null) {
             throw new IllegalArgumentException("Date de fin ne peut pas être nulle");
         }
 
-        // 1. Vérifier si la promotion est déjà active pour ce client
         boolean exists = activationRepository.existsByClientIdAndPromotionIdAndDateExpirationAfter(
                 clientId, promotionId, LocalDate.now());
         if (exists) {
             throw new IllegalStateException("Cette promotion est déjà active pour ce client");
         }
 
-        // 2. Charger client et promotion depuis la base
         Client client = getClientById(clientId);
         Promotion promotion = promotionRepository.findById(promotionId)
                 .orElseThrow(() -> new RuntimeException("Promotion non trouvée avec l'ID: " + promotionId));
 
-        // 3. Valider les dates d'activation/expiration
         if (dateDebut.isBefore(promotion.getDateDebut())) {
             throw new IllegalArgumentException("La date d'activation ne peut pas être avant le début de la promotion");
         }
@@ -75,7 +77,6 @@ public class ClientServiceImpl implements ClientService {
             throw new IllegalArgumentException("La date d'expiration ne peut pas être après la fin de la promotion");
         }
 
-        // 4. Créer et sauvegarder l'activation
         ActivationPromotion activation = new ActivationPromotion();
         activation.setClient(client);
         activation.setPromotion(promotion);

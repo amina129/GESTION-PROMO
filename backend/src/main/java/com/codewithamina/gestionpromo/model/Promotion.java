@@ -45,4 +45,7 @@ public class Promotion {
     @Column(name = "unite_mesure")
     private String uniteMesure; // 'MO', 'GO', 'minutes', 'heures'
 
+    @Column(name = "statut")
+    private String statut;
+
 }

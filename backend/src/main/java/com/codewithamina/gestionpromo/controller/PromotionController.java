@@ -28,6 +28,10 @@ public class PromotionController {
         this.promotionMapper = promotionMapper;
     }
 
+
+
+
+
     @GetMapping("/search")
     public ResponseEntity<List<PromotionDTO>> searchPromotions(
             @RequestParam(required = false) String nom,

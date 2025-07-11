@@ -58,8 +58,9 @@ const ClientsManagement = () => {
         setLoading(true);
         try {
             const response = await fetch(
-                `${API_BASE_URL}/promotions/available?categorie_client=${selectedClient.categorie_client}`
+                `${API_BASE_URL}/clients/available?clientId=${selectedClient.id}`
             );
+
             if (!response.ok) throw new Error("Erreur lors du chargement");
             const data = await response.json();
             setAvailablePromotions(data);

@@ -48,4 +48,8 @@ public class PromotionDTO {
 
     @Pattern(regexp = "MO|GO|minutes|heures", message = "L'unité de mesure doit être 'MO', 'GO', 'minutes' ou 'heures'")
     private String uniteMesure; // Peut être null
+
+    @Pattern(regexp = "ACTIF|INACTIF|EXPIRÉ", message = "Le statut doit être 'ACTIF', 'INACTIF' ou 'EXPIRÉ'")
+    private String statut;
+
 }

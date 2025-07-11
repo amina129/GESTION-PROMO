@@ -20,6 +20,7 @@ public class PromotionMapper {
         dto.setCategorieClient(promotion.getCategorieClient());
         dto.setTypeUnite(promotion.getTypeUnite());
         dto.setUniteMesure(promotion.getUniteMesure());
+        dto.setStatut(promotion.getStatut()); // ✅ Ajout du statut
         return dto;
     }
 
@@ -36,6 +37,7 @@ public class PromotionMapper {
         promotion.setCategorieClient(dto.getCategorieClient());
         promotion.setTypeUnite(dto.getTypeUnite());
         promotion.setUniteMesure(dto.getUniteMesure());
+        promotion.setStatut(dto.getStatut()); // ✅ Ajout du statut
         return promotion;
     }
 }

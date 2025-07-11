@@ -1,17 +1,23 @@
 package com.codewithamina.gestionpromo.service;
 
+import com.codewithamina.gestionpromo.model.Promotion;
 import com.codewithamina.gestionpromo.repository.PromotionRepository;
 import org.springframework.stereotype.Service;
 
-@Service
-public class PromotionServiceImp implements PromotionService {  // Implémente l'interface
-    private final PromotionRepository promotionRepository;  // final pour l'immutabilité
+import java.time.LocalDate;
+import java.util.List;
 
-    // Injection par constructeur (supprimez le constructeur vide inutile)
+@Service
+public class PromotionServiceImp implements PromotionService {
+    private final PromotionRepository promotionRepository;
+
     public PromotionServiceImp(PromotionRepository promotionRepository) {
         this.promotionRepository = promotionRepository;
     }
 
-    // Supprimez la méthode PromotionService() qui est incorrecte
-
+    @Override
+    public List<Promotion> findByCategorieClient(String categorieClient) {
+        LocalDate today = LocalDate.now();
+        return promotionRepository.findAvailableByCategorieClient(categorieClient, today);
+    }
 }
