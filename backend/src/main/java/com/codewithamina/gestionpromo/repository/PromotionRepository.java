@@ -58,6 +58,22 @@ public interface PromotionRepository extends JpaRepository<Promotion, Long> {
             "AND (:categorieClient IS NULL OR p.categorieClient = :categorieClient)")
     List<Promotion> findAvailableByCategorieClient(@Param("categorieClient") String categorieClient,
                                                    @Param("today") LocalDate today);
+
+    @Query("SELECT p FROM Promotion p WHERE " +
+            "p.statut = 'ACTIF' AND " +
+            "p.categorieClient = :categorieClient AND " +
+            "p.dateDebut <= :dateFin AND " +
+            "p.dateFin >= :dateDebut AND " +
+            "NOT EXISTS (" +
+            "  SELECT ap FROM ActivationPromotion ap " +
+            "  WHERE ap.promotion.id = p.id AND ap.client.id = :clientId" +
+            ")")
+    List<Promotion> findAvailablePromotionsForClientAndDateRange(
+            @Param("categorieClient") String categorieClient,
+            @Param("clientId") Long clientId,
+            @Param("dateDebut") LocalDate dateDebut,
+            @Param("dateFin") LocalDate dateFin);
+
 }
 
 

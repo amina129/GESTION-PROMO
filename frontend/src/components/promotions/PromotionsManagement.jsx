@@ -82,7 +82,6 @@ const PromotionsManagement = () => {
             { value: 'minutes', label: 'Minutes' },
             { value: 'heures', label: 'Heures' }
         ]
-        // SMS n'a pas d'unité de mesure
     };
 
     const searchPromotions = async () => {
@@ -122,6 +121,7 @@ const PromotionsManagement = () => {
                 sousType: promotionData.sousType,
                 valeur: promotionData.valeur,
                 categorieClient: promotionData.categorieClient,
+                statut: "ACTIF",
                 // Seulement inclure si nécessaire
                 ...(promotionData.sousType === 'unite_gratuite' && {
                     typeUnite: promotionData.typeUnite,

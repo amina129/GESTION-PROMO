@@ -7,10 +7,12 @@ import com.codewithamina.gestionpromo.service.ClientService;
 import com.codewithamina.gestionpromo.service.ClientServiceImpl;
 import com.codewithamina.gestionpromo.service.PromotionService;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -27,24 +29,62 @@ public class ClientController {
         this.promotionService = promotionService;
         this.clientServiceImpl = clientServiceImpl;
     }
-
     @GetMapping("/available")
-    public ResponseEntity<List<Promotion>> getAvailablePromotions(@RequestParam Long clientId) {
+    public ResponseEntity<List<Promotion>> getAvailablePromotions(
+            @RequestParam Long clientId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateDebut,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFin) {
+
+        System.out.println("=== DEBUG getAvailablePromotions ===");
+        System.out.println("clientId: " + clientId);
+        System.out.println("dateDebut: " + dateDebut);
+        System.out.println("dateFin: " + dateFin);
+
         if (clientId == null) {
             return ResponseEntity.badRequest().build();
         }
 
-        // Récupérer la catégorie client depuis la base
-        String categorieClient = clientServiceImpl.getCategorieClientById(clientId);
-        if (categorieClient == null) {
-            return ResponseEntity.notFound().build();
+        try {
+            List<Promotion> promotions;
+
+            // Si les dates sont fournies, utiliser la logique avec dates
+            if (dateDebut != null && dateFin != null) {
+                System.out.println("Recherche avec dates");
+
+                if (dateDebut.isAfter(dateFin)) {
+                    System.out.println("Date début après date fin - erreur");
+                    return ResponseEntity.badRequest().build();
+                }
+
+                // Utiliser la méthode du service avec dates
+                promotions = clientServiceImpl.getAvailablePromotionsForDateRange(clientId, dateDebut, dateFin);
+
+            } else {
+                System.out.println("Recherche sans dates");
+
+                // Récupérer la catégorie client depuis le service
+                String categorieClient = clientServiceImpl.getCategorieClientById(clientId);
+                System.out.println("categorieClient: " + categorieClient);
+
+                if (categorieClient == null) {
+                    return ResponseEntity.notFound().build();
+                }
+
+                // Vous devez ajouter cette méthode dans votre service ou utiliser PromotionService
+                // Pour l'instant, utilisons la méthode existante avec dates
+                promotions = clientServiceImpl.getAvailablePromotionsForDateRange(
+                        clientId, LocalDate.now(), LocalDate.now().plusYears(1));
+            }
+
+            System.out.println("Nombre de promotions trouvées: " + promotions.size());
+            return ResponseEntity.ok(promotions);
+
+        } catch (Exception e) {
+            System.err.println("Erreur: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-
-        // Récupérer les promotions disponibles *non activées* pour ce client
-        List<Promotion> promotions = promotionService.findAvailablePromotionsForClient(clientId, categorieClient);
-        return ResponseEntity.ok(promotions);
     }
-
 
     @GetMapping("/search")
     public ResponseEntity<List<Client>> searchClients(

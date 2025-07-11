@@ -55,22 +55,42 @@ const ClientsManagement = () => {
     const loadAvailablePromotions = async () => {
         if (!selectedClient) return;
 
-        setLoading(true);
-        try {
-            const response = await fetch(
-                `${API_BASE_URL}/clients/available?clientId=${selectedClient.id}`
-            );
+        // Vérifier que les dates sont saisies
+        if (!assignmentDates.date_debut || !assignmentDates.date_fin) {
+            setError("Veuillez saisir les dates de début et de fin");
+            return;
+        }
 
-            if (!response.ok) throw new Error("Erreur lors du chargement");
+        setLoading(true);
+        setError(null); // Réinitialiser l'erreur
+
+        try {
+            // Construire l'URL avec les dates
+            const url = `${API_BASE_URL}/clients/available?clientId=${selectedClient.id}&dateDebut=${assignmentDates.date_debut}&dateFin=${assignmentDates.date_fin}`;
+
+            console.log("URL appelée:", url); // Pour debug
+
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Erreur ${response.status}: ${errorText}`);
+            }
+
             const data = await response.json();
             setAvailablePromotions(data);
+
+            // Réinitialiser la sélection de promotion
+            setSelectedPromotion(null);
+
         } catch (err) {
-            setError(err.message);
+            console.error("Erreur lors du chargement des promotions:", err);
+            setError("Erreur lors du chargement des promotions: " + err.message);
+            setAvailablePromotions([]); // Vider la liste en cas d'erreur
         } finally {
             setLoading(false);
         }
     };
-
     const assignPromotion = async () => {
         if (!selectedClient || !selectedPromotion || !assignmentDates.date_debut || !assignmentDates.date_fin) {
             setError("Veuillez compléter tous les champs");
