@@ -1,0 +1,73 @@
+/* Header.css */
+.orange-header {
+    background: linear-gradient(to right, #FF7900, #E56E00);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: white;
+    width: 100%;
+    padding: 0 16px;
+}
+
+.header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 64px;
+}
+
+.header-left {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+.header-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.system-name {
+    font-size: 0.875rem;
+    display: none; /* Hidden on mobile */
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 9999px;
+    padding: 4px 12px 4px 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.user-profile:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.user-icon {
+    height: 20px;
+    width: 20px;
+    margin-right: 8px;
+}
+
+.dropdown-icon {
+    height: 16px;
+    width: 16px;
+    margin-left: 4px;
+}
+
+/* Medium screens and up */
+@media (min-width: 768px) {
+    .system-name {
+        display: block;
+    }
+}

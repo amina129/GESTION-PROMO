@@ -1,10 +1,11 @@
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, User } from 'lucide-react';
+import './Header.css'; // Create this file for CSS
 
 const Header = ({ activeTab }) => (
-    <header>
-        <div>
-            <div>
-                <h2>
+    <header className="orange-header">
+        <div className="header-container">
+            <div className="header-left">
+                <h2 className="header-title">
                     {activeTab === 'HomePage' && 'Tableau de Bord'}
                     {activeTab === 'promotions' && 'Gestion des Promotions'}
                     {activeTab === 'clients' && 'Gestion des Clients'}
@@ -12,16 +13,15 @@ const Header = ({ activeTab }) => (
                     {activeTab === 'statistiques' && 'Analyses & Rapports'}
                     {activeTab === 'parametres' && 'Paramètres du Système'}
                 </h2>
-                <p>Système de Gestion des Promotions - Opérateur Telecom</p>
             </div>
 
-            <div>
-                <div role="button" tabIndex={0}>
-                    <div></div>
-                    <div>
-                        <span> utilisateur</span>
-                        <ChevronDown size={16} color="var(--primary-dark)" />
-                    </div>
+            <div className="header-right">
+                <div className="system-name">Système de Gestion des Promotions</div>
+
+                <div className="user-profile" role="button" tabIndex={0}>
+                    <User className="user-icon" />
+                    <span>Utilisateur</span>
+                    <ChevronDown className="dropdown-icon" />
                 </div>
             </div>
         </div>
