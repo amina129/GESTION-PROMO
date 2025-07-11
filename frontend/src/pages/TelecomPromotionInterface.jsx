@@ -1,47 +1,37 @@
 import React, { useState } from 'react';
 import Header from "../components/common/Header";
 import Sidebar from "../components/common/Sidebar";
-import Dashboard from "../components/common/Dashboard";
 import PromotionsManagement from "../components/promotions/PromotionsManagement";
 import ClientsManagement from "../components/Client/ClientsManagement";
+import HomePage from "../components/HomePage/HomePage";
 
 const TelecomPromotionInterface = () => {
-    const [activeTab, setActiveTab] = useState('dashboard');
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [activeTab, setActiveTab] = useState('HomePage');
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
-
     const [promotions] = useState([
-        // ... same promotions data as before
+        // your promotions data here
     ]);
-
     const [clients] = useState([
-        // ... same clients data as before
+        // your clients data here
     ]);
-
     const [stats] = useState({
-        // ... same stats data as before
+        // your stats data here
     });
 
     return (
-        <div className="orange-telecom flex min-h-screen bg-orange-50">
+        <div className="app-container" style={{ display: 'flex' }}>
             <Sidebar
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
                 sidebarCollapsed={sidebarCollapsed}
                 setSidebarCollapsed={setSidebarCollapsed}
             />
-
-            <div className={`flex-1 transition-all duration-200 ${sidebarCollapsed ? 'ml-16' : 'ml-56'}`}>
-                <Header activeTab={activeTab} />
-
-                <main className="orange-card p-6 mx-4 my-2">
-                    {activeTab === 'dashboard' && (
-                        <Dashboard
-                            promotions={promotions}
-                            stats={stats}
-                        />
-                    )}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <Header activeTab={activeTab} setActiveTab={setActiveTab} />
+                <main style={{ padding: '1rem', flexGrow: 1 }}>
+                    {activeTab === 'HomePage' && <HomePage />}
                     {activeTab === 'promotions' && (
                         <PromotionsManagement
                             promotions={promotions}
@@ -51,19 +41,13 @@ const TelecomPromotionInterface = () => {
                             setFilterStatus={setFilterStatus}
                         />
                     )}
-                    {activeTab === 'clients' && (
-                        <ClientsManagement
-                            clients={clients}
-                        />
-                    )}
-
+                    {activeTab === 'clients' && <ClientsManagement clients={clients} />}
                     {activeTab === 'statistiques' && (
-                        <div className="orange-card p-4">
-                            <h3 className="text-lg font-semibold text-orange-800 mb-4">Analytics Dashboard</h3>
-                            {/* Analytics content would go here */}
+                        <div>
+                            <h3>Analytics Dashboard</h3>
+                            {/* Analytics content */}
                         </div>
                     )}
-
                 </main>
             </div>
         </div>

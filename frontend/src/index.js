@@ -3,7 +3,6 @@ import { createRoot } from 'react-dom/client';
 import 'bootstrap/dist/css/bootstrap.min.css';  // Add this line
 import './index.css';
 import App from './App';
-import './styles/orange-luxury-theme.css';
 
 
 const container = document.getElementById('root');
