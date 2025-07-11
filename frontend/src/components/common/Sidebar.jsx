@@ -9,7 +9,7 @@ const Sidebar = ({ activeTab, setActiveTab, sidebarCollapsed, setSidebarCollapse
         </div>
         <nav>
             {[
-                { id: 'dashboard', icon: Home, label: 'Tableau de Bord' },
+                { id: 'HomePage', icon: Home, label: 'Tableau de Bord' },  // Changed from 'dashboard'
                 { id: 'promotions', icon: Gift, label: 'Promotions' },
                 { id: 'clients', icon: Users, label: 'Clients' },
                 { id: 'statistiques', icon: BarChart3, label: 'Statistiques' },

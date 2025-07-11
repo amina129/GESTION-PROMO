@@ -5,7 +5,7 @@ const Header = ({ activeTab }) => (
         <div>
             <div>
                 <h2>
-                    {activeTab === 'dashboard' && 'Tableau de Bord'}
+                    {activeTab === 'HomePage' && 'Tableau de Bord'}
                     {activeTab === 'promotions' && 'Gestion des Promotions'}
                     {activeTab === 'clients' && 'Gestion des Clients'}
                     {activeTab === 'fidelite' && 'Programme de Fidélité'}
