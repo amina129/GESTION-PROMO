@@ -2,7 +2,6 @@ package com.codewithamina.gestionpromo.controller;
 
 import com.codewithamina.gestionpromo.dto.PromotionAssignmentDto;
 import com.codewithamina.gestionpromo.model.Client;
-import com.codewithamina.gestionpromo.model.Promotion;
 import com.codewithamina.gestionpromo.service.ClientService;
 import com.codewithamina.gestionpromo.service.PromotionService;
 import jakarta.validation.Valid;
@@ -14,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/clients")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "*")
 public class ClientController {
 
     private final ClientService clientService;
@@ -42,15 +41,6 @@ public class ClientController {
         );
 
         return ResponseEntity.ok(clients);
-    }
-
-    @GetMapping("/{clientId}/promotions/available")
-    public ResponseEntity<List<Promotion>> getAvailablePromotions(
-            @PathVariable Long clientId,
-            @RequestParam String categorie_client) {
-
-        List<Promotion> promotions = promotionService.getAvailablePromotionsForCategory(categorie_client);
-        return ResponseEntity.ok(promotions);
     }
 
     @PostMapping("/{clientId}/promotions")

@@ -1,10 +1,7 @@
 package com.codewithamina.gestionpromo.service;
 
-import com.codewithamina.gestionpromo.model.Promotion;
 import com.codewithamina.gestionpromo.repository.PromotionRepository;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class PromotionServiceImp implements PromotionService {  // Implémente l'interface
@@ -17,8 +14,4 @@ public class PromotionServiceImp implements PromotionService {  // Implémente l
 
     // Supprimez la méthode PromotionService() qui est incorrecte
 
-    @Override  // Ajoutez l'annotation pour indiquer l'implémentation
-    public List<Promotion> getAvailablePromotionsForCategory(String categorieClient) {
-        return promotionRepository.findByCategorieClientAndActiveTrue(categorieClient);
-    }
 }

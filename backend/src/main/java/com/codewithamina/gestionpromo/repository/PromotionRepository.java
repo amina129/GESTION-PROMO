@@ -25,7 +25,6 @@ public interface PromotionRepository extends JpaRepository<Promotion, Long> {
             @Param("dateFin") LocalDate dateFin,
             @Param("categorieClient") String categorieClient);
 
-    List<Promotion> findByCategorieClientAndActiveTrue(String categorieClient);
 
 }
 

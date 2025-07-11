@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -25,15 +25,15 @@ public class ActivationPromotion {
     private Client client;
 
     @Column(name = "date_activation", nullable = false)
-    private LocalDateTime dateActivation;
+    private LocalDate dateActivation;
 
     @Column(name = "date_expiration")
-    private LocalDateTime dateExpiration;
+    private LocalDate dateExpiration;
 
     public ActivationPromotion() {
     }
 
-    public ActivationPromotion(Promotion promotion, Client client, LocalDateTime dateActivation, LocalDateTime dateExpiration) {
+    public ActivationPromotion(Promotion promotion, Client client, LocalDate dateActivation, LocalDate dateExpiration) {
         this.promotion = promotion;
         this.client = client;
         this.dateActivation = dateActivation;
