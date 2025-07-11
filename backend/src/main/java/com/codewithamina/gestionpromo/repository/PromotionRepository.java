@@ -37,6 +37,20 @@ public interface PromotionRepository extends JpaRepository<Promotion, Long> {
             @Param("today") LocalDate today,
             @Param("intervalStart") LocalDate intervalStart,
             @Param("intervalEnd") LocalDate intervalEnd);
+    @Query("SELECT p FROM Promotion p WHERE " +
+            "p.categorieClient = :categorieClient AND " +
+            "p.dateDebut <= CURRENT_DATE AND " +
+            "p.dateFin >= CURRENT_DATE AND " +
+            "p.statut = 'ACTIF' AND " +
+            "NOT EXISTS (" +
+            "  SELECT ap FROM ActivationPromotion ap " +
+            "  WHERE ap.promotion.id = p.id AND ap.client.id = :clientId" +
+            ")")
+    List<Promotion> findAvailableByCategorieClientAndClientId(
+            @Param("categorieClient") String categorieClient,
+            @Param("clientId") Long clientId);
+
+
 
     @Query("SELECT p FROM Promotion p " +
             "WHERE p.statut = 'ACTIF' " +

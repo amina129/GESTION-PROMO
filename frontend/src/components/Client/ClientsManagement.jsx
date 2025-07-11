@@ -93,7 +93,7 @@ const ClientsManagement = () => {
 
             // Réinitialiser après succès
             setSelectedClient(null);
-            setSelectedPromotion(null);
+            setError(null);            setSelectedPromotion(null);
             setAssignmentDates({ date_debut: '', date_fin: '' });
             searchClients();
         } catch (err) {
@@ -268,6 +268,10 @@ const ClientsManagement = () => {
                         )}
 
                         <div>
+                            {selectedClient && error && (
+                                <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>
+                            )}
+
                             <button onClick={() => setSelectedClient(null)}>
                                 Annuler
                             </button>

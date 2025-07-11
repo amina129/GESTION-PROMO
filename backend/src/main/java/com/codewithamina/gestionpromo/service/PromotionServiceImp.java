@@ -20,4 +20,9 @@ public class PromotionServiceImp implements PromotionService {
         LocalDate today = LocalDate.now();
         return promotionRepository.findAvailableByCategorieClient(categorieClient, today);
     }
+
+    @Override
+    public List<Promotion> findAvailablePromotionsForClient(Long clientId, String categorieClient) {
+        return promotionRepository.findAvailableByCategorieClientAndClientId(categorieClient, clientId);
+    }
 }

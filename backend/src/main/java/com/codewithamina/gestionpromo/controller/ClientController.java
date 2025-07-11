@@ -36,12 +36,12 @@ public class ClientController {
 
         // Récupérer la catégorie client depuis la base
         String categorieClient = clientServiceImpl.getCategorieClientById(clientId);
-
         if (categorieClient == null) {
             return ResponseEntity.notFound().build();
         }
 
-        List<Promotion> promotions = promotionService.findByCategorieClient(categorieClient);
+        // Récupérer les promotions disponibles *non activées* pour ce client
+        List<Promotion> promotions = promotionService.findAvailablePromotionsForClient(clientId, categorieClient);
         return ResponseEntity.ok(promotions);
     }
 
