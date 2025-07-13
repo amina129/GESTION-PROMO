@@ -1,8 +1,6 @@
 package com.codewithamina.gestionpromo.controller;
 
 import com.codewithamina.gestionpromo.config.JwtUtils;
-import com.codewithamina.gestionpromo.model.Admin;
-import com.codewithamina.gestionpromo.repository.AdminRepository;
 import com.codewithamina.gestionpromo.request.JWTResponse;
 import com.codewithamina.gestionpromo.request.LoginRequest;
 import com.codewithamina.gestionpromo.request.MessageResponse;
@@ -14,7 +12,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -67,30 +64,6 @@ public class AuthController {
     public ResponseEntity<?> logout() {
         return ResponseEntity.ok(new MessageResponse("Déconnexion réussie."));
     }
-    @RestController
-    @RequestMapping("/api/test")
-    @CrossOrigin(origins = "http://localhost:3000")
-    public class TestController {
 
-        @Autowired
-        private AdminRepository adminRepository;
-
-        @Autowired
-        private PasswordEncoder passwordEncoder;
-
-        @PostMapping("/create-admin")
-        public ResponseEntity<?> createTestAdmin() {
-            Admin admin = new Admin();
-            admin.setEmail("test@example.com");
-            admin.setNom("Test");
-            admin.setPrenom("Admin");
-            admin.setFonction("Administrator");
-            admin.setMotDePasse(passwordEncoder.encode("admin123")); // Encode the password
-
-            adminRepository.save(admin);
-
-            return ResponseEntity.ok(new MessageResponse("Test admin created successfully"));
-        }
-    }
 
 }
