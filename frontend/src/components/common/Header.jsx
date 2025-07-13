@@ -9,9 +9,7 @@ const Header = ({ activeTab }) => (
                     {activeTab === 'HomePage' && 'Tableau de Bord'}
                     {activeTab === 'promotions' && 'Gestion des Promotions'}
                     {activeTab === 'clients' && 'Gestion des Clients'}
-                    {activeTab === 'fidelite' && 'Programme de Fidélité'}
                     {activeTab === 'statistiques' && 'Analyses & Rapports'}
-                    {activeTab === 'parametres' && 'Paramètres du Système'}
                 </h2>
             </div>
 

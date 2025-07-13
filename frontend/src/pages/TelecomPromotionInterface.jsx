@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Header from "../components/common/Header";
-import Sidebar from "../components/common/Sidebar";
+import Navbar from "../components/common/Navbar";  // renommé ici
 import PromotionsManagement from "../components/promotions/PromotionsManagement";
 import ClientsManagement from "../components/Client/ClientsManagement";
 import HomePage from "../components/HomePage/HomePage";
@@ -16,18 +16,18 @@ const TelecomPromotionInterface = () => {
 
     return (
         <div className="app-container" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-            {/* Sidebar at the top */}
-            <Sidebar
+            {/* Navbar en haut */}
+            <Navbar
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
                 sidebarCollapsed={sidebarCollapsed}
                 setSidebarCollapsed={setSidebarCollapsed}
             />
 
-            {/* Header below Sidebar */}
+            {/* Header en dessous de la Navbar */}
             <Header activeTab={activeTab} />
 
-            {/* Main content (HomePage, Promotions, Clients, etc.) */}
+            {/* Contenu principal */}
             <main style={{ flex: 1, padding: '1rem' }}>
                 {activeTab === 'HomePage' && <HomePage />}
                 {activeTab === 'promotions' && (
@@ -43,7 +43,7 @@ const TelecomPromotionInterface = () => {
                 {activeTab === 'statistiques' && (
                     <div>
                         <h3>Analytics Dashboard</h3>
-                        {/* Analytics content */}
+                        {/* Contenu analytique ici */}
                     </div>
                 )}
             </main>
