@@ -1,25 +1,27 @@
+// src/main/java/com/codewithamina/gestionpromo/config/AdminDetails.java
 package com.codewithamina.gestionpromo.config;
 
 import com.codewithamina.gestionpromo.model.Admin;
+import com.codewithamina.gestionpromo.model.Fonction;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
 
 public class AdminDetails implements UserDetails {
-
     private final Admin admin;
 
     public AdminDetails(Admin admin) {
         this.admin = admin;
     }
 
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Aucun rôle attribué pour le moment, on retourne une liste vide
-        return Collections.emptyList();
+        return Collections.singletonList(
+                new SimpleGrantedAuthority("ROLE_" + admin.getFonction().name())
+        );
     }
 
     @Override
@@ -29,9 +31,18 @@ public class AdminDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return admin.getEmail(); // Email utilisé comme identifiant de connexion
+        return admin.getEmail();
     }
 
+    public Long getId() {
+        return admin.getId();
+    }
+
+    public Fonction getFonction() {
+        return admin.getFonction();
+    }
+
+    // Other required UserDetails methods
     @Override
     public boolean isAccountNonExpired() {
         return true;
@@ -50,9 +61,5 @@ public class AdminDetails implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
-    }
-
-    public Admin getAdmin() {
-        return admin;
     }
 }

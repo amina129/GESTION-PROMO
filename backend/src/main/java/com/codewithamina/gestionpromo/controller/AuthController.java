@@ -1,17 +1,17 @@
 package com.codewithamina.gestionpromo.controller;
 
+import com.codewithamina.gestionpromo.config.AdminDetails;
 import com.codewithamina.gestionpromo.config.JwtUtils;
 import com.codewithamina.gestionpromo.request.JWTResponse;
 import com.codewithamina.gestionpromo.request.LoginRequest;
 import com.codewithamina.gestionpromo.request.MessageResponse;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -26,38 +26,27 @@ public class AuthController {
     @Autowired
     private JwtUtils jwtUtils;
 
+    // AuthController.java
     @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginRequest.getEmail(),
+                        loginRequest.getPassword()
+                )
+        );
 
-        System.out.println("=== AUTHENTICATION DEBUG ===");
-        System.out.println("Password provided: " + loginRequest.getPassword());
-        System.out.println("Password length: " + loginRequest.getPassword().length());
-        System.out.println("============================");
-        try {
-            // L'AuthenticationManager se charge de vérifier les credentials
-            // via le UserDetailsService et le PasswordEncoder
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            loginRequest.getUsername(),
-                            loginRequest.getPassword()
-                    )
-            );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = jwtUtils.generateJwtToken(authentication);
 
-            // Générer le token JWT
-            String jwt = jwtUtils.generateJwtToken(authentication);
+        AdminDetails adminDetails = (AdminDetails) authentication.getPrincipal();
 
-            return ResponseEntity.ok(new JWTResponse(jwt, loginRequest.getUsername()));
-
-        } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new MessageResponse("Identifiants invalides"));
-        } catch (AuthenticationException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new MessageResponse("Erreur d'authentification : " + e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new MessageResponse("Erreur serveur : " + e.getMessage()));
-        }
+        return ResponseEntity.ok(new JWTResponse(
+                jwt,
+                adminDetails.getId(),
+                adminDetails.getUsername(),
+                adminDetails.getFonction() // Add role to response
+        ));
     }
 
     @PostMapping("/logout")

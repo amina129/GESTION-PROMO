@@ -9,7 +9,6 @@ import lombok.Setter;
 @Entity
 @Table(name = "admin")
 public class Admin {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,9 +25,9 @@ public class Admin {
     @Column(name = "mot_de_passe", nullable = false)
     private String motDePasse;
 
-    private String fonction;
-
-    public Admin() {
-    }
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Fonction fonction; // Changed to enum
 
 }
+

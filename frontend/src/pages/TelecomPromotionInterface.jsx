@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from "../components/common/Header";
-import Navbar from "../components/common/Navbar";  // renommé ici
+import Navbar from "../components/common/Navbar";
 import PromotionsManagement from "../components/promotions/PromotionsManagement";
 import ClientsManagement from "../components/Client/ClientsManagement";
 import HomePage from "../components/HomePage/HomePage";
+import { useAuth } from "../components/auth/AuthContext"; // Updated import
 
 const TelecomPromotionInterface = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -13,24 +14,32 @@ const TelecomPromotionInterface = () => {
     const [promotions] = useState([]);
     const [clients] = useState([]);
     const [stats] = useState({});
+    const [allowedTabs, setAllowedTabs] = useState(['HomePage']);
+    const { currentUser } = useAuth(); // Using auth context instead of direct service
+
+    useEffect(() => {
+        if (currentUser?.fonction === 'ADMIN') {
+            setAllowedTabs(['HomePage', 'promotions', 'clients', 'statistiques']);
+        } else if (currentUser?.fonction === 'CONSULTANT') {
+            setAllowedTabs(['HomePage', 'clients', 'statistiques']);
+        }
+    }, [currentUser]); // Watch currentUser instead of userRole
 
     return (
         <div className="app-container" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-            {/* Navbar en haut */}
             <Navbar
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
                 sidebarCollapsed={sidebarCollapsed}
                 setSidebarCollapsed={setSidebarCollapsed}
+                allowedTabs={allowedTabs}
             />
 
-            {/* Header en dessous de la Navbar */}
             <Header activeTab={activeTab} />
 
-            {/* Contenu principal */}
             <main style={{ flex: 1, padding: '1rem' }}>
                 {activeTab === 'HomePage' && <HomePage />}
-                {activeTab === 'promotions' && (
+                {activeTab === 'promotions' && allowedTabs.includes('promotions') && (
                     <PromotionsManagement
                         promotions={promotions}
                         searchTerm={searchTerm}
@@ -39,8 +48,8 @@ const TelecomPromotionInterface = () => {
                         setFilterStatus={setFilterStatus}
                     />
                 )}
-                {activeTab === 'clients' && <ClientsManagement clients={clients} />}
-                {activeTab === 'statistiques' && (
+                {activeTab === 'clients' && allowedTabs.includes('clients') && <ClientsManagement clients={clients} />}
+                {activeTab === 'statistiques' && allowedTabs.includes('statistiques') && (
                     <div>
                         <h3>Analytics Dashboard</h3>
                         {/* Contenu analytique ici */}
