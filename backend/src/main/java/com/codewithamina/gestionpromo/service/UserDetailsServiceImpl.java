@@ -21,7 +21,16 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Admin admin = adminRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Admin non trouvé avec l'email : " + email));
+        // Debug information
+        System.out.println("=== DEBUG INFO ===");
+        System.out.println("Found admin: " + admin.getEmail());
+        System.out.println("Password hash from DB: " + admin.getMotDePasse());
+        System.out.println("Hash length: " + admin.getMotDePasse().length());
+        System.out.println("Hash starts with $2a$: " + admin.getMotDePasse().startsWith("$2a$"));
+        System.out.println("==================");
 
         return new AdminDetails(admin);
+
     }
+
 }

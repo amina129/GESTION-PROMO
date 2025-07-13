@@ -15,6 +15,7 @@ public class AdminDetails implements UserDetails {
         this.admin = admin;
     }
 
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // Aucun rôle attribué pour le moment, on retourne une liste vide

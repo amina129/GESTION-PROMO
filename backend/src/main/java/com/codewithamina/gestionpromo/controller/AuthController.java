@@ -1,12 +1,11 @@
 package com.codewithamina.gestionpromo.controller;
 
+import com.codewithamina.gestionpromo.config.JwtUtils;
 import com.codewithamina.gestionpromo.model.Admin;
 import com.codewithamina.gestionpromo.repository.AdminRepository;
 import com.codewithamina.gestionpromo.request.JWTResponse;
 import com.codewithamina.gestionpromo.request.LoginRequest;
 import com.codewithamina.gestionpromo.request.MessageResponse;
-import com.codewithamina.gestionpromo.config.JwtUtils;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,10 +13,10 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -28,33 +27,18 @@ public class AuthController {
     private AuthenticationManager authenticationManager;
 
     @Autowired
-    private AdminRepository adminRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
     private JwtUtils jwtUtils;
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
+
+        System.out.println("=== AUTHENTICATION DEBUG ===");
+        System.out.println("Password provided: " + loginRequest.getPassword());
+        System.out.println("Password length: " + loginRequest.getPassword().length());
+        System.out.println("============================");
         try {
-            // Vérifier si l'admin existe par email
-            Optional<Admin> optionalAdmin = adminRepository.findByEmail(loginRequest.getUsername());
-
-            if (optionalAdmin.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new MessageResponse("Admin non trouvé avec cet email."));
-            }
-
-            Admin admin = optionalAdmin.get();
-
-            // Vérifier le mot de passe (en clair ou encodé selon ton système)
-            if (!passwordEncoder.matches(loginRequest.getPassword(), admin.getMotDePasse())) {
-                throw new BadCredentialsException("Mot de passe invalide.");
-            }
-
-            // Authentifier avec Spring Security (nécessite que UserDetailsService soit correctement configuré)
+            // L'AuthenticationManager se charge de vérifier les credentials
+            // via le UserDetailsService et le PasswordEncoder
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginRequest.getUsername(),
@@ -66,12 +50,16 @@ public class AuthController {
             String jwt = jwtUtils.generateJwtToken(authentication);
 
             return ResponseEntity.ok(new JWTResponse(jwt, loginRequest.getUsername()));
+
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new MessageResponse("Identifiants invalides"));
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new MessageResponse("Erreur d'authentification : " + e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new MessageResponse("Erreur d'authentification : " + e.getMessage()));
+                    .body(new MessageResponse("Erreur serveur : " + e.getMessage()));
         }
     }
 
@@ -79,4 +67,30 @@ public class AuthController {
     public ResponseEntity<?> logout() {
         return ResponseEntity.ok(new MessageResponse("Déconnexion réussie."));
     }
+    @RestController
+    @RequestMapping("/api/test")
+    @CrossOrigin(origins = "http://localhost:3000")
+    public class TestController {
+
+        @Autowired
+        private AdminRepository adminRepository;
+
+        @Autowired
+        private PasswordEncoder passwordEncoder;
+
+        @PostMapping("/create-admin")
+        public ResponseEntity<?> createTestAdmin() {
+            Admin admin = new Admin();
+            admin.setEmail("test@example.com");
+            admin.setNom("Test");
+            admin.setPrenom("Admin");
+            admin.setFonction("Administrator");
+            admin.setMotDePasse(passwordEncoder.encode("admin123")); // Encode the password
+
+            adminRepository.save(admin);
+
+            return ResponseEntity.ok(new MessageResponse("Test admin created successfully"));
+        }
+    }
+
 }
