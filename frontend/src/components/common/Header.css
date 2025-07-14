@@ -1,19 +1,23 @@
-/* Header.css */
 .orange-header {
+    position: fixed;
+    top: 50px;  /* placé juste sous la navbar */
+    left: 0;
+    right: 0;
+    height: 64px;
     background: linear-gradient(to right, #FF7900, #E56E00);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     color: white;
-    width: 100%;
+    z-index: 900;  /* inférieur à navbar */
+    display: flex;
+    align-items: center;
     padding: 0 16px;
 }
-
 .header-container {
     max-width: 1200px;
     margin: 0 auto;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 64px;
+    width: 100%;
 }
 
 .header-left {
@@ -36,7 +40,7 @@
 
 .system-name {
     font-size: 0.875rem;
-    display: none; /* Hidden on mobile */
+    display: none; /* Masqué sur mobile */
 }
 
 .user-profile {
@@ -65,7 +69,6 @@
     margin-left: 4px;
 }
 
-/* Medium screens and up */
 @media (min-width: 768px) {
     .system-name {
         display: block;

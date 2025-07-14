@@ -4,6 +4,7 @@ import LogoutButton from './LogoutButton';
 import { useAuth } from '../auth/AuthContext';
 
 const Header = ({ activeTab }) => {
+    console.log('Header rendu avec activeTab =', activeTab);
     const { currentUser } = useAuth();
 
     return (

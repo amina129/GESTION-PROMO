@@ -1,16 +1,18 @@
 /* Navbar.css */
 
 .navbar {
-    background-color: #000;
-    color: white;
-    padding: 0 20px;
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+    background-color: #0a0a0a;
     z-index: 1000;
-    height: 60px;
     display: flex;
     align-items: center;
+    padding: 0 16px;
 }
+
 
 .navbar-container {
     max-width: 1200px;

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import './Login.css';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -22,7 +23,8 @@ const Login = () => {
     return (
         <div className="login-container">
             <form onSubmit={handleSubmit}>
-                <h2>Connexion</h2>
+                <img src="/OIP.png" alt="Logo Orange" className="login-logo" />
+                <h2>Identifiez-vous</h2>
                 {error && <div className="alert alert-danger">{error}</div>}
                 <div className="form-group">
                     <label>Email</label>
@@ -44,7 +46,8 @@ const Login = () => {
                         required
                     />
                 </div>
-                <button type="submit" className="btn btn-primary">
+                <button type="submit" className="btn btn-primary"
+                style={{color :"black"}}>
                     Se connecter
                 </button>
             </form>
