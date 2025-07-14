@@ -3,6 +3,7 @@ package com.codewithamina.gestionpromo.config;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SecurityException;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,15 +15,17 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
+
+
 @Component
 public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
     // Minimum 256-bit (32 characters) secret key recommended
-    @Value("${app.jwtSecret}")
+    @Value("${jwt.secret}")
     private String jwtSecret;
 
-    @Value("${app.jwtExpirationMs:86400000}") // Default 24 hours
+    @Value("${jwt.expiration:86400000}")
     private int jwtExpirationMs;
 
     private SecretKey getSigningKey() {
@@ -82,5 +85,11 @@ public class JwtUtils {
             logger.error("JWT claims string is empty: {}", e.getMessage());
         }
         return false;
+    }
+    @PostConstruct
+    public void init() {
+        logger.info("JWT Secret loaded: {}", jwtSecret != null ? "Present" : "NULL");
+        logger.info("JWT Secret length: {}", jwtSecret != null ? jwtSecret.length() : "0");
+        logger.info("JWT Expiration: {}", jwtExpirationMs);
     }
 }

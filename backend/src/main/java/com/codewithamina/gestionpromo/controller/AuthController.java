@@ -26,7 +26,6 @@ public class AuthController {
     @Autowired
     private JwtUtils jwtUtils;
 
-    // AuthController.java
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(

@@ -1,4 +1,3 @@
-// src/main/java/com/codewithamina/gestionpromo/config/AdminDetails.java
 package com.codewithamina.gestionpromo.config;
 
 import com.codewithamina.gestionpromo.model.Admin;
