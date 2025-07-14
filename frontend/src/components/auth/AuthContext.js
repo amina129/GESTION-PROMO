@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import authService from './authService';
 
 const AuthContext = createContext();
@@ -6,6 +7,7 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
     const [currentUser, setCurrentUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     const login = async (email, password) => {
         try {
@@ -18,9 +20,29 @@ export function AuthProvider({ children }) {
         }
     };
 
-    const logout = () => {
-        authService.logout();
-        setCurrentUser(null);
+    const logout = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log(data.message);
+            }
+        } catch (error) {
+            console.error('Erreur lors de la déconnexion:', error);
+        } finally {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            setCurrentUser(null);
+            navigate('/login');
+        }
     };
 
     useEffect(() => {

@@ -4,8 +4,7 @@ import Navbar from "../components/common/Navbar";
 import PromotionsManagement from "../components/promotions/PromotionsManagement";
 import ClientsManagement from "../components/Client/ClientsManagement";
 import HomePage from "../components/HomePage/HomePage";
-import { useAuth } from "../components/auth/AuthContext"; // Updated import
-
+import { useAuth } from "../components/auth/AuthContext";
 const TelecomPromotionInterface = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [activeTab, setActiveTab] = useState('HomePage');
