@@ -16,7 +16,7 @@ const LogoutButton = ({ className = "logout-btn" }) => {
             className={className}
             style={{
                 padding: '8px 16px',
-                backgroundColor: '#dc3545',
+                backgroundColor: '#FD7110',
                 color: 'white',
                 border: 'none',
                 borderRadius: '4px',
