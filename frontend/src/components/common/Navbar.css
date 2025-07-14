@@ -10,25 +10,45 @@
     z-index: 1000;
     display: flex;
     align-items: center;
-    padding: 0 16px;
+    padding: 0 25px;
+    border-bottom: 0.1px solid #ccc;
 }
-
 
 .navbar-container {
-    max-width: 1200px;
     width: 100%;
-    margin: 0 auto;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    justify-content: center;
 }
 
-.navbar-logo {
-    font-size: 24px;
-    font-weight: bold;
-    color: #ff7900;
-    text-transform: uppercase;
+.navbar-links {
+    display: flex;
+    justify-content: space-evenly; /* 🔸 evenly space nav items */
+    align-items: center;
+    width: 100%;
+    max-width: 800px; /* Optional: limit width on large screens */
 }
+
+.navbar-button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 8px 12px;
+    transition: background-color 0.2s;
+}
+
+.navbar-button.active {
+    border-bottom: 2px solid #ff7900;
+}
+
+.navbar-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
 
 .navbar-links {
     display: flex;

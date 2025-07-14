@@ -14,7 +14,6 @@ const Navbar = ({ activeTab, setActiveTab, allowedTabs }) => {
     return (
         <header className="navbar">
             <div className="navbar-container">
-                <div className="navbar-logo">Gestion Promotion</div>
                 <nav className="navbar-links">
                     {navItems.filter(item => allowedTabs.includes(item.id)).map((item) => (
                         <button
@@ -32,4 +31,4 @@ const Navbar = ({ activeTab, setActiveTab, allowedTabs }) => {
     );
 };
 
-export default Navbar; // Make sure default export exists
+export default Navbar;

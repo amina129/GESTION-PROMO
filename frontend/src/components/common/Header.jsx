@@ -19,15 +19,6 @@ const Header = ({ activeTab }) => {
                     </h2>
                 </div>
 
-                <div className="header-right">
-                    <div className="system-name">Système de Gestion des Promotions</div>
-
-                    <div className="user-profile" role="button" tabIndex={0}>
-                        <User className="user-icon" />
-                        <span>{currentUser?.nom || 'Utilisateur'}</span>
-                        <ChevronDown className="dropdown-icon" />
-                    </div>
-                </div>
             </div>
             <LogoutButton />
         </header>

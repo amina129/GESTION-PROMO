@@ -4,12 +4,12 @@
     left: 0;
     right: 0;
     height: 64px;
-    background: linear-gradient(to right, #FF7900, #E56E00);
+    background: black;
     color: white;
-    z-index: 900;  /* inférieur à navbar */
+    z-index: 900;
     display: flex;
     align-items: center;
-    padding: 0 16px;
+    padding: 0 26px;
 }
 .header-container {
     max-width: 1200px;
