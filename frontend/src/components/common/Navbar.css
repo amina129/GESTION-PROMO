@@ -5,8 +5,8 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 50px;
-    background-color: #0a0a0a;
+    height: 70px;
+    background-color: black;
     z-index: 1000;
     display: flex;
     align-items: center;

@@ -14,7 +14,7 @@ const Header = ({ activeTab }) => {
                 <div className="header-left">
                     <img src="/OIP.png" alt="Logo Orange" className="login-logo" />
                     <h2 className="header-title">
-                        {activeTab === 'HomePage' && 'Accueil'}
+                        {activeTab === 'HomePage' && 'Tableau de Bord'}
                         {activeTab === 'promotions' && 'Gestion des Promotions'}
                         {activeTab === 'clients' && 'Gestion des Clients'}
                         {activeTab === 'statistiques' && 'Analyses & Rapports'}

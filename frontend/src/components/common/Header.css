@@ -1,18 +1,19 @@
+/* Update your Header.css */
 .orange-header {
     position: fixed;
-    top: 50px;
+    top: 60px; /* Adjust this to be below your Navbar height */
     left: 0;
     right: 0;
     height: 64px;
     background-color: #000 !important;
     color: white;
-    z-index: 900;
+    z-index: 800; /* Lower than Navbar */
     border-bottom: 1px solid #333;
     display: flex;
     align-items: center;
     padding: 0 200px 0 120px !important;
     font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
-    padding-top: 5px !important;
+    padding-top: 7px !important;
     padding-bottom: 5px !important;
 }
 
@@ -27,7 +28,7 @@
 .header-left {
     display: flex;
     align-items: center;
-    margin-left: 100px !important;
+    margin-left: 200px !important;
 }
 
 .login-logo {
@@ -54,58 +55,15 @@
     gap: 16px;
 }
 
-.system-name {
-    font-size: 0.9rem;
-    color: #ccc;
-    display: none;
-}
-
-.user-profile {
-    display: flex;
-    align-items: center;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 999px;
-    padding: 6px 12px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    white-space: nowrap;
-}
-
-.user-profile:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-}
-
-.user-icon {
-    height: 20px;
-    width: 20px;
-    margin-right: 8px;
-    flex-shrink: 0;
-}
-
-.dropdown-icon {
-    height: 16px;
-    width: 16px;
-    margin-left: 6px;
-    flex-shrink: 0;
-}
-
-/* Show system-name on medium+ screens */
-@media (min-width: 768px) {
-    .system-name {
-        display: block;
-    }
-}
-.header-left {
-    margin-left: 200px !important; /* Increased from 100px */
-}
 /* Mobile responsive adjustments */
 @media (max-width: 768px) {
     .orange-header {
         padding: 0 40px !important;
+        top: 50px; /* Adjust for mobile navbar height */
     }
 
     .header-left {
-        margin-left: 150px !important; /* Increased from 100px */
+        margin-left: 150px !important;
     }
 
     .header-title {
@@ -114,11 +72,6 @@
 
     .header-right {
         gap: 8px;
-    }
-
-    .user-profile {
-        padding: 4px 8px;
-        font-size: 14px;
     }
 
     .login-logo {
