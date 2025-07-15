@@ -8,49 +8,60 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const { login } = useAuth();
-    const navigate = useNavigate(); // Moved navigation to component level
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             await login(email, password);
-            navigate('/telecom'); // Navigation happens here after successful login
+            navigate('/telecom');
         } catch (err) {
             setError('Email ou mot de passe incorrect');
         }
     };
 
     return (
-        <div className="login-container">
-            <form onSubmit={handleSubmit}>
-                <img src="/OIP.png" alt="Logo Orange" className="login-logo" />
-                <h2>Identifiez-vous</h2>
-                {error && <div className="alert alert-danger">{error}</div>}
-                <div className="form-group">
-                    <label>Email</label>
-                    <input
-                        type="email"
-                        className="form-control"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
+        <div className="login-page">
+            {/* Black Navigation Bar */}
+            <nav className="login-navbar">
+                <div className="navbar-content">
+                    <span className="welcome-message">Bienvenue à Orange !</span>
                 </div>
-                <div className="form-group">
-                    <label>Mot de passe</label>
-                    <input
-                        type="password"
-                        className="form-control"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
-                </div>
-                <button type="submit" className="btn btn-primary"
-                style={{color :"black"}}>
-                    Se connecter
-                </button>
-            </form>
+            </nav>
+
+            {/* Enhanced Login Container */}
+            <div className="login-container">
+                <form onSubmit={handleSubmit}>
+                    <div className="logo-container">
+                        <img src="/OIP.png" alt="Logo Orange" className="login-logo" />
+                    </div>
+                    <h2 className="login-title">Identifiez-vous</h2>
+                    {error && <div className="alert alert-danger">{error}</div>}
+                    <div className="form-group">
+                        <label>Email</label>
+                        <input
+                            type="email"
+                            className="form-control"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>Mot de passe</label>
+                        <input
+                            type="password"
+                            className="form-control"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <button type="submit" className="btn-login">
+                        Se connecter
+                    </button>
+                </form>
+            </div>
         </div>
     );
 };

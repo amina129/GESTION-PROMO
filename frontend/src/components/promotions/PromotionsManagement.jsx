@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Plus, RotateCcw } from 'lucide-react';
+import  './PromotionsManagement.css' ;
 
 const PromotionsManagement = () => {
     const [promotions, setPromotions] = useState([]);
@@ -25,10 +26,11 @@ const PromotionsManagement = () => {
         sousType: '',
         categorieClient: '',
         uniteMesure: '',
-        typeUnite: '' // nouveau champ pour DATA/SMS/APPEL
+        typeUnite: ''
     });
 
     const API_BASE_URL = 'http://localhost:8080/api';
+
     // Options pour les catégories client
     const categoriesClient = [
         { value: 'VIP', label: 'VIP' },
@@ -96,7 +98,8 @@ const PromotionsManagement = () => {
             if (searchFields.dateFin) queryParams.append("dateFin", searchFields.dateFin);
             if (searchFields.categorieClient) queryParams.append("categorieClient", searchFields.categorieClient);
 
-            const response = await fetch(`${API_BASE_URL}/promotions/search?${queryParams.toString()}`);            if (!response.ok) throw new Error("Erreur lors du chargement des promotions");
+            const response = await fetch(`${API_BASE_URL}/promotions/search?${queryParams.toString()}`);
+            if (!response.ok) throw new Error("Erreur lors du chargement des promotions");
             const data = await response.json();
             setPromotions(data);
         } catch (err) {
@@ -111,7 +114,6 @@ const PromotionsManagement = () => {
         setError(null);
 
         try {
-            // Préparer les données à envoyer
             const dataToSend = {
                 nom: promotionData.nom,
                 description: promotionData.description,
@@ -122,7 +124,6 @@ const PromotionsManagement = () => {
                 valeur: promotionData.valeur,
                 categorieClient: promotionData.categorieClient,
                 statut: "ACTIF",
-                // Seulement inclure si nécessaire
                 ...(promotionData.sousType === 'unite_gratuite' && {
                     typeUnite: promotionData.typeUnite,
                     ...(promotionData.typeUnite !== 'SMS' && {
@@ -138,7 +139,6 @@ const PromotionsManagement = () => {
             });
 
             if (!response.ok) {
-                // Essayer d'extraire le message d'erreur du backend
                 const errorResponse = await response.json();
                 throw new Error(
                     errorResponse.message ||
@@ -153,7 +153,6 @@ const PromotionsManagement = () => {
             resetForm();
 
         } catch (err) {
-            // Gestion améliorée des erreurs
             if (err.message.includes('Validation failed')) {
                 setError('Données invalides : veuillez vérifier les champs du formulaire');
             } else {
@@ -250,7 +249,6 @@ const PromotionsManagement = () => {
         setFormData(prev => {
             const newData = { ...prev, [name]: value };
 
-            // Réinitialiser les champs dépendants
             if (name === 'type') {
                 newData.sousType = '';
                 newData.valeur = '';
@@ -271,7 +269,6 @@ const PromotionsManagement = () => {
             return newData;
         });
 
-        // Réinitialiser l'erreur quand l'utilisateur modifie les champs
         if (error) setError(null);
     };
 
@@ -279,7 +276,6 @@ const PromotionsManagement = () => {
         setSearchFields(prev => {
             const newFields = { ...prev, [field]: value };
 
-            // Réinitialiser le sous-type si le type principal change
             if (field === 'type') {
                 newFields.sousType = '';
             }
@@ -322,15 +318,29 @@ const PromotionsManagement = () => {
         return formData.sousType === 'unite_gratuite' && formData.typeUnite && formData.typeUnite !== 'SMS';
     };
 
+    const getCategoryBadgeClass = (category) => {
+        switch (category) {
+            case 'VIP':
+                return 'vip-badge';
+            case 'B2B':
+                return 'b2b-badge';
+            case 'JP':
+                return 'jp-badge';
+            default:
+                return 'default-badge';
+        }
+    };
+
     return (
-        <div>
+        <div className="promotions-container">
+
             {/* Champs de recherche */}
             {showSearchFields && (
-                <div >
-                    <h2 >Rechercher une promotion</h2>
-                    <div >
-                        <div>
-                            <label >Nom</label>
+                <div className="search-section">
+                    <h2>Rechercher une promotion</h2>
+                    <div className="search-fields">
+                        <div className="search-field">
+                            <label>Nom</label>
                             <input
                                 type="text"
                                 placeholder="Nom de la promotion"
@@ -338,8 +348,8 @@ const PromotionsManagement = () => {
                                 onChange={(e) => handleSearchChange('nom', e.target.value)}
                             />
                         </div>
-                        <div>
-                            <label >Type principal</label>
+                        <div className="search-field">
+                            <label>Type principal</label>
                             <select
                                 value={searchFields.type}
                                 onChange={(e) => handleSearchChange('type', e.target.value)}
@@ -350,7 +360,7 @@ const PromotionsManagement = () => {
                                 ))}
                             </select>
                         </div>
-                        <div>
+                        <div className="search-field">
                             <label>Sous-type</label>
                             <select
                                 value={searchFields.sousType}
@@ -365,7 +375,7 @@ const PromotionsManagement = () => {
                                 }
                             </select>
                         </div>
-                        <div>
+                        <div className="search-field">
                             <label>Date début</label>
                             <input
                                 type="date"
@@ -373,16 +383,16 @@ const PromotionsManagement = () => {
                                 onChange={(e) => handleSearchChange('dateDebut', e.target.value)}
                             />
                         </div>
-                        <div>
-                            <label >Date fin</label>
+                        <div className="search-field">
+                            <label>Date fin</label>
                             <input
                                 type="date"
                                 value={searchFields.dateFin}
                                 onChange={(e) => handleSearchChange('dateFin', e.target.value)}
                             />
                         </div>
-                        <div>
-                            <label >Catégorie client</label>
+                        <div className="search-field">
+                            <label>Catégorie client</label>
                             <select
                                 value={searchFields.categorieClient}
                                 onChange={(e) => handleSearchChange('categorieClient', e.target.value)}
@@ -394,13 +404,15 @@ const PromotionsManagement = () => {
                             </select>
                         </div>
                     </div>
-                    <div >
+                    <div className="search-actions">
                         <button
+                            className="button button-primary"
                             onClick={searchPromotions}
                         >
                             Rechercher
                         </button>
                         <button
+                            className="button button-secondary"
                             onClick={() => setSearchFields({
                                 nom: '', type: '', sousType: '', dateDebut: '', dateFin: '', categorieClient: ''
                             })}
@@ -412,40 +424,43 @@ const PromotionsManagement = () => {
             )}
 
             {/* Boutons d'action */}
-            <div >
+            <div className="action-buttons">
                 <button
+                    className="button button-secondary"
                     onClick={() => setShowSearchFields(!showSearchFields)}
                 >
-                    <Search size={20} />
+                    <Search className="button-icon" size={20} />
                     {showSearchFields ? 'Masquer la recherche' : 'Rechercher une promotion'}
                 </button>
                 <button
+                    className="button button-primary"
                     onClick={() => setShowCreateForm(true)}
                 >
-                    <Plus size={20} />
+                    <Plus className="button-icon" size={20} />
                     Créer une promotion
                 </button>
                 <button
+                    className="button button-secondary"
                     onClick={resetAll}
                 >
-                    <RotateCcw size={20} />
+                    <RotateCcw className="button-icon" size={20} />
                     Réinitialiser tout
                 </button>
             </div>
 
             {/* Messages d'erreur */}
             {error && (
-                <div >
+                <div className="error-message">
                     {error}
                 </div>
             )}
 
             {/* Formulaire de création */}
             {showCreateForm && (
-                <div >
-                    <h2 >Créer une nouvelle promotion</h2>
-                    <div >
-                        <div>
+                <div className="create-form">
+                    <h2>Créer une nouvelle promotion</h2>
+                    <div className="form-grid">
+                        <div className="form-field">
                             <label>Nom *</label>
                             <input
                                 type="text"
@@ -455,8 +470,8 @@ const PromotionsManagement = () => {
                                 onChange={handleInputChange}
                             />
                         </div>
-                        <div >
-                            <label >Description</label>
+                        <div className="form-field">
+                            <label>Description</label>
                             <textarea
                                 name="description"
                                 placeholder="Description de la promotion"
@@ -465,8 +480,8 @@ const PromotionsManagement = () => {
                                 onChange={handleInputChange}
                             />
                         </div>
-                        <div>
-                            <label >Type principal *</label>
+                        <div className="form-field">
+                            <label>Type principal *</label>
                             <select
                                 name="type"
                                 value={formData.type}
@@ -478,8 +493,8 @@ const PromotionsManagement = () => {
                                 ))}
                             </select>
                         </div>
-                        <div>
-                            <label >Sous-type *</label>
+                        <div className="form-field">
+                            <label>Sous-type *</label>
                             <select
                                 name="sousType"
                                 value={formData.sousType}
@@ -495,10 +510,10 @@ const PromotionsManagement = () => {
                             </select>
                         </div>
 
-                        {/* Champ Type d'unité - affiché seulement pour unité gratuite */}
+                        {/* Champ Type d'unité */}
                         {shouldShowTypeUniteField() && (
-                            <div>
-                                <label >Type d'unité *</label>
+                            <div className="form-field">
+                                <label>Type d'unité *</label>
                                 <select
                                     name="typeUnite"
                                     value={formData.typeUnite}
@@ -512,10 +527,10 @@ const PromotionsManagement = () => {
                             </div>
                         )}
 
-                        {/* Champ Valeur - affiché seulement si un sous-type est sélectionné */}
+                        {/* Champ Valeur */}
                         {shouldShowValeurField() && (
-                            <div>
-                                <label >
+                            <div className="form-field">
+                                <label>
                                     Valeur *
                                     {formData.sousType === 'remise' && ' (%)'}
                                     {formData.sousType === 'unite_gratuite' && ' (quantité)'}
@@ -548,9 +563,9 @@ const PromotionsManagement = () => {
                             </div>
                         )}
 
-                        {/* Champ Unité de mesure - affiché selon le type d'unité */}
+                        {/* Champ Unité de mesure */}
                         {shouldShowUniteMesureField() && (
-                            <div>
+                            <div className="form-field">
                                 <label>Unité de mesure *</label>
                                 <select
                                     name="uniteMesure"
@@ -566,8 +581,9 @@ const PromotionsManagement = () => {
                                 </select>
                             </div>
                         )}
-                        <div>
-                            <label >Catégorie Client *</label>
+
+                        <div className="form-field">
+                            <label>Catégorie Client *</label>
                             <select
                                 name="categorieClient"
                                 value={formData.categorieClient}
@@ -580,8 +596,8 @@ const PromotionsManagement = () => {
                             </select>
                         </div>
 
-                        <div>
-                            <label >Date de début *</label>
+                        <div className="form-field">
+                            <label>Date de début *</label>
                             <input
                                 type="date"
                                 name="dateDebut"
@@ -589,8 +605,8 @@ const PromotionsManagement = () => {
                                 onChange={handleInputChange}
                             />
                         </div>
-                        <div>
-                            <label >Date de fin *</label>
+                        <div className="form-field">
+                            <label>Date de fin *</label>
                             <input
                                 type="date"
                                 name="dateFin"
@@ -598,17 +614,18 @@ const PromotionsManagement = () => {
                                 onChange={handleInputChange}
                             />
                         </div>
-
                     </div>
 
-                    <div>
+                    <div className="form-actions">
                         <button
+                            className="button button-primary"
                             onClick={handleSubmit}
                             disabled={loading}
                         >
                             {loading ? 'Création...' : 'Créer la promotion'}
                         </button>
                         <button
+                            className="button button-secondary"
                             onClick={resetForm}
                         >
                             Annuler

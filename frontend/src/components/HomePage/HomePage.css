@@ -1,4 +1,58 @@
 /* Font imports */
+/* Increased spacing version */
+.split-screen {
+    display: flex;
+    min-height: 60vh;
+    gap: 40px; /* DOUBLED the gap between categories */
+    background-color: white;
+    padding: 0 60px; /* Increased side padding */
+    max-width: 1600px; /* Wider container */
+    margin: 0 auto;
+}
+
+.promotion-half {
+    flex: 1;
+    padding: 50px; /* More internal padding */
+    margin: 20px; /* Increased external margin */
+    /* Other existing properties */
+}
+
+/* Visual separators */
+.particulier-promotion {
+    border-right: 8px solid var(--orange-color); /* Thick colored border */
+    margin-right: 20px; /* Extra right margin */
+}
+
+.entreprise-promotion {
+    border-left: 8px solid #666; /* Thick colored border */
+    margin-left: 20px; /* Extra left margin */
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .split-screen {
+        gap: 30px;
+        padding: 0 20px;
+    }
+
+    .promotion-half {
+        padding: 40px 30px;
+        margin: 15px 0;
+    }
+
+    /* Reset side borders on mobile */
+    .particulier-promotion,
+    .entreprise-promotion {
+        border-right: none;
+        border-left: none;
+        border-top: 8px solid var(--orange-color);
+        margin: 0;
+    }
+
+    .entreprise-promotion {
+        border-top: 8px solid #666;
+    }
+}
 @font-face {
     font-family: 'Orange Sans';
     src: url('https://www.orange.tn/static/media/OrangeSans-Regular.woff2') format('woff2'),
@@ -30,7 +84,7 @@ body {
 }
 
 .home-container {
-    margin-top: 120px;
+    margin-top: 80px;
     background-color: white;
     color: #000;
 }
