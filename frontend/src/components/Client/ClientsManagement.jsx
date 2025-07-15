@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Check, X } from 'lucide-react';
-
+import './ClientsManagement.css'
 const ClientsManagement = () => {
     // États pour la recherche
     const [searchCriteria, setSearchCriteria] = useState({
@@ -44,6 +44,7 @@ const ClientsManagement = () => {
             const response = await fetch(`${API_BASE_URL}/clients/search?${queryParams.toString()}`);
             if (!response.ok) throw new Error("Erreur lors de la recherche");
             const data = await response.json();
+            console.log("Données reçues:", data); // Ajoutez cette ligne
             setClients(data);
         } catch (err) {
             setError(err.message);
@@ -131,16 +132,24 @@ const ClientsManagement = () => {
         setAssignmentDates(prev => ({ ...prev, [field]: value }));
     };
 
+    const getClientCategoryBadge = (category) => {
+        switch (category) {
+            case 'VIP': return 'vip-badge';
+            case 'B2B': return 'b2b-badge';
+            case 'JP': return 'jp-badge';
+            default: return 'default-badge';
+        }
+    };
+
     return (
-        <div>
-            <h1>Gestion des Clients</h1>
+        <div className="promotions-container">
 
             {/* Recherche */}
-            <div>
+            <div className="search-section">
                 <h2>Rechercher un client</h2>
 
-                <div>
-                    <div>
+                <div className="search-fields">
+                    <div className="search-field">
                         <label>Numéro de téléphone</label>
                         <input
                             type="text"
@@ -148,7 +157,7 @@ const ClientsManagement = () => {
                             onChange={(e) => handleSearchChange('numero_telephone', e.target.value)}
                         />
                     </div>
-                    <div>
+                    <div className="search-field">
                         <label>Prénom</label>
                         <input
                             type="text"
@@ -156,7 +165,7 @@ const ClientsManagement = () => {
                             onChange={(e) => handleSearchChange('prenom', e.target.value)}
                         />
                     </div>
-                    <div>
+                    <div className="search-field">
                         <label>Nom</label>
                         <input
                             type="text"
@@ -164,7 +173,7 @@ const ClientsManagement = () => {
                             onChange={(e) => handleSearchChange('nom', e.target.value)}
                         />
                     </div>
-                    <div>
+                    <div className="search-field">
                         <label>Email</label>
                         <input
                             type="email"
@@ -172,7 +181,7 @@ const ClientsManagement = () => {
                             onChange={(e) => handleSearchChange('email', e.target.value)}
                         />
                     </div>
-                    <div>
+                    <div className="search-field">
                         <label>Catégorie</label>
                         <select
                             value={searchCriteria.categorie_client}
@@ -186,18 +195,20 @@ const ClientsManagement = () => {
                     </div>
                 </div>
 
-                <button onClick={searchClients} disabled={loading}>
-                    <Search />
-                    {loading ? 'Recherche...' : 'Rechercher'}
-                </button>
+                <div className="search-actions">
+                    <button className="button button-primary" onClick={searchClients} disabled={loading}>
+                        <Search className="button-icon" />
+                        {loading ? 'Recherche...' : 'Rechercher'}
+                    </button>
+                </div>
             </div>
 
-            {error && <div>{error}</div>}
+            {error && <div className="error-message">{error}</div>}
 
             {loading && clients.length === 0 ? (
-                <div>Chargement...</div>
+                <div className="loading-message">Chargement...</div>
             ) : clients.length > 0 ? (
-                <table>
+                <table className="results-table">
                     <thead>
                     <tr>
                         <th>ID</th>
@@ -215,9 +226,11 @@ const ClientsManagement = () => {
                             <td>{client.prenom} {client.nom}</td>
                             <td>{client.numero_telephone}</td>
                             <td>{client.email}</td>
-                            <td>{client.categorie_client}</td>
                             <td>
-                                <button onClick={() => setSelectedClient(client)}>
+                                {client.categorieClient}
+                            </td>
+                            <td>
+                                <button className="button button-secondary" onClick={() => setSelectedClient(client)}>
                                     Affecter promotion
                                 </button>
                             </td>
@@ -226,22 +239,43 @@ const ClientsManagement = () => {
                     </tbody>
                 </table>
             ) : (
-                <div>Aucun client trouvé</div>
+                <div className="empty-message">Aucun client trouvé</div>
             )}
 
             {/* Modal d'affectation */}
             {selectedClient && (
-                <div>
-                    <div>
-                        <div>
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000
+                }}>
+                    <div className="create-form" style={{
+                        maxWidth: '600px',
+                        width: '90%',
+                        maxHeight: '80vh',
+                        overflowY: 'auto'
+                    }}>
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginBottom: '20px'
+                        }}>
                             <h2>Affecter une promotion à {selectedClient.prenom} {selectedClient.nom}</h2>
-                            <button onClick={() => setSelectedClient(null)}>
+                            <button className="button button-secondary" onClick={() => setSelectedClient(null)}>
                                 <X />
                             </button>
                         </div>
 
-                        <div>
-                            <div>
+                        <div className="form-grid">
+                            <div className="form-field">
                                 <label>Date de début</label>
                                 <input
                                     type="date"
@@ -249,7 +283,7 @@ const ClientsManagement = () => {
                                     onChange={(e) => handleDateChange('date_debut', e.target.value)}
                                 />
                             </div>
-                            <div>
+                            <div className="form-field">
                                 <label>Date de fin</label>
                                 <input
                                     type="date"
@@ -259,43 +293,64 @@ const ClientsManagement = () => {
                             </div>
                         </div>
 
-                        <button
-                            onClick={loadAvailablePromotions}
-                            disabled={!assignmentDates.date_debut || !assignmentDates.date_fin}
-                        >
-                            Voir les promotions disponibles
-                        </button>
+                        <div style={{ marginBottom: '20px' }}>
+                            <button
+                                className="button button-primary"
+                                onClick={loadAvailablePromotions}
+                                disabled={!assignmentDates.date_debut || !assignmentDates.date_fin}
+                            >
+                                Voir les promotions disponibles
+                            </button>
+                        </div>
 
                         {availablePromotions.length > 0 && (
-                            <div>
-                                <h3>Promotions disponibles</h3>
-                                <div>
+                            <div style={{ marginBottom: '20px' }}>
+                                <h3 style={{ color: '#ff6600', marginBottom: '15px' }}>Promotions disponibles</h3>
+                                <div style={{
+                                    display: 'grid',
+                                    gap: '10px',
+                                    maxHeight: '200px',
+                                    overflowY: 'auto'
+                                }}>
                                     {availablePromotions.map(promo => (
                                         <div
                                             key={promo.id}
                                             onClick={() => setSelectedPromotion(promo)}
+                                            style={{
+                                                padding: '15px',
+                                                border: selectedPromotion?.id === promo.id ? '2px solid #ff6600' : '1px solid #ddd',
+                                                borderRadius: '8px',
+                                                cursor: 'pointer',
+                                                backgroundColor: selectedPromotion?.id === promo.id ? '#fff9f5' : 'white'
+                                            }}
                                         >
-                                            <div>
-                                                <span>{promo.nom}</span>
-                                                {selectedPromotion?.id === promo.id && <Check />}
+                                            <div style={{
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'center',
+                                                marginBottom: '5px'
+                                            }}>
+                                                <span style={{ fontWeight: '600' }}>{promo.nom}</span>
+                                                {selectedPromotion?.id === promo.id && <Check style={{ color: '#ff6600' }} />}
                                             </div>
-                                            <div>{promo.description}</div>
-                                            <div>Du {promo.date_debut} au {promo.date_fin}</div>
+                                            <div style={{ fontSize: '14px', color: '#666', marginBottom: '5px' }}>{promo.description}</div>
+                                            <div style={{ fontSize: '12px', color: '#999' }}>Du {promo.date_debut} au {promo.date_fin}</div>
                                         </div>
                                     ))}
                                 </div>
                             </div>
                         )}
 
-                        <div>
+                        <div className="form-actions">
                             {selectedClient && error && (
-                                <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>
+                                <div className="error-message" style={{ marginBottom: '10px' }}>{error}</div>
                             )}
 
-                            <button onClick={() => setSelectedClient(null)}>
+                            <button className="button button-secondary" onClick={() => setSelectedClient(null)}>
                                 Annuler
                             </button>
                             <button
+                                className="button button-primary"
                                 onClick={assignPromotion}
                                 disabled={!selectedPromotion || loading}
                             >
