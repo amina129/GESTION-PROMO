@@ -35,7 +35,7 @@ const PromotionsManagement = () => {
     const categoriesClient = [
         { value: 'VIP', label: 'VIP' },
         { value: 'B2B', label: 'B2B' },
-        { value: 'JP', label: 'JP' },
+        { value: 'GP', label: 'GP' },
         { value: 'privé', label: 'Privé' }
     ];
 
@@ -324,8 +324,8 @@ const PromotionsManagement = () => {
                 return 'vip-badge';
             case 'B2B':
                 return 'b2b-badge';
-            case 'JP':
-                return 'jp-badge';
+            case 'GP':
+                return 'Gp-badge';
             default:
                 return 'default-badge';
         }
@@ -337,92 +337,137 @@ const PromotionsManagement = () => {
             {/* Champs de recherche */}
             {showSearchFields && (
                 <div className="search-section">
-                    <h2>Rechercher une promotion</h2>
-                    <div className="search-fields">
-                        <div className="search-field">
-                            <label>Nom</label>
-                            <input
-                                type="text"
-                                placeholder="Nom de la promotion"
-                                value={searchFields.nom}
-                                onChange={(e) => handleSearchChange('nom', e.target.value)}
-                            />
+                    <div className="search-header">
+                        <h2>Rechercher une promotion</h2>
+                    </div>
+
+                    <div className="search-container">
+                        {/* Section Informations générales */}
+                        <div className="search-group">
+                            <h3 className="group-title">
+                                <label>Nom de la promotion</label>
+                            </h3>
+                            <div className="search-row">
+                                <div className="search-field search-field-full">
+                                    <input
+                                        type="text"
+                                        placeholder="Saisissez le nom de la promotion"
+                                        value={searchFields.nom}
+                                        onChange={(e) => handleSearchChange('nom', e.target.value)}
+                                    />
+                                </div>
+                            </div>
                         </div>
-                        <div className="search-field">
-                            <label>Type principal</label>
-                            <select
-                                value={searchFields.type}
-                                onChange={(e) => handleSearchChange('type', e.target.value)}
-                            >
-                                <option value="">Tous les types</option>
-                                {typesPromotion.map(type => (
-                                    <option key={type.value} value={type.value}>{type.label}</option>
-                                ))}
-                            </select>
+
+                        {/* Section Types de promotion */}
+                        <div className="search-group">
+                            <h3 className="group-title">
+                                Types de promotion
+                            </h3>
+                            <div className="search-row">
+                                <div className="search-field">
+                                    <label>Type principal</label>
+                                    <select
+                                        value={searchFields.type}
+                                        onChange={(e) => handleSearchChange('type', e.target.value)}
+                                    >
+                                        <option value="">Tous les types</option>
+                                        {typesPromotion.map(type => (
+                                            <option key={type.value} value={type.value}>{type.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="search-field">
+                                    <label>Sous-type</label>
+                                    <select
+                                        value={searchFields.sousType}
+                                        onChange={(e) => handleSearchChange('sousType', e.target.value)}
+                                        disabled={!searchFields.type}
+                                    >
+                                        <option value="">Tous les sous-types</option>
+                                        {searchFields.type && sousTypesPromotion[searchFields.type] &&
+                                            sousTypesPromotion[searchFields.type].map(sousType => (
+                                                <option key={sousType.value} value={sousType.value}>{sousType.label}</option>
+                                            ))
+                                        }
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-                        <div className="search-field">
-                            <label>Sous-type</label>
-                            <select
-                                value={searchFields.sousType}
-                                onChange={(e) => handleSearchChange('sousType', e.target.value)}
-                                disabled={!searchFields.type}
-                            >
-                                <option value="">Tous les sous-types</option>
-                                {searchFields.type && sousTypesPromotion[searchFields.type] &&
-                                    sousTypesPromotion[searchFields.type].map(sousType => (
-                                        <option key={sousType.value} value={sousType.value}>{sousType.label}</option>
-                                    ))
-                                }
-                            </select>
+
+                        {/* Section Période */}
+                        <div className="search-group">
+                            <h3 className="group-title">
+                                Période de validité
+                            </h3>
+                            <div className="search-row">
+                                <div className="search-field">
+                                    <label>Date de début</label>
+                                    <input
+                                        type="date"
+                                        value={searchFields.dateDebut}
+                                        onChange={(e) => handleSearchChange('dateDebut', e.target.value)}
+                                    />
+                                </div>
+                                <div className="search-field">
+                                    <label>Date de fin</label>
+                                    <input
+                                        type="date"
+                                        value={searchFields.dateFin}
+                                        onChange={(e) => handleSearchChange('dateFin', e.target.value)}
+                                    />
+                                </div>
+                            </div>
                         </div>
-                        <div className="search-field">
-                            <label>Date début</label>
-                            <input
-                                type="date"
-                                value={searchFields.dateDebut}
-                                onChange={(e) => handleSearchChange('dateDebut', e.target.value)}
-                            />
-                        </div>
-                        <div className="search-field">
-                            <label>Date fin</label>
-                            <input
-                                type="date"
-                                value={searchFields.dateFin}
-                                onChange={(e) => handleSearchChange('dateFin', e.target.value)}
-                            />
-                        </div>
-                        <div className="search-field">
-                            <label>Catégorie client</label>
-                            <select
-                                value={searchFields.categorieClient}
-                                onChange={(e) => handleSearchChange('categorieClient', e.target.value)}
-                            >
-                                <option value="">Toutes les catégories</option>
-                                {categoriesClient.map(cat => (
-                                    <option key={cat.value} value={cat.value}>{cat.label}</option>
-                                ))}
-                            </select>
+
+                        {/* Section Catégorie client */}
+                        <div className="search-group">
+                            <h3 className="group-title">
+                                Catégorie client
+                            </h3>
+                            <div className="search-row">
+                                <div className="search-field search-field-full">
+                                    <label>Catégorie client ciblée</label>
+                                    <select
+                                        value={searchFields.categorieClient}
+                                        onChange={(e) => handleSearchChange('categorieClient', e.target.value)}
+                                    >
+                                        <option value="">Toutes les catégories</option>
+                                        {categoriesClient.map(cat => (
+                                            <option key={cat.value} value={cat.value}>{cat.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                     </div>
+
+                    {/* Actions de recherche */}
                     <div className="search-actions">
-                        <button
-                            className="button button-primary"
-                            onClick={searchPromotions}
-                        >
-                            Rechercher
-                        </button>
-                        <button
-                            className="button button-secondary"
-                            onClick={() => setSearchFields({
-                                nom: '', type: '', sousType: '', dateDebut: '', dateFin: '', categorieClient: ''
-                            })}
-                        >
-                            Réinitialiser filtres
-                        </button>
+                        <div className="search-summary">
+                <span className="filter-count">
+                    {Object.values(searchFields).filter(val => val !== '').length} filtres actifs
+                </span>
+                        </div>
+                        <div className="action-buttons">
+                            <button
+                                className="button button-secondary"
+                                onClick={() => setSearchFields({
+                                    nom: '', type: '', sousType: '', dateDebut: '', dateFin: '', categorieClient: ''
+                                })}
+                            >
+                                Réinitialiser
+                            </button>
+                            <button
+                                className="button button-primary"
+                                onClick={searchPromotions}
+                            >
+                                Rechercher
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
-
             {/* Boutons d'action */}
             <div className="action-buttons">
                 <button
@@ -457,184 +502,208 @@ const PromotionsManagement = () => {
 
             {/* Formulaire de création */}
             {showCreateForm && (
-                <div className="create-form">
-                    <h2>Créer une nouvelle promotion</h2>
-                    <div className="form-grid">
-                        <div className="form-field">
-                            <label>Nom *</label>
-                            <input
-                                type="text"
-                                name="nom"
-                                placeholder="Nom de la promotion"
-                                value={formData.nom}
-                                onChange={handleInputChange}
-                            />
-                        </div>
-                        <div className="form-field">
-                            <label>Description</label>
-                            <textarea
-                                name="description"
-                                placeholder="Description de la promotion"
-                                rows="3"
-                                value={formData.description}
-                                onChange={handleInputChange}
-                            />
-                        </div>
-                        <div className="form-field">
-                            <label>Type principal *</label>
-                            <select
-                                name="type"
-                                value={formData.type}
-                                onChange={handleInputChange}
-                            >
-                                <option value="">Sélectionner un type</option>
-                                {typesPromotion.map(type => (
-                                    <option key={type.value} value={type.value}>{type.label}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="form-field">
-                            <label>Sous-type *</label>
-                            <select
-                                name="sousType"
-                                value={formData.sousType}
-                                onChange={handleInputChange}
-                                disabled={!formData.type}
-                            >
-                                <option value="">Sélectionner un sous-type</option>
-                                {formData.type && sousTypesPromotion[formData.type] &&
-                                    sousTypesPromotion[formData.type].map(sousType => (
-                                        <option key={sousType.value} value={sousType.value}>{sousType.label}</option>
-                                    ))
-                                }
-                            </select>
-                        </div>
+                <div className="search-section">
+                    <div className="search-header">
+                        <h2>Créer une nouvelle promotion</h2>
+                    </div>
 
-                        {/* Champ Type d'unité */}
-                        {shouldShowTypeUniteField() && (
-                            <div className="form-field">
-                                <label>Type d'unité *</label>
-                                <select
-                                    name="typeUnite"
-                                    value={formData.typeUnite}
-                                    onChange={handleInputChange}
-                                >
-                                    <option value="">Sélectionner un type</option>
-                                    {typesUnite.map(type => (
-                                        <option key={type.value} value={type.value}>{type.label}</option>
-                                    ))}
-                                </select>
+                    <div className="search-container">
+                        <div className="search-group">
+                            <div className="search-row">
+                                <div className="search-field">
+                                    <label>Nom *</label>
+                                    <input
+                                        type="text"
+                                        name="nom"
+                                        placeholder="Nom de la promotion"
+                                        value={formData.nom}
+                                        onChange={handleInputChange}
+                                    />
+                                </div>
+
+                                <div className="search-field">
+                                    <label>Description</label>
+                                    <textarea
+                                        name="description"
+                                        placeholder="Description de la promotion"
+                                        rows="3"
+                                        value={formData.description}
+                                        onChange={handleInputChange}
+                                        className="search-textarea"
+                                    />
+                                </div>
                             </div>
-                        )}
 
-                        {/* Champ Valeur */}
-                        {shouldShowValeurField() && (
-                            <div className="form-field">
-                                <label>
-                                    Valeur *
-                                    {formData.sousType === 'remise' && ' (%)'}
-                                    {formData.sousType === 'unite_gratuite' && ' (quantité)'}
-                                    {formData.sousType === 'point_bonus' && ' (points)'}
-                                </label>
-                                {formData.sousType === 'remise' ? (
+                            <div className="search-row">
+                                <div className="search-field">
+                                    <label>Type principal *</label>
                                     <select
-                                        name="valeur"
-                                        value={formData.valeur}
+                                        name="type"
+                                        value={formData.type}
                                         onChange={handleInputChange}
                                     >
-                                        <option value="">Sélectionner un pourcentage</option>
-                                        {pourcentagesRemise.map(pct => (
-                                            <option key={pct.value} value={pct.value}>{pct.label}</option>
+                                        <option value="">Sélectionner un type</option>
+                                        {typesPromotion.map(type => (
+                                            <option key={type.value} value={type.value}>{type.label}</option>
                                         ))}
                                     </select>
-                                ) : (
-                                    <input
-                                        type="number"
-                                        name="valeur"
-                                        placeholder={
-                                            formData.sousType === 'unite_gratuite' ? 'Quantité' :
-                                                formData.sousType === 'point_bonus' ? 'Points' : 'Valeur'
-                                        }
-                                        value={formData.valeur}
+                                </div>
+
+                                <div className="search-field">
+                                    <label>Sous-type *</label>
+                                    <select
+                                        name="sousType"
+                                        value={formData.sousType}
                                         onChange={handleInputChange}
-                                        min="0"
+                                        disabled={!formData.type}
+                                    >
+                                        <option value="">Sélectionner un sous-type</option>
+                                        {formData.type && sousTypesPromotion[formData.type] &&
+                                            sousTypesPromotion[formData.type].map(sousType => (
+                                                <option key={sousType.value} value={sousType.value}>{sousType.label}</option>
+                                            ))
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+
+                            {/* Champ Type d'unité */}
+                            {shouldShowTypeUniteField() && (
+                                <div className="search-row">
+                                    <div className="search-field">
+                                        <label>Type d'unité *</label>
+                                        <select
+                                            name="typeUnite"
+                                            value={formData.typeUnite}
+                                            onChange={handleInputChange}
+                                        >
+                                            <option value="">Sélectionner un type</option>
+                                            {typesUnite.map(type => (
+                                                <option key={type.value} value={type.value}>{type.label}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Champ Valeur */}
+                            {shouldShowValeurField() && (
+                                <div className="search-row">
+                                    <div className="search-field">
+                                        <label>
+                                            Valeur *
+                                            {formData.sousType === 'remise' && ' (%)'}
+                                            {formData.sousType === 'unite_gratuite' && ' (quantité)'}
+                                            {formData.sousType === 'point_bonus' && ' (points)'}
+                                        </label>
+                                        {formData.sousType === 'remise' ? (
+                                            <select
+                                                name="valeur"
+                                                value={formData.valeur}
+                                                onChange={handleInputChange}
+                                            >
+                                                <option value="">Sélectionner un pourcentage</option>
+                                                {pourcentagesRemise.map(pct => (
+                                                    <option key={pct.value} value={pct.value}>{pct.label}</option>
+                                                ))}
+                                            </select>
+                                        ) : (
+                                            <input
+                                                type="number"
+                                                name="valeur"
+                                                placeholder={
+                                                    formData.sousType === 'unite_gratuite' ? 'Quantité' :
+                                                        formData.sousType === 'point_bonus' ? 'Points' : 'Valeur'
+                                                }
+                                                value={formData.valeur}
+                                                onChange={handleInputChange}
+                                                min="0"
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Champ Unité de mesure */}
+                            {shouldShowUniteMesureField() && (
+                                <div className="search-row">
+                                    <div className="search-field">
+                                        <label>Unité de mesure *</label>
+                                        <select
+                                            name="uniteMesure"
+                                            value={formData.uniteMesure}
+                                            onChange={handleInputChange}
+                                        >
+                                            <option value="">Sélectionner une unité</option>
+                                            {unitesMesureParType[formData.typeUnite] &&
+                                                unitesMesureParType[formData.typeUnite].map(unite => (
+                                                    <option key={unite.value} value={unite.value}>{unite.label}</option>
+                                                ))
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="search-row">
+                                <div className="search-field">
+                                    <label>Catégorie Client *</label>
+                                    <select
+                                        name="categorieClient"
+                                        value={formData.categorieClient}
+                                        onChange={handleInputChange}
+                                    >
+                                        <option value="">Sélectionner une catégorie</option>
+                                        {categoriesClient.map(cat => (
+                                            <option key={cat.value} value={cat.value}>{cat.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="search-row">
+                                <div className="search-field">
+                                    <label>Date de début *</label>
+                                    <input
+                                        type="date"
+                                        name="dateDebut"
+                                        value={formData.dateDebut}
+                                        onChange={handleInputChange}
                                     />
-                                )}
+                                </div>
+
+                                <div className="search-field">
+                                    <label>Date de fin *</label>
+                                    <input
+                                        type="date"
+                                        name="dateFin"
+                                        value={formData.dateFin}
+                                        onChange={handleInputChange}
+                                    />
+                                </div>
                             </div>
-                        )}
-
-                        {/* Champ Unité de mesure */}
-                        {shouldShowUniteMesureField() && (
-                            <div className="form-field">
-                                <label>Unité de mesure *</label>
-                                <select
-                                    name="uniteMesure"
-                                    value={formData.uniteMesure}
-                                    onChange={handleInputChange}
-                                >
-                                    <option value="">Sélectionner une unité</option>
-                                    {unitesMesureParType[formData.typeUnite] &&
-                                        unitesMesureParType[formData.typeUnite].map(unite => (
-                                            <option key={unite.value} value={unite.value}>{unite.label}</option>
-                                        ))
-                                    }
-                                </select>
-                            </div>
-                        )}
-
-                        <div className="form-field">
-                            <label>Catégorie Client *</label>
-                            <select
-                                name="categorieClient"
-                                value={formData.categorieClient}
-                                onChange={handleInputChange}
-                            >
-                                <option value="">Sélectionner une catégorie</option>
-                                {categoriesClient.map(cat => (
-                                    <option key={cat.value} value={cat.value}>{cat.label}</option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div className="form-field">
-                            <label>Date de début *</label>
-                            <input
-                                type="date"
-                                name="dateDebut"
-                                value={formData.dateDebut}
-                                onChange={handleInputChange}
-                            />
-                        </div>
-                        <div className="form-field">
-                            <label>Date de fin *</label>
-                            <input
-                                type="date"
-                                name="dateFin"
-                                value={formData.dateFin}
-                                onChange={handleInputChange}
-                            />
                         </div>
                     </div>
 
-                    <div className="form-actions">
-                        <button
-                            className="button button-primary"
-                            onClick={handleSubmit}
-                            disabled={loading}
-                        >
-                            {loading ? 'Création...' : 'Créer la promotion'}
-                        </button>
-                        <button
-                            className="button button-secondary"
-                            onClick={resetForm}
-                        >
-                            Annuler
-                        </button>
+                    <div className="search-actions">
+                        <div className="action-buttons">
+                            <button
+                                className="button button-primary"
+                                onClick={handleSubmit}
+                                disabled={loading}
+                            >
+                                {loading ? 'Création...' : 'Créer la promotion'}
+                            </button>
+                            <button
+                                className="button button-secondary"
+                                onClick={resetForm}
+                            >
+                                Annuler
+                            </button>
+                        </div>
                     </div>
                 </div>
-            )}
-
-            {/* Tableau des résultats */}
+            )}{/* Tableau des résultats */}
             <div >
                 {loading && <div >Chargement...</div>}
 
@@ -663,7 +732,7 @@ const PromotionsManagement = () => {
                                         <span className={`px-2 py-1 rounded-full text-xs ${
                                             p.categorieClient === 'VIP' ? 'bg-yellow-100 text-yellow-800' :
                                                 p.categorieClient === 'B2B' ? 'bg-indigo-100 text-indigo-800' :
-                                                    p.categorieClient === 'JP' ? 'bg-pink-100 text-pink-800' :
+                                                    p.categorieClient === 'GP' ? 'bg-pink-100 text-pink-800' :
                                                         'bg-gray-100 text-gray-800'
                                         }`}>
                                             {p.categorieClient}

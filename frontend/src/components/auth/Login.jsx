@@ -25,7 +25,7 @@ const Login = () => {
             {/* Black Navigation Bar */}
             <nav className="login-navbar">
                 <div className="navbar-content">
-                    <span className="welcome-message">Bienvenue à Orange !</span>
+                    <span className="welcome-message">Bienvenue au systeme de gestion des promtions !</span>
                 </div>
             </nav>
 

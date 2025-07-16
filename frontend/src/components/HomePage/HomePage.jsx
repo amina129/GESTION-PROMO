@@ -26,7 +26,6 @@ const HomePage = () => {
                                         <div className="promotion-details">
                                             <h3>Offre 3jab</h3>
                                             <p>50Go à 50DT/mois au lieu de 70DT</p>
-                                            <span className="promo-price">50 DT <span className="original-price">70 DT</span></span>
                                         </div>
                                     </div>
                                 </div>
@@ -50,7 +49,6 @@ const HomePage = () => {
                                         <div className="promotion-details">
                                             <h3>Pack Communication</h3>
                                             <p>Lignes illimitées à prix réduit pour PME</p>
-                                            <span className="promo-badge">ÉCONOMISEZ 30%</span>
                                         </div>
                                     </div>
                                 </div>

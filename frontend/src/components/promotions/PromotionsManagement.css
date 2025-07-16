@@ -1,29 +1,32 @@
 /* Main container styles */
 .promotions-container {
     font-family: 'Open Sans', Arial, sans-serif;
-    margin-top: 70px !important;
-    padding: 100px !important ;
+    margin-top: 20px !important;  /* Reduced from 40px */
+    padding: 20px !important;     /* Reduced from 100px */
     color: #333;
 }
 
 /* Header styles */
 .promotions-header {
     color: #ff6600;
-    font-size: 24px;
+    font-size: 22px;              /* Slightly smaller */
     font-weight: 700;
-    margin-bottom: 20px;
+    margin-bottom: 15px;          /* Reduced */
     border-bottom: 2px solid #ff6600;
-    padding-bottom: 10px;
+    padding-bottom: 8px;         /* Reduced */
 }
 
 /* Search section styles */
 .search-section {
-    background-color: #f5f5f5;
+    background-color: #ffffff;
     border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 20px;                /* Kept at 20px */
+    margin: 10px auto 20px auto;  /* Reduced top margin */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    border: 1px solid #f0f0f0;
+    max-width: 800px;
 }
+
 
 .search-section h2 {
     color: #ff6600;
@@ -67,6 +70,7 @@
     display: flex;
     gap: 10px;
     justify-content: flex-end;
+
 }
 
 /* Button styles */
@@ -259,5 +263,266 @@
     .search-actions,
     .form-actions {
         justify-content: flex-start;
+    }
+}
+
+
+/* pour la recherche */
+.search-section {
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    max-width: 800px;
+    margin: 0 auto 16px auto;
+}
+
+.search-header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #ff7900;
+}
+
+.search-header h2 {
+    color: #000000;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -0.025em;
+}
+
+/* Container principal */
+.search-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Groupes de champs - Style minimaliste */
+.search-group {
+    background: #fafafa;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    padding: 16px;
+    transition: border-color 0.2s ease;
+}
+
+.search-group:hover {
+    border-color: #ff7900;
+}
+
+.group-title {
+    color: #000000;
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #ff7900;
+}
+
+/* Lignes de champs */
+.search-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 0;
+}
+
+/* Champs de recherche */
+.search-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.search-field-full {
+    grid-column: 1 / -1;
+    width: 97%;
+}
+
+.search-field label {
+    font-weight: 500;
+    color: #000000;
+    font-size: 13px;
+    margin-bottom: 2px;
+}
+
+.search-field input,
+.search-field select {
+    padding: 8px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 3px;
+    font-size: 13px;
+    background: #ffffff;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.search-field input:focus,
+.search-field select:focus {
+    outline: none;
+    border-color: #ff7900;
+    box-shadow: 0 0 0 1px #ff7900;
+}
+
+.search-field input::placeholder {
+    color: #9ca3af;
+}
+
+.search-field select:disabled {
+    background-color: #f9fafb;
+    color: #6b7280;
+    cursor: not-allowed;
+    border-color: #e5e7eb;
+}
+
+/* Section des actions */
+.search-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.search-summary {
+    display: flex;
+    align-items: center;
+}
+
+.filter-count {
+    background: #ff7900;
+    color: #ffffff;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+/* Boutons style Orange.com */
+.button {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 16px;
+    border-radius: 3px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    border: 1px solid transparent;
+}
+
+.button-primary {
+    background: #ff7900;
+    color: #ffffff;
+    border-color: #ff7900;
+}
+
+.button-primary:hover {
+    background: #e6610a;
+    border-color: #e6610a;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(255, 121, 0, 0.2);
+}
+
+.button-secondary {
+    background: #ffffff;
+    color: #000000;
+    border-color: #000000;
+}
+
+.button-secondary:hover {
+    background: #f9fafb;
+    border-color: #ff7900;
+    color: #ff7900;
+    transform: translateY(-1px);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .search-section {
+        padding: 16px 12px;
+        margin: 0 auto 12px auto;
+    }
+
+    .search-header h2 {
+        font-size: 18px;
+    }
+
+    .search-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .search-actions {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+
+    .action-buttons {
+        justify-content: center;
+    }
+
+    .search-group {
+        padding: 12px;
+    }
+
+    .group-title {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .search-header h2 {
+        font-size: 16px;
+    }
+
+    .button {
+        padding: 8px 14px;
+        font-size: 12px;
+    }
+
+    .search-field input,
+    .search-field select {
+        padding: 8px;
+        font-size: 13px;
+    }
+}
+
+/* Effets subtils pour l'interactivité */
+.search-field input:hover,
+.search-field select:hover {
+    border-color: #ff7900;
+}
+
+.search-group:focus-within {
+    border-color: #ff7900;
+    box-shadow: 0 0 0 1px rgba(255, 121, 0, 0.3);
+}
+
+/* Animation légère */
+.search-group {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
