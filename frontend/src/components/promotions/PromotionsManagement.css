@@ -42,9 +42,11 @@
 }
 
 .search-field {
-    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    height: 100%; /* Assure que le conteneur prend toute la hauteur */
 }
-
 .search-field label {
     display: block;
     margin-bottom: 5px;
@@ -458,10 +460,17 @@
     .search-header h2 {
         font-size: 18px;
     }
+    .textarea-container {
+        height: 100%; /* Prend toute la hauteur disponible */
+    }
+
 
     .search-row {
-        grid-template-columns: 1fr;
-        gap: 12px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px; /* Augmentation du gap de 12px à 20px */
+        margin-bottom: 0;
+        align-items: start; /* Alignement en haut pour les champs de hauteur différente */
     }
 
     .search-actions {
@@ -499,6 +508,11 @@
         font-size: 13px;
     }
 }
+.search-field input,
+.search-field textarea {
+    width: 100%;
+    box-sizing: border-box; /* Inclut padding et border dans la largeur */
+}
 
 /* Effets subtils pour l'interactivité */
 .search-field input:hover,
@@ -525,4 +539,28 @@
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* Ajout pour le textarea */
+.search-textarea {
+    padding: 8px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 3px;
+    font-size: 13px;
+    background: #ffffff;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    min-height: 60px;
+    resize: vertical;
+    width: 100%;
+}
+
+.search-textarea:focus {
+    outline: none;
+    border-color: #ff7900;
+    box-shadow: 0 0 0 1px #ff7900;
+}
+
+.search-textarea::placeholder {
+    color: #9ca3af;
 }

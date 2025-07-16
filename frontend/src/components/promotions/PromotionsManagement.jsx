@@ -499,7 +499,6 @@ const PromotionsManagement = () => {
                     {error}
                 </div>
             )}
-
             {/* Formulaire de création */}
             {showCreateForm && (
                 <div className="search-section">
@@ -508,8 +507,10 @@ const PromotionsManagement = () => {
                     </div>
 
                     <div className="search-container">
+                        {/* Section Informations générales */}
                         <div className="search-group">
-                            <div className="search-row">
+                            <h3 className="group-title">Informations générales</h3>
+                            <div className="search-row" style={{ gap: '20px' }}> {/* Ajout du gap ici */}
                                 <div className="search-field">
                                     <label>Nom *</label>
                                     <input
@@ -520,20 +521,24 @@ const PromotionsManagement = () => {
                                         onChange={handleInputChange}
                                     />
                                 </div>
-
                                 <div className="search-field">
                                     <label>Description</label>
-                                    <textarea
-                                        name="description"
-                                        placeholder="Description de la promotion"
-                                        rows="3"
-                                        value={formData.description}
-                                        onChange={handleInputChange}
-                                        className="search-textarea"
-                                    />
+                                    <div className="textarea-container">
+                <textarea
+                    name="description"
+                    placeholder="Description de la promotion"
+                    rows="4"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                />
+                                    </div>
                                 </div>
                             </div>
+                        </div>
 
+                        {/* Section Catégorie promotion */}
+                        <div className="search-group">
+                            <h3 className="group-title">Catégorie promotion</h3>
                             <div className="search-row">
                                 <div className="search-field">
                                     <label>Type principal *</label>
@@ -548,7 +553,6 @@ const PromotionsManagement = () => {
                                         ))}
                                     </select>
                                 </div>
-
                                 <div className="search-field">
                                     <label>Sous-type *</label>
                                     <select
@@ -566,9 +570,12 @@ const PromotionsManagement = () => {
                                     </select>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Champ Type d'unité */}
-                            {shouldShowTypeUniteField() && (
+                        {/* Section Détails promotion */}
+                        {shouldShowTypeUniteField() && (
+                            <div className="search-group">
+                                <h3 className="group-title">Détails promotion</h3>
                                 <div className="search-row">
                                     <div className="search-field">
                                         <label>Type d'unité *</label>
@@ -584,10 +591,13 @@ const PromotionsManagement = () => {
                                         </select>
                                     </div>
                                 </div>
-                            )}
+                            </div>
+                        )}
 
-                            {/* Champ Valeur */}
-                            {shouldShowValeurField() && (
+                        {/* Section Valeur */}
+                        {shouldShowValeurField() && (
+                            <div className="search-group">
+                                <h3 className="group-title">Valeur</h3>
                                 <div className="search-row">
                                     <div className="search-field">
                                         <label>
@@ -622,10 +632,13 @@ const PromotionsManagement = () => {
                                         )}
                                     </div>
                                 </div>
-                            )}
+                            </div>
+                        )}
 
-                            {/* Champ Unité de mesure */}
-                            {shouldShowUniteMesureField() && (
+                        {/* Section Unité de mesure */}
+                        {shouldShowUniteMesureField() && (
+                            <div className="search-group">
+                                <h3 className="group-title">Unité de mesure</h3>
                                 <div className="search-row">
                                     <div className="search-field">
                                         <label>Unité de mesure *</label>
@@ -643,10 +656,14 @@ const PromotionsManagement = () => {
                                         </select>
                                     </div>
                                 </div>
-                            )}
+                            </div>
+                        )}
 
+                        {/* Section Catégorie client */}
+                        <div className="search-group">
+                            <h3 className="group-title">Catégorie client</h3>
                             <div className="search-row">
-                                <div className="search-field">
+                                <div className="search-field search-field-full">
                                     <label>Catégorie Client *</label>
                                     <select
                                         name="categorieClient"
@@ -660,7 +677,11 @@ const PromotionsManagement = () => {
                                     </select>
                                 </div>
                             </div>
+                        </div>
 
+                        {/* Section Période */}
+                        <div className="search-group">
+                            <h3 className="group-title">Période de validité</h3>
                             <div className="search-row">
                                 <div className="search-field">
                                     <label>Date de début *</label>
@@ -671,7 +692,6 @@ const PromotionsManagement = () => {
                                         onChange={handleInputChange}
                                     />
                                 </div>
-
                                 <div className="search-field">
                                     <label>Date de fin *</label>
                                     <input
@@ -685,8 +705,15 @@ const PromotionsManagement = () => {
                         </div>
                     </div>
 
+                    {/* Actions du formulaire */}
                     <div className="search-actions">
                         <div className="action-buttons">
+                            <button
+                                className="button button-secondary"
+                                onClick={resetForm}
+                            >
+                                Annuler
+                            </button>
                             <button
                                 className="button button-primary"
                                 onClick={handleSubmit}
@@ -694,16 +721,11 @@ const PromotionsManagement = () => {
                             >
                                 {loading ? 'Création...' : 'Créer la promotion'}
                             </button>
-                            <button
-                                className="button button-secondary"
-                                onClick={resetForm}
-                            >
-                                Annuler
-                            </button>
                         </div>
                     </div>
                 </div>
-            )}{/* Tableau des résultats */}
+            )}
+            {/* Tableau des résultats */}
             <div >
                 {loading && <div >Chargement...</div>}
 
