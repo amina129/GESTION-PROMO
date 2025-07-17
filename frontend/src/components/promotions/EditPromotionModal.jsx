@@ -1,0 +1,255 @@
+import React, { useState, useEffect } from 'react';
+import { X, Calendar, Users, Edit, Save, AlertCircle } from 'lucide-react';
+import './PromotionsManagement.css';
+
+const EditPromotionModal = ({
+                                promotion,
+                                editMode,
+                                onClose,
+                                onSave,
+                                loading,
+                                error,
+                                API_BASE_URL
+                            }) => {
+    const [formData, setFormData] = useState({
+        nom: '',
+        description: '',
+        dateDebut: '',
+        dateFin: '',
+        categorieClient: '',
+        newCategories: []
+    });
+
+    const [validationErrors, setValidationErrors] = useState({});
+    const [selectedCategories, setSelectedCategories] = useState([]);
+
+    // Catégories corrigées pour correspondre exactement au service Java
+    const categoriesClient = [
+        { value: 'GP', label: 'GP' },
+        { value: 'privé', label: 'Privé' },
+        { value: 'VIP', label: 'VIP' },
+        { value: 'B2B', label: 'B2B' }
+    ];
+
+    useEffect(() => {
+        if (promotion) {
+            setFormData({
+                nom: promotion.nom || '',
+                description: promotion.description || '',
+                dateDebut: promotion.dateDebut || '',
+                dateFin: promotion.dateFin || '',
+                categorieClient: promotion.categorieClient || '',
+                newCategories: []
+            });
+
+            // Gestion des catégories existantes (peut être séparées par des virgules)
+            const existingCategories = promotion.categorieClient
+                ? promotion.categorieClient.split(',').map(cat => cat.trim())
+                : [];
+            setSelectedCategories(existingCategories);
+        }
+    }, [promotion]);
+
+    const validateForm = () => {
+        const errors = {};
+
+        if (editMode === 'period') {
+            if (!formData.dateDebut) errors.dateDebut = 'La date de début est requise';
+            if (!formData.dateFin) errors.dateFin = 'La date de fin est requise';
+            if (formData.dateDebut && formData.dateFin && formData.dateDebut > formData.dateFin) {
+                errors.dateFin = 'La date de fin doit être postérieure à la date de début';
+            }
+        }
+
+        if (editMode === 'category') {
+            if (selectedCategories.length === 0) {
+                errors.categorieClient = 'Au moins une catégorie doit être sélectionnée';
+            }
+        }
+
+        setValidationErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!validateForm()) return;
+
+        const updateData = {
+            id: promotion.id,
+            ...formData
+        };
+
+        if (editMode === 'category') {
+            // Envoyer les catégories exactement comme définies dans le service Java
+            updateData.categorieClient = selectedCategories.join(',');
+        }
+
+        onSave(updateData, editMode);
+    };
+
+    const handleCategoryChange = (category) => {
+        setSelectedCategories(prev => {
+            if (prev.includes(category)) {
+                return prev.filter(c => c !== category);
+            } else {
+                return [...prev, category];
+            }
+        });
+    };
+
+    const getModalTitle = () => {
+        switch (editMode) {
+            case 'period': return 'Prolonger la période de validité';
+            case 'category': return 'Étendre les catégories client';
+            default: return 'Modifier la promotion';
+        }
+    };
+
+    const getModalIcon = () => {
+        switch (editMode) {
+            case 'period': return <Calendar size={20} />;
+            case 'category': return <Users size={20} />;
+            default: return <Edit size={20} />;
+        }
+    };
+
+    if (!promotion) return null;
+
+    return (
+        <div className="modal-overlay">
+            <div className="modal-content edit-promotion-modal">
+                <div className="modal-header">
+                    <div className="modal-title">
+                        {getModalIcon()}
+                        <h2>{getModalTitle()}</h2>
+                    </div>
+                    <button className="modal-close" onClick={onClose}>
+                        <X size={20} />
+                    </button>
+                </div>
+
+                <div className="modal-body">
+                    {error && (
+                        <div className="error-message">
+                            <AlertCircle size={16} />
+                            <span>{error}</span>
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSubmit}>
+                        {/* Période de validité */}
+                        {editMode === 'period' && (
+                            <div className="form-section">
+                                <h3>Période de validité</h3>
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label>Date de début</label>
+                                        <input
+                                            type="date"
+                                            value={formData.dateDebut}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, dateDebut: e.target.value }))}
+                                            className={validationErrors.dateDebut ? 'error' : ''}
+                                        />
+                                        {validationErrors.dateDebut && <span className="error-text">{validationErrors.dateDebut}</span>}
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Date de fin</label>
+                                        <input
+                                            type="date"
+                                            value={formData.dateFin}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, dateFin: e.target.value }))}
+                                            className={validationErrors.dateFin ? 'error' : ''}
+                                        />
+                                        {validationErrors.dateFin && <span className="error-text">{validationErrors.dateFin}</span>}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Catégories client */}
+                        {editMode === 'category' && (
+                            <div className="form-section">
+                                <h3>Catégories client ciblées</h3>
+                                <div className="categories-selection">
+                                    {categoriesClient.map(cat => (
+                                        <label key={cat.value} className="category-checkbox">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedCategories.includes(cat.value)}
+                                                onChange={() => handleCategoryChange(cat.value)}
+                                            />
+                                            <span className="checkbox-label">{cat.label}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                                {validationErrors.categorieClient &&
+                                    <span className="error-text">{validationErrors.categorieClient}</span>
+                                }
+                            </div>
+                        )}
+
+                        {/* Résumé des modifications */}
+                        <div className="form-section summary-section">
+                            <h3>Résumé des modifications</h3>
+                            <div className="summary-content">
+                                <div className="summary-item">
+                                    <strong>Promotion:</strong> {promotion.nom}
+                                </div>
+                                {editMode === 'period' && (
+                                    <>
+                                        <div className="summary-item">
+                                            <strong>Ancienne période:</strong> {promotion.dateDebut} → {promotion.dateFin}
+                                        </div>
+                                        <div className="summary-item">
+                                            <strong>Nouvelle période:</strong> {formData.dateDebut} → {formData.dateFin}
+                                        </div>
+                                    </>
+                                )}
+                                {editMode === 'category' && (
+                                    <>
+                                        <div className="summary-item">
+                                            <strong>Catégorie actuelle:</strong> {promotion.categorieClient}
+                                        </div>
+                                        <div className="summary-item">
+                                            <strong>Nouvelles catégories:</strong> {selectedCategories.join(', ')}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div className="modal-footer">
+                    <button
+                        type="button"
+                        className="button button-secondary"
+                        onClick={onClose}
+                        disabled={loading}
+                    >
+                        Annuler
+                    </button>
+                    <button
+                        type="submit"
+                        className="button button-primary"
+                        onClick={handleSubmit}
+                        disabled={loading}
+                    >
+                        {loading ? (
+                            <span className="loading-text">Sauvegarde...</span>
+                        ) : (
+                            <>
+                                <Save size={16} />
+                                Sauvegarder
+                            </>
+                        )}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default EditPromotionModal;

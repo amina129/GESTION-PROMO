@@ -855,3 +855,265 @@
 .search-section, .results-container {
     animation: fadeIn 0.25s ease-out;
 }
+/* Styles pour le menu d'actions déroulant */
+.action-menu-container {
+    position: relative;
+    display: inline-block;
+}
+
+.action-menu-trigger {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #666;
+}
+
+.action-menu-trigger:hover {
+    background: #f5f5f5;
+    border-color: #2196f3;
+    color: #2196f3;
+}
+
+.menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 998;
+}
+
+.action-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    min-width: 180px;
+    z-index: 999;
+    overflow: hidden;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    background: white;
+    color: #333;
+    cursor: pointer;
+    transition: background 0.2s;
+    text-align: left;
+}
+
+.menu-item:hover {
+    background: #f5f5f5;
+}
+
+.menu-item:first-child:hover {
+    background: #f3e5f5;
+    color: #9c27b0;
+}
+
+.menu-item:last-child:hover {
+    background: #e8f5e8;
+    color: #4caf50;
+}
+
+.menu-item span {
+    font-size: 13px;
+}
+
+/* Styles pour les actions dans la liste */
+.promotion-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 4px;
+}
+
+.action-btn {
+    padding: 6px 8px;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-btn:hover {
+    background: #f5f5f5;
+}
+
+.edit-btn:hover {
+    background: #e3f2fd;
+    border-color: #2196f3;
+    color: #2196f3;
+}
+
+.period-btn:hover {
+    background: #f3e5f5;
+    border-color: #9c27b0;
+    color: #9c27b0;
+}
+
+.category-btn:hover {
+    background: #e8f5e8;
+    border-color: #4caf50;
+    color: #4caf50;
+}
+
+/* Styles pour les statuts */
+.promotion-status {
+    text-align: center;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-badge.active {
+    background: #e8f5e8;
+    color: #2e7d32;
+}
+
+.status-badge.expired {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.status-badge.upcoming {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+/* Styles pour les lignes selon le statut */
+.promotion-row.expired {
+    opacity: 0.7;
+}
+
+.promotion-row.active {
+    border-left: 3px solid #4caf50;
+}
+
+.promotion-row.upcoming {
+    border-left: 3px solid #ff9800;
+}
+
+.promotion-row.expired {
+    border-left: 3px solid #f44336;
+}
+
+/* Styles pour le modal d'édition */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 8px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #333;
+}
+
+.modal-title h2 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    color: #666;
+}
+
+.modal-close:hover {
+    background: #f5f5f5;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 20px;
+    border-top: 1px solid #eee;
+}
+
+/* Styles pour le formulaire d'édition */
+.form-section {
+    margin-bottom: 25px;
+}
+
+.form-section h3 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 16px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #555;
+}
+
