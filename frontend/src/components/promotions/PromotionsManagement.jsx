@@ -10,23 +10,35 @@ const PromotionsManagement = () => {
     const [promotions, setPromotions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [previousView, setPreviousView] = useState(null);
 
     const API_BASE_URL = 'http://localhost:8080/api';
+
+    const handleBack = () => {
+        if (previousView) {
+            setPromotions([]);
+            setActiveView(previousView);
+            setPreviousView(null);
+        }
+    };
 
     const handlePromotionCreated = (newPromotion) => {
         setPromotions([...promotions, newPromotion]);
         setActiveView('list');
+        setPreviousView('create');
     };
 
     const handleSearchResults = (results) => {
         setPromotions(results);
         setActiveView('list');
+        setPreviousView('search');
     };
 
     const resetAll = () => {
         setPromotions([]);
         setError(null);
         setActiveView('list');
+        setPreviousView(null);
     };
 
     const renderContent = () => {
@@ -61,6 +73,7 @@ const PromotionsManagement = () => {
                         <PromotionsList
                             promotions={promotions}
                             loading={loading}
+                            onBack={previousView ? handleBack : null}
                         />
                     </div>
                 );
@@ -69,17 +82,22 @@ const PromotionsManagement = () => {
 
     return (
         <div className="promotions-container">
-            {/* Barre de navigation modernisée */}
             <nav className="orange-navbar">
                 <ul className="nav-menu">
                     <li className={`nav-item ${activeView === 'search' ? 'active' : ''}`}>
-                        <button onClick={() => setActiveView('search')}>
+                        <button onClick={() => {
+                            setActiveView('search');
+                            setPreviousView('list');
+                        }}>
                             <Search size={18} />
                             Rechercher
                         </button>
                     </li>
                     <li className={`nav-item ${activeView === 'create' ? 'active' : ''}`}>
-                        <button onClick={() => setActiveView('create')}>
+                        <button onClick={() => {
+                            setActiveView('create');
+                            setPreviousView('list');
+                        }}>
                             <Plus size={18} />
                             Créer
                         </button>
@@ -93,14 +111,12 @@ const PromotionsManagement = () => {
                 </ul>
             </nav>
 
-            {/* Messages d'erreur */}
             {error && (
                 <div className="error-message">
                     {error}
                 </div>
             )}
 
-            {/* Contenu dynamique */}
             {renderContent()}
         </div>
     );

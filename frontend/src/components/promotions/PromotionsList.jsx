@@ -45,11 +45,12 @@ const PromotionsList = ({ promotions, loading, onBack }) => {
 
     return (
         <div className="promotions-list-container">
-            <button onClick={onBack} className="back-button">
-                <ChevronLeft size={16} />
-                Retour
-            </button>
-
+            {onBack && (
+                <button onClick={onBack} className="back-button">
+                    <ChevronLeft size={16} />
+                    Retour
+                </button>
+            )}
             <div className="promotions-table-container">
                 <table className="promotions-table">
                     <thead>
