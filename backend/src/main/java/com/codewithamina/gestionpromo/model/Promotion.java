@@ -1,5 +1,6 @@
 package com.codewithamina.gestionpromo.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,6 +16,7 @@ import java.util.Set;
 @Entity
 @Table(name = "promotions")
 public class Promotion {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -31,13 +33,22 @@ public class Promotion {
     private LocalDate dateFin;
 
     @Column(nullable = false)
-    private String type; // 'relatif' or 'absolu'
+    private String type;
 
     @Column(name = "sous_type", nullable = false)
-    private String sousType; // 'remise', 'unite_gratuite', 'point_bonus'
+    private String sousType;
 
     @Column(nullable = false)
     private BigDecimal valeur;
+
+    @Column(name = "type_unite")
+    private String typeUnite;
+
+    @Column(name = "unite_mesure")
+    private String uniteMesure;
+
+    @Column(name = "statut")
+    private String statut;
 
     @ManyToMany
     @JoinTable(
@@ -45,38 +56,28 @@ public class Promotion {
             joinColumns = @JoinColumn(name = "promotion_id"),
             inverseJoinColumns = @JoinColumn(name = "category_id")
     )
+    @JsonManagedReference // Évite la récursion lors de la sérialisation JSON
     private Set<Category> categories = new HashSet<>();
 
+    // Ajoute une catégorie à la promotion
+    public void addCategory(Category category) {
+        this.categories.add(category);
+        category.getPromotions().add(this);
+    }
 
-    @Column(name = "type_unite")
-    private String typeUnite; // 'DATA', 'SMS', 'APPEL'
-
-    @Column(name = "unite_mesure")
-    private String uniteMesure; // 'MO', 'GO', 'minutes', 'heures'
-
-    @Column(name = "statut")
-    private String statut;
-
-
+    // Vide les catégories associées
     public void clearCategories() {
-        // Properly handle bidirectional relationship
         for (Category category : this.categories) {
             category.getPromotions().remove(this);
         }
         this.categories.clear();
     }
 
-    public void addCategory(Category category) {
-        this.categories.add(category);
-        category.getPromotions().add(this);
-    }
-    // Helper method to maintain backward compatibility
+    // Retourne la liste des codes de catégorie client
     public List<String> getCategorieClient() {
         return this.categories.stream()
                 .map(Category::getCode)
                 .distinct()
                 .toList();
     }
-
-
 }

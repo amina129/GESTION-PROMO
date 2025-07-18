@@ -1,5 +1,6 @@
 package com.codewithamina.gestionpromo.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,6 +23,7 @@ public class Category {
     private String libelle;
 
     @ManyToMany(mappedBy = "categories")
+    @JsonBackReference // Empêche la récursion infinie
     private Set<Promotion> promotions = new HashSet<>();
 
     // Helper method to add promotion

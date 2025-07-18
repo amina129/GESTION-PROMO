@@ -31,6 +31,7 @@ public class ActivationPromotion {
     private LocalDate dateExpiration;
 
     public ActivationPromotion() {
+        // Constructeur vide requis par JPA
     }
 
     public ActivationPromotion(Promotion promotion, Client client, LocalDate dateActivation, LocalDate dateExpiration) {

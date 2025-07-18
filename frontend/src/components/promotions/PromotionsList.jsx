@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
-import { ChevronLeft, Edit, Calendar, Users, MoreVertical, ChevronDown } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ChevronLeft, Edit, Calendar, Users, ChevronDown } from 'lucide-react';
 import './PromotionsManagement.css';
 
 const PromotionsList = ({ promotions, loading, onBack, onEditPromotion }) => {
+    const listRef = useRef(null);
+
     const formatValeur = (promotion) => {
         if (promotion.sousType === 'remise') {
             return `${promotion.valeur}%`;
@@ -14,7 +16,14 @@ const PromotionsList = ({ promotions, loading, onBack, onEditPromotion }) => {
         return promotion.valeur;
     };
 
-// Composant pour le menu d'actions de chaque promotion
+    useEffect(() => {
+        if (listRef.current) {
+            listRef.current.scrollTop = 0; // remonte en haut du conteneur
+            window.scrollTo(0, 0);        // remonte en haut de la page
+        }
+    }, [promotions]);
+
+    // Composant pour le menu d'actions de chaque promotion
     const PromotionActionMenu = ({ promotion, onEditPromotion }) => {
         const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -74,21 +83,6 @@ const PromotionsList = ({ promotions, loading, onBack, onEditPromotion }) => {
         return `${typeLabel} - ${sousTypeLabel}`;
     };
 
-    const isPromotionExpired = (dateFin) => {
-        return new Date(dateFin) < new Date();
-    };
-
-    const isPromotionActive = (dateDebut, dateFin) => {
-        const now = new Date();
-        return new Date(dateDebut) <= now && new Date(dateFin) >= now;
-    };
-
-    const getPromotionStatus = (promotion) => {
-        if (isPromotionExpired(promotion.dateFin)) return 'expired';
-        if (isPromotionActive(promotion.dateDebut, promotion.dateFin)) return 'active';
-        return 'upcoming';
-    };
-
     if (loading) {
         return (
             <div className="promotions-loading">
@@ -107,7 +101,7 @@ const PromotionsList = ({ promotions, loading, onBack, onEditPromotion }) => {
     }
 
     return (
-        <div className="promotions-list-container">
+        <div className="promotions-list-container" ref={listRef}>
             {onBack && (
                 <button onClick={onBack} className="back-button">
                     <ChevronLeft size={16} />
@@ -129,13 +123,12 @@ const PromotionsList = ({ promotions, loading, onBack, onEditPromotion }) => {
                         <th>Période</th>
                         <th>Type</th>
                         <th>Catégorie</th>
-                        <th>Statut</th>
-                        <th>Actions</th>
+                        <th>Actions</th> {/* Statut supprimé */}
                     </tr>
                     </thead>
                     <tbody>
                     {promotions.map(p => (
-                        <tr key={p.id} className={`promotion-row ${getPromotionStatus(p)}`}>
+                        <tr key={p.id} className="promotion-row">
                             <td className="promotion-name">{p.nom}</td>
                             <td className="promotion-description">{p.description}</td>
                             <td className="promotion-value">{formatValeur(p)}</td>
@@ -148,17 +141,11 @@ const PromotionsList = ({ promotions, loading, onBack, onEditPromotion }) => {
                             </td>
                             <td className="promotion-type">{formatTypePromotion(p)}</td>
                             <td className="promotion-categories">
-                                {p.categories?.map(cat => (
-                                    <span key={cat.code} className={`category-badge ${cat.code.toLowerCase()}`}>
-                                        {cat.code}
-                                    </span>
+                                {p.categorieClient?.map(code => (
+                                    <span key={code} className={`category-badge ${code.toLowerCase()}`}>
+                                            {code}
+                                        </span>
                                 ))}
-                            </td>
-                            <td className="promotion-status">
-                                <span className={`status-badge ${getPromotionStatus(p)}`}>
-                                    {getPromotionStatus(p) === 'active' ? 'Active' :
-                                        getPromotionStatus(p) === 'expired' ? 'Expirée' : 'À venir'}
-                                </span>
                             </td>
                             <td className="promotion-actions">
                                 <PromotionActionMenu
