@@ -4,6 +4,7 @@ import './PromotionsManagement.css';
 
 const PromotionsList = ({ promotions, loading, onBack, onEditPromotion }) => {
     const listRef = useRef(null);
+    const [visiblePromotions, setVisiblePromotions] = useState([]);
 
     const formatValeur = (promotion) => {
         if (promotion.sousType === 'remise') {
@@ -17,13 +18,19 @@ const PromotionsList = ({ promotions, loading, onBack, onEditPromotion }) => {
     };
 
     useEffect(() => {
+        if (promotions && promotions.length > 0) {
+            // Affiche seulement les 5 premières promotions
+            setVisiblePromotions(promotions.slice(0, 5));
+        } else {
+            setVisiblePromotions([]);
+        }
+
         if (listRef.current) {
-            listRef.current.scrollTop = 0; // remonte en haut du conteneur
-            window.scrollTo(0, 0);        // remonte en haut de la page
+            listRef.current.scrollTop = 0;
+            window.scrollTo(0, 0);
         }
     }, [promotions]);
 
-    // Composant pour le menu d'actions de chaque promotion
     const PromotionActionMenu = ({ promotion, onEditPromotion }) => {
         const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -92,7 +99,7 @@ const PromotionsList = ({ promotions, loading, onBack, onEditPromotion }) => {
         );
     }
 
-    if (promotions.length === 0) {
+    if (visiblePromotions.length === 0) {
         return (
             <div className="promotions-empty">
                 <p>Utilisez la recherche ou créez une nouvelle promotion.</p>
@@ -110,7 +117,7 @@ const PromotionsList = ({ promotions, loading, onBack, onEditPromotion }) => {
             )}
 
             <div className="promotions-header">
-                <h3>{promotions.length} promotion(s) trouvée(s)</h3>
+                <h3>{visiblePromotions.length} promotion(s) affichée(s)</h3>
             </div>
 
             <div className="promotions-table-container">
@@ -123,11 +130,11 @@ const PromotionsList = ({ promotions, loading, onBack, onEditPromotion }) => {
                         <th>Période</th>
                         <th>Type</th>
                         <th>Catégorie</th>
-                        <th>Actions</th> {/* Statut supprimé */}
+                        <th>Actions</th>
                     </tr>
                     </thead>
                     <tbody>
-                    {promotions.map(p => (
+                    {visiblePromotions.map(p => (
                         <tr key={p.id} className="promotion-row">
                             <td className="promotion-name">{p.nom}</td>
                             <td className="promotion-description">{p.description}</td>
@@ -143,8 +150,8 @@ const PromotionsList = ({ promotions, loading, onBack, onEditPromotion }) => {
                             <td className="promotion-categories">
                                 {p.categorieClient?.map(code => (
                                     <span key={code} className={`category-badge ${code.toLowerCase()}`}>
-                                            {code}
-                                        </span>
+                                        {code}
+                                    </span>
                                 ))}
                             </td>
                             <td className="promotion-actions">

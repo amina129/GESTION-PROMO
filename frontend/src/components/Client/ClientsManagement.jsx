@@ -45,7 +45,7 @@ const ClientsManagement = () => {
             if (!response.ok) throw new Error("Erreur lors de la recherche");
             const data = await response.json();
             console.log("Données reçues:", data); // Ajoutez cette ligne
-            setClients(data);
+            setClients(data.slice(0, 5)); // Affiche uniquement les 5 premiers clients
         } catch (err) {
             setError(err.message);
         } finally {
