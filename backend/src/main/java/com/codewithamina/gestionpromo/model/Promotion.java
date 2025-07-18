@@ -6,6 +6,9 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -47,5 +50,33 @@ public class Promotion {
 
     @Column(name = "statut")
     private String statut;
+    @ManyToMany
+    @JoinTable(
+            name = "promotion_category_mapping",
+            joinColumns = @JoinColumn(name = "promotion_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    private Set<Category> categories = new HashSet<>();
+
+    public void clearCategories() {
+        // Properly handle bidirectional relationship
+        for (Category category : this.categories) {
+            category.getPromotions().remove(this);
+        }
+        this.categories.clear();
+    }
+
+    public void addCategory(Category category) {
+        this.categories.add(category);
+        category.getPromotions().add(this);
+    }
+    // Helper method to maintain backward compatibility
+    public List<String> getCategorieClient() {
+        return this.categories.stream()
+                .map(Category::getCode)
+                .distinct()
+                .toList();
+    }
+
 
 }

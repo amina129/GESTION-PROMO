@@ -43,10 +43,9 @@ const EditPromotionModal = ({
             });
 
             // Gestion des catégories existantes (peut être séparées par des virgules)
-            const existingCategories = promotion.categorieClient
-                ? promotion.categorieClient.split(',').map(cat => cat.trim())
-                : [];
-            setSelectedCategories(existingCategories);
+            const existingCategories = Array.isArray(promotion.categorieClient)
+                ? promotion.categorieClient
+                : (promotion.categorieClient ? promotion.categorieClient.split(',').map(cat => cat.trim()) : []);
         }
     }, [promotion]);
 
@@ -76,19 +75,45 @@ const EditPromotionModal = ({
 
         if (!validateForm()) return;
 
-        const updateData = {
-            id: promotion.id,
-            ...formData
-        };
+        try {
+            let updateData;
 
-        if (editMode === 'category') {
-            // Envoyer les catégories exactement comme définies dans le service Java
-            updateData.categorieClient = selectedCategories.join(',');
+            if (editMode === 'category') {
+                // Dans handleSubmit (mode category):
+                const nouvellesCategories = selectedCategories
+                    .filter(cat => !promotion.categories?.some(c => c.code === cat));
+
+                await onSave({
+                    id: promotion.id,
+                    categories: nouvellesCategories
+                }, editMode);
+            } else if (editMode === 'category') {
+                // Create the properly formatted request body
+                const requestBody = {
+                    categories: selectedCategories
+                };
+
+                const response = await fetch(`${API_BASE_URL}/promotions/${promotion.id}/etendre-categories`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Erreur lors de la mise à jour');
+                }
+
+                const updatedPromotion = await response.json();
+                onSave(updatedPromotion, editMode);
+            }
+
+        } catch (err) {
+            setError(err.message);
         }
-
-        onSave(updateData, editMode);
     };
-
     const handleCategoryChange = (category) => {
         setSelectedCategories(prev => {
             if (prev.includes(category)) {
@@ -210,7 +235,8 @@ const EditPromotionModal = ({
                                 {editMode === 'category' && (
                                     <>
                                         <div className="summary-item">
-                                            <strong>Catégorie actuelle:</strong> {promotion.categorieClient}
+                                            <strong>Catégories actuelles:</strong>
+                                            {promotion.categories?.map(c => c.code).join(', ')}
                                         </div>
                                         <div className="summary-item">
                                             <strong>Nouvelles catégories:</strong> {selectedCategories.join(', ')}

@@ -46,9 +46,20 @@ const PromotionsManagement = () => {
     };
 
     const handlePromotionUpdated = (updatedPromotion) => {
-        setPromotions(promotions.map(p =>
-            p.id === updatedPromotion.id ? updatedPromotion : p
-        ));
+        console.log('Updated promotion received:', updatedPromotion);
+        console.log('Current promotions:', promotions);
+
+        const newPromotions = promotions.map(p => {
+            if (p.id === updatedPromotion.id) {
+                console.log('Updating promotion:', p.id);
+                return updatedPromotion;
+            }
+            return p;
+        });
+
+        console.log('New promotions array:', newPromotions);
+        setPromotions(newPromotions);
+
         setActiveView('list');
         setPreviousView('edit');
         setEditingPromotion(null);
@@ -97,14 +108,17 @@ const PromotionsManagement = () => {
         setLoading(true);
         setError(null);
 
+        console.log('Sending categories:', nouvellesCategories);
+
         try {
             const response = await fetch(`${API_BASE_URL}/promotions/${promotionId}/etendre-categories`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                // Send as raw array (not wrapped in object) to match backend List<String> parameter
-                body: JSON.stringify(nouvellesCategories)
+                body: JSON.stringify({
+                    categories: nouvellesCategories
+                })
             });
 
             if (!response.ok) {
@@ -113,9 +127,11 @@ const PromotionsManagement = () => {
             }
 
             const updatedPromotion = await response.json();
+            console.log('Response from backend:', updatedPromotion);
             handlePromotionUpdated(updatedPromotion);
 
         } catch (err) {
+            console.error('Error:', err);
             setError(err.message);
         } finally {
             setLoading(false);
@@ -269,10 +285,26 @@ const ProlongationForm = ({ promotion, onSubmit, onCancel, loading }) => {
     );
 };
 
-// Composant pour le formulaire d'extension des catégories
+// Composant pour le formulaire d'extension des catégories - FIXED VERSION
 const ExtensionCategoriesForm = ({ promotion, onSubmit, onCancel, loading }) => {
     const [selectedCategories, setSelectedCategories] = useState([]);
     const availableCategories = ['GP', 'privé', 'VIP', 'B2B'];
+
+    // Get current categories (could be from categories array or categorieClient string)
+    const getCurrentCategories = () => {
+        if (promotion.categories && promotion.categories.length > 0) {
+            return promotion.categories.map(cat => cat.code);
+        }
+        if (promotion.categorieClient) {
+            // Since categorieClient is already an array, just return it
+            return Array.isArray(promotion.categorieClient)
+                ? promotion.categorieClient
+                : [promotion.categorieClient];
+        }
+        return [];
+    };
+
+    const currentCategories = getCurrentCategories();
 
     const handleCategoryToggle = (category) => {
         setSelectedCategories(prev =>
@@ -285,24 +317,28 @@ const ExtensionCategoriesForm = ({ promotion, onSubmit, onCancel, loading }) => 
     const handleSubmit = (e) => {
         e.preventDefault();
         if (selectedCategories.length > 0) {
-            const allCategories = [...new Set([promotion.categorieClient, ...selectedCategories])];
-            onSubmit(promotion.id, allCategories);
+            // Only send the NEW categories to be added
+            onSubmit(promotion.id, selectedCategories);
         }
     };
 
     return (
         <form onSubmit={handleSubmit} className="edit-form">
             <div className="form-group">
-                <label>Catégorie actuelle:</label>
-                <span className={`category-badge ${promotion.categorieClient.toLowerCase()}`}>
-                    {promotion.categorieClient}
-                </span>
+                <label>Catégories actuelles:</label>
+                <div className="current-categories">
+                    {currentCategories.map(cat => (
+                        <span key={cat} className={`category-badge ${cat.toLowerCase()}`}>
+                            {cat}
+                        </span>
+                    ))}
+                </div>
             </div>
             <div className="form-group">
                 <label>Ajouter les catégories:</label>
                 <div className="categories-grid">
                     {availableCategories
-                        .filter(cat => cat !== promotion.categorieClient)
+                        .filter(cat => !currentCategories.includes(cat))
                         .map(category => (
                             <label key={category} className="category-checkbox">
                                 <input
@@ -311,7 +347,7 @@ const ExtensionCategoriesForm = ({ promotion, onSubmit, onCancel, loading }) => 
                                     onChange={() => handleCategoryToggle(category)}
                                 />
                                 <span className={`category-badge ${category.toLowerCase()}`}>
-                                    {category}
+                                     {category}
                                 </span>
                             </label>
                         ))}

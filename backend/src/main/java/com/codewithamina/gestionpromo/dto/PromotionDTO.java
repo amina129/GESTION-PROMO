@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
@@ -38,10 +39,8 @@ public class PromotionDTO {
     @DecimalMin(value = "0.0", inclusive = false, message = "La valeur doit être positive")
     private BigDecimal valeur;
 
-    @NotBlank(message = "La catégorie client est obligatoire")
-    @Pattern(regexp = "VIP|B2B|JP|privé",
-            message = "La catégorie client doit être 'VIP', 'B2B', 'JP' ou 'privé'")
-    private String categorieClient;
+    @NotEmpty(message = "La liste des catégories clients ne doit pas être vide")
+    private List<@Pattern(regexp = "VIP|B2B|JP|privé", message = "Catégorie invalide") String> categorieClient;
 
     @Pattern(regexp = "DATA|SMS|APPEL", message = "Le type d'unité doit être 'DATA', 'SMS' ou 'APPEL'")
     private String typeUnite; // Peut être null
@@ -51,5 +50,6 @@ public class PromotionDTO {
 
     @Pattern(regexp = "ACTIF|INACTIF|EXPIRÉ", message = "Le statut doit être 'ACTIF', 'INACTIF' ou 'EXPIRÉ'")
     private String statut;
+
 
 }

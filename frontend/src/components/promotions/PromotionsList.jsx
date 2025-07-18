@@ -147,10 +147,12 @@ const PromotionsList = ({ promotions, loading, onBack, onEditPromotion }) => {
                                 </div>
                             </td>
                             <td className="promotion-type">{formatTypePromotion(p)}</td>
-                            <td className="promotion-category">
-                                <span className={`category-badge ${p.categorieClient.toLowerCase()}`}>
-                                    {p.categorieClient}
-                                </span>
+                            <td className="promotion-categories">
+                                {p.categories?.map(cat => (
+                                    <span key={cat.code} className={`category-badge ${cat.code.toLowerCase()}`}>
+                                        {cat.code}
+                                    </span>
+                                ))}
                             </td>
                             <td className="promotion-status">
                                 <span className={`status-badge ${getPromotionStatus(p)}`}>

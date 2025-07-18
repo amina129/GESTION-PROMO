@@ -2,9 +2,11 @@ package com.codewithamina.gestionpromo.controller;
 
 import com.codewithamina.gestionpromo.dto.PromotionDTO;
 import com.codewithamina.gestionpromo.mapper.PromotionMapper;
+import com.codewithamina.gestionpromo.model.Category;
 import com.codewithamina.gestionpromo.model.Promotion;
+import com.codewithamina.gestionpromo.repository.CategoryRepository;
 import com.codewithamina.gestionpromo.repository.PromotionRepository;
-import com.codewithamina.gestionpromo.service.PromotionServiceImp;
+import com.codewithamina.gestionpromo.service.PromotionService;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "http://localhost:3000")
@@ -20,18 +23,20 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/promotions")
 public class PromotionController {
 
+    private final PromotionService promotionService;
+    private final CategoryRepository categoryRepository; // Ajoutez ceci
     private final PromotionRepository promotionRepository;
     private final PromotionMapper promotionMapper;
-    private final PromotionServiceImp promotionServiceImp;
 
-    public PromotionController(PromotionRepository promotionRepository,
-                               PromotionMapper promotionMapper, PromotionServiceImp promotionServiceImp) {
+    public PromotionController(PromotionService promotionService,
+                               CategoryRepository categoryRepository, // Ajoutez ce paramètre
+                               PromotionRepository promotionRepository,
+                               PromotionMapper promotionMapper) {
+        this.promotionService = promotionService;
+        this.categoryRepository = categoryRepository; // Initialisez-le
         this.promotionRepository = promotionRepository;
         this.promotionMapper = promotionMapper;
-        this.promotionServiceImp = promotionServiceImp;
     }
-
-
 
 
 
@@ -67,7 +72,8 @@ public class PromotionController {
             @PathVariable Long id,
             @RequestBody ProlongationRequest request) {
         try {
-            Promotion updatedPromotion = promotionServiceImp.prolongerPromotion(id, request.getNouvelleDateFin());
+            // Use the injected promotionService (interface) instead of promotionServiceImp (implementation)
+            Promotion updatedPromotion = promotionService.prolongerPromotion(id, request.getNouvelleDateFin());
             PromotionDTO updatedDto = promotionMapper.toDto(updatedPromotion);
             return ResponseEntity.ok(updatedDto);
         } catch (RuntimeException e) {
@@ -78,19 +84,48 @@ public class PromotionController {
     }
 
     @PutMapping("/{id}/etendre-categories")
-    public ResponseEntity<PromotionDTO> etendreCategories(
+    public ResponseEntity<?> etendreCategories(
             @PathVariable Long id,
             @RequestBody ExtensionCategoriesRequest request) {
+
         try {
-            Promotion updatedPromotion = promotionServiceImp.etendreCategories(id, request.getCategories());
-            PromotionDTO updatedDto = promotionMapper.toDto(updatedPromotion);
-            return ResponseEntity.ok(updatedDto);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+            // 1. Charger la promotion avec ses catégories existantes
+            Promotion promotion = promotionService.getPromotionWithCategories(id);
+
+            // 2. Charger les nouvelles catégories
+            List<Category> newCategories = categoryRepository.findByCodeIn(request.getCategories());
+
+            // 3. Valider que toutes les catégories existent
+            if (newCategories.size() != request.getCategories().size()) {
+                Set<String> foundCodes = newCategories.stream()
+                        .map(Category::getCode)
+                        .collect(Collectors.toSet());
+
+                List<String> missingCodes = request.getCategories().stream()
+                        .filter(code -> !foundCodes.contains(code))
+                        .collect(Collectors.toList());
+
+                return ResponseEntity.badRequest().body(new ErrorResponse("Catégories introuvables: " + missingCodes));
+            }
+
+            // 4. Ajouter seulement les nouvelles catégories
+            newCategories.forEach(category -> {
+                if (!promotion.getCategories().contains(category)) {
+                    promotion.addCategory(category);
+                }
+            });
+
+            // 5. Sauvegarder
+            Promotion updated = promotionRepository.save(promotion);
+            return ResponseEntity.ok(promotionMapper.toDto(updated));
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
     }
+
+    // Simple DTO for error responses
+    public record ErrorResponse(String message) {}
 
     // Request DTOs
     public static class ProlongationRequest {

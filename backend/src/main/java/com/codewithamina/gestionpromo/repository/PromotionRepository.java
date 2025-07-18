@@ -1,12 +1,14 @@
 package com.codewithamina.gestionpromo.repository;
 
 import com.codewithamina.gestionpromo.model.Promotion;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface PromotionRepository extends JpaRepository<Promotion, Long> {
 
@@ -73,7 +75,7 @@ public interface PromotionRepository extends JpaRepository<Promotion, Long> {
             @Param("clientId") Long clientId,
             @Param("dateDebut") LocalDate dateDebut,
             @Param("dateFin") LocalDate dateFin);
-
-}
+    @EntityGraph(attributePaths = "categories")
+    Optional<Promotion> findWithCategoriesById(Long id);}
 
 
