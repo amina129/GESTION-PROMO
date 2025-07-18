@@ -74,7 +74,7 @@ const CreatePromotion = ({ onPromotionCreated, onCancel, setError, setLoading, A
                 type: promotionData.type,
                 sousType: promotionData.sousType,
                 valeur: promotionData.valeur,
-                categorieClient: promotionData.categorieClient,
+                categorieClient: [promotionData.categorieClient], // Wrap in array
                 statut: "ACTIF",
                 ...(promotionData.sousType === 'unite_gratuite' && {
                     typeUnite: promotionData.typeUnite,

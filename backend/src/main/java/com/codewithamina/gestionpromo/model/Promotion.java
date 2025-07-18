@@ -39,8 +39,14 @@ public class Promotion {
     @Column(nullable = false)
     private BigDecimal valeur;
 
-    @Column(name = "categorie_client", nullable = false)
-    private String categorieClient;
+    @ManyToMany
+    @JoinTable(
+            name = "promotion_category_mapping",
+            joinColumns = @JoinColumn(name = "promotion_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    private Set<Category> categories = new HashSet<>();
+
 
     @Column(name = "type_unite")
     private String typeUnite; // 'DATA', 'SMS', 'APPEL'
@@ -50,13 +56,7 @@ public class Promotion {
 
     @Column(name = "statut")
     private String statut;
-    @ManyToMany
-    @JoinTable(
-            name = "promotion_category_mapping",
-            joinColumns = @JoinColumn(name = "promotion_id"),
-            inverseJoinColumns = @JoinColumn(name = "category_id")
-    )
-    private Set<Category> categories = new HashSet<>();
+
 
     public void clearCategories() {
         // Properly handle bidirectional relationship
