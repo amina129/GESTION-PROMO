@@ -50,7 +50,24 @@ public class ClientServiceImpl implements ClientService {
                 categorieClient
         );
     }
-    // Ajouter cette méthode dans votre ClientServiceImpl
+    @Override
+    @Transactional
+    public void cancelAssignedPromotions(Long clientId, List<Long> activationIds) {
+        if (activationIds == null || activationIds.isEmpty()) {
+            throw new IllegalArgumentException("Aucune promotion sélectionnée pour annulation");
+        }
+
+        // On vérifie que les activations existent et appartiennent bien au client
+        List<ActivationPromotion> activations = activationRepository.findAllById(activationIds);
+
+        for (ActivationPromotion activation : activations) {
+            if (!activation.getClient().getId().equals(clientId)) {
+                throw new IllegalArgumentException("Une ou plusieurs promotions ne sont pas liées à ce client");
+            }
+        }
+
+        activationRepository.deleteAll(activations);
+    }
 
     @Override
     public List<AssignedPromotionDto> getAssignedPromotions(Long clientId) {
@@ -113,7 +130,6 @@ public class ClientServiceImpl implements ClientService {
                 })
                 .collect(Collectors.toList());
     }
-
 
     @Override
     @Transactional

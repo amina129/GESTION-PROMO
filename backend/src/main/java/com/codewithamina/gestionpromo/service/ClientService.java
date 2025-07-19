@@ -28,4 +28,8 @@ public interface ClientService {
             String email,
             String categorieClient
     );
+    void cancelAssignedPromotions(Long clientId, List<Long> activationIds);
+
+
+
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Search, RefreshCw, Calendar, Clock } from 'lucide-react';
+import { ArrowLeft, Search, RefreshCw, Calendar, Clock, X, Trash2 } from 'lucide-react';
 import authService from '../auth/authService';
 import PromotionAssignmentModal from './PromotionAssignmentModal';
 import './ClientsManagement.css';
@@ -21,6 +21,11 @@ const ClientPromotionPage = ({ client, onBack }) => {
     const [assignedPromotions, setAssignedPromotions] = useState([]);
     const [loadingAssigned, setLoadingAssigned] = useState(true);
     const [errorAssigned, setErrorAssigned] = useState(null);
+
+    // Cancel assignment states
+    const [showCancelMode, setShowCancelMode] = useState(false);
+    const [selectedForCancellation, setSelectedForCancellation] = useState([]);
+    const [cancelLoading, setCancelLoading] = useState(false);
 
     // Charger les promotions assignées
     const loadAssignedPromotions = async () => {
@@ -113,6 +118,63 @@ const ClientPromotionPage = ({ client, onBack }) => {
             }
         } finally {
             setLoading(false);
+        }
+    };
+
+    // Fonctions pour l'annulation d'assignement
+    const handleCancelModeToggle = () => {
+        setShowCancelMode(!showCancelMode);
+        setSelectedForCancellation([]);
+        setError(null);
+    };
+
+    const handlePromotionSelect = (activationId) => {
+        setSelectedForCancellation(prev => {
+            if (prev.includes(activationId)) {
+                return prev.filter(id => id !== activationId);
+            } else {
+                return [...prev, activationId];
+            }
+        });
+    };
+
+    const cancelSelectedPromotions = async () => {
+        if (selectedForCancellation.length === 0) {
+            setError("Veuillez sélectionner au moins une promotion à annuler");
+            return;
+        }
+
+        const confirmMessage = `Êtes-vous sûr de vouloir annuler l'assignement de ${selectedForCancellation.length} promotion(s) ?`;
+        if (!window.confirm(confirmMessage)) {
+            return;
+        }
+
+        setCancelLoading(true);
+        setError(null);
+
+        try {
+            // Appel API pour annuler les assignements sélectionnés
+            await authService.api.delete(`/clients/${client.id}/promotions/assignments`, {
+                data: selectedForCancellation
+            });
+
+            // Recharger les promotions assignées
+            await loadAssignedPromotions();
+
+            // Reset
+            setSelectedForCancellation([]);
+            setShowCancelMode(false);
+
+            alert(`${selectedForCancellation.length} promotion(s) annulée(s) avec succès !`);
+        } catch (err) {
+            console.error("Erreur lors de l'annulation:", err);
+            setError(err.response?.data?.message || "Erreur lors de l'annulation des assignements");
+            if (err.response?.status === 401) {
+                authService.logout();
+                window.location.href = '/login';
+            }
+        } finally {
+            setCancelLoading(false);
         }
     };
 
@@ -219,16 +281,73 @@ const ClientPromotionPage = ({ client, onBack }) => {
                     marginBottom: '20px'
                 }}>
                     <h2 style={{ color: '#ff6600', margin: 0 }}>Promotions assignées</h2>
-                    <button
-                        className="button button-secondary"
-                        onClick={loadAssignedPromotions}
-                        disabled={loadingAssigned}
-                        style={{ padding: '8px 16px' }}
-                    >
-                        <RefreshCw className={`button-icon ${loadingAssigned ? 'spinning' : ''}`} />
-                        Actualiser
-                    </button>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <button
+                            className="button button-secondary"
+                            onClick={loadAssignedPromotions}
+                            disabled={loadingAssigned}
+                            style={{ padding: '8px 16px' }}
+                        >
+                            <RefreshCw className={`button-icon ${loadingAssigned ? 'spinning' : ''}`} />
+                            Actualiser
+                        </button>
+                        {assignedPromotions.length > 0 && (
+                            <button
+                                className={`button ${showCancelMode ? 'button-secondary' : 'button-danger'}`}
+                                onClick={handleCancelModeToggle}
+                                style={{ padding: '8px 16px' }}
+                            >
+                                {showCancelMode ? (
+                                    <>
+                                        <X className="button-icon" />
+                                        Annuler sélection
+                                    </>
+                                ) : (
+                                    <>
+                                        <Trash2 className="button-icon" />
+                                        Annuler assignements
+                                    </>
+                                )}
+                            </button>
+                        )}
+                    </div>
                 </div>
+
+                {/* Actions d'annulation */}
+                {showCancelMode && selectedForCancellation.length > 0 && (
+                    <div style={{
+                        background: '#fff3cd',
+                        border: '1px solid #ffeaa7',
+                        borderRadius: '8px',
+                        padding: '15px',
+                        marginBottom: '20px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                    }}>
+                        <span>
+                            {selectedForCancellation.length} promotion(s) sélectionnée(s) pour annulation
+                        </span>
+                        <button
+                            className="button button-danger"
+                            onClick={cancelSelectedPromotions}
+                            disabled={cancelLoading}
+                            style={{ padding: '8px 16px' }}
+                        >
+                            {cancelLoading ? (
+                                <>
+                                    <RefreshCw className="button-icon spinning" />
+                                    Annulation...
+                                </>
+                            ) : (
+                                <>
+                                    <Trash2 className="button-icon" />
+                                    Confirmer l'annulation
+                                </>
+                            )}
+                        </button>
+                    </div>
+                )}
 
                 {loadingAssigned && (
                     <div className="loading-message">
@@ -265,15 +384,46 @@ const ClientPromotionPage = ({ client, onBack }) => {
                                 {assignedPromotions.map((promotion) => (
                                     <div
                                         key={promotion.activationId}
-                                        className="promotion-card"
+                                        className={`promotion-card ${showCancelMode ? 'selectable' : ''} ${
+                                            selectedForCancellation.includes(promotion.activationId) ? 'selected' : ''
+                                        }`}
                                         style={{
-                                            border: '1px solid #ddd',
+                                            border: selectedForCancellation.includes(promotion.activationId)
+                                                ? '2px solid #e74c3c'
+                                                : '1px solid #ddd',
                                             borderRadius: '8px',
                                             padding: '20px',
-                                            backgroundColor: '#fff',
-                                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                            backgroundColor: selectedForCancellation.includes(promotion.activationId)
+                                                ? '#ffeaea'
+                                                : '#fff',
+                                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                            cursor: showCancelMode ? 'pointer' : 'default',
+                                            position: 'relative'
                                         }}
+                                        onClick={showCancelMode ? () => handlePromotionSelect(promotion.activationId) : undefined}
                                     >
+                                        {showCancelMode && (
+                                            <div style={{
+                                                position: 'absolute',
+                                                top: '10px',
+                                                right: '10px',
+                                                width: '20px',
+                                                height: '20px',
+                                                borderRadius: '50%',
+                                                border: '2px solid #e74c3c',
+                                                backgroundColor: selectedForCancellation.includes(promotion.activationId)
+                                                    ? '#e74c3c'
+                                                    : 'transparent',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                            }}>
+                                                {selectedForCancellation.includes(promotion.activationId) && (
+                                                    <X size={12} color="white" />
+                                                )}
+                                            </div>
+                                        )}
+
                                         <div style={{ marginBottom: '12px' }}>
                                             <div style={{
                                                 display: 'flex',
@@ -284,22 +434,25 @@ const ClientPromotionPage = ({ client, onBack }) => {
                                                 <h3 style={{
                                                     margin: 0,
                                                     color: '#333',
-                                                    fontSize: '18px'
+                                                    fontSize: '18px',
+                                                    paddingRight: showCancelMode ? '30px' : '0'
                                                 }}>
                                                     {promotion.promotionNom}
                                                 </h3>
-                                                <span
-                                                    className={`status-badge ${getStatusClass(promotion.statut)}`}
-                                                    style={{
-                                                        padding: '4px 12px',
-                                                        borderRadius: '20px',
-                                                        fontSize: '12px',
-                                                        fontWeight: 'bold',
-                                                        textTransform: 'uppercase'
-                                                    }}
-                                                >
-                                                    {getStatusText(promotion.statut)}
-                                                </span>
+                                                {!showCancelMode && (
+                                                    <span
+                                                        className={`status-badge ${getStatusClass(promotion.statut)}`}
+                                                        style={{
+                                                            padding: '4px 12px',
+                                                            borderRadius: '20px',
+                                                            fontSize: '12px',
+                                                            fontWeight: 'bold',
+                                                            textTransform: 'uppercase'
+                                                        }}
+                                                    >
+                                                        {getStatusText(promotion.statut)}
+                                                    </span>
+                                                )}
                                             </div>
 
                                             {promotion.promotionDescription && (
@@ -320,7 +473,7 @@ const ClientPromotionPage = ({ client, onBack }) => {
                                                     {promotion.promotionValeur && (
                                                         <span style={{ marginLeft: '8px', color: '#ff6600' }}>
                                                             ({promotion.promotionValeur}
-                                                            {promotion.promotionType === 'POURCENTAGE' ? '%' : '€'})
+                                                            {promotion.promotionType === 'POURCENTAGE' ? '%' : '%'})
                                                         </span>
                                                     )}
                                                 </div>
@@ -354,7 +507,7 @@ const ClientPromotionPage = ({ client, onBack }) => {
                                             </div>
                                         </div>
 
-                                        {promotion.statut === 'ACTIVE' && promotion.joursRestants !== null && (
+                                        {!showCancelMode && promotion.statut === 'ACTIVE' && promotion.joursRestants !== null && (
                                             <div style={{
                                                 display: 'flex',
                                                 alignItems: 'center',
@@ -382,10 +535,12 @@ const ClientPromotionPage = ({ client, onBack }) => {
                 <button
                     className="button button-primary"
                     onClick={handleOpenModal}
+                    disabled={showCancelMode}
                     style={{
                         padding: '15px 30px',
                         fontSize: '16px',
-                        minWidth: '250px'
+                        minWidth: '250px',
+                        opacity: showCancelMode ? 0.6 : 1
                     }}
                 >
                     <Search className="button-icon" />

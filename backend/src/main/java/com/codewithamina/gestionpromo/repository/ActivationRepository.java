@@ -60,4 +60,6 @@ public interface ActivationRepository extends JpaRepository<ActivationPromotion,
     @Query("SELECT ap FROM ActivationPromotion ap WHERE ap.client.id = :clientId " +
             "AND ap.dateActivation <= CURRENT_DATE AND ap.dateExpiration >= CURRENT_DATE")
     List<ActivationPromotion> findCurrentActivePromotionsByClientId(@Param("clientId") Long clientId);
+    void deleteAll(Iterable<? extends ActivationPromotion> entities);
+
 }

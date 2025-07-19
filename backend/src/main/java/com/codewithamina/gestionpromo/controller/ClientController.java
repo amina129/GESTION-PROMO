@@ -106,6 +106,41 @@ public class ClientController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+    @DeleteMapping("/{clientId}/promotions/assignments")
+    public ResponseEntity<String> cancelAssignedPromotions(
+            Authentication authentication,
+            @PathVariable Long clientId,
+            @RequestBody List<Long> activationIds) {
+
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            AdminDetails adminDetails = (AdminDetails) authentication.getPrincipal();
+
+            // Vérification des permissions pour les conseillers
+            if (adminDetails.getFonction() != Fonction.ADMIN) {
+                Client client = clientService.getClientById(clientId);
+                if (client == null || !client.getIdConseiller().equals(adminDetails.getId())) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                            .body("Vous n'avez pas la permission d'annuler des promotions pour ce client");
+                }
+            }
+
+            clientService.cancelAssignedPromotions(clientId, activationIds);
+
+            return ResponseEntity.ok("Promotions annulées avec succès");
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erreur lors de l'annulation des promotions");
+        }
+    }
+
     @GetMapping("/available")
     public ResponseEntity<List<Promotion>> getAvailablePromotions(
             @RequestParam Long clientId,
