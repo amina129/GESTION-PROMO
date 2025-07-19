@@ -106,6 +106,40 @@ public class ClientController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+    @PutMapping("/{clientId}/promotions/{activationId}/extend")
+    public ResponseEntity<String> extendPromotionValidity(
+            Authentication authentication,
+            @PathVariable Long clientId,
+            @PathVariable Long activationId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate newDateFin) {
+
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            AdminDetails adminDetails = (AdminDetails) authentication.getPrincipal();
+
+            // Vérification des permissions pour les conseillers
+            if (adminDetails.getFonction() != Fonction.ADMIN) {
+                Client client = clientService.getClientById(clientId);
+                if (client == null || !client.getIdConseiller().equals(adminDetails.getId())) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                            .body("Vous n'avez pas la permission de modifier cette promotion");
+                }
+            }
+
+            clientService.extendPromotionValidity(clientId, activationId, newDateFin);
+
+            return ResponseEntity.ok("Période de validité étendue avec succès");
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erreur lors de l'extension de la période de validité");
+        }
+    }
     @DeleteMapping("/{clientId}/promotions/assignments")
     public ResponseEntity<String> cancelAssignedPromotions(
             Authentication authentication,

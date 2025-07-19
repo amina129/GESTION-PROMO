@@ -29,7 +29,7 @@ public interface ClientService {
             String categorieClient
     );
     void cancelAssignedPromotions(Long clientId, List<Long> activationIds);
-
+    void extendPromotionValidity(Long clientId, Long activationId, LocalDate newDateFin);
 
 
 }

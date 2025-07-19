@@ -52,6 +52,30 @@ public class ClientServiceImpl implements ClientService {
     }
     @Override
     @Transactional
+    public void extendPromotionValidity(Long clientId, Long activationId, LocalDate newDateFin) {
+        ActivationPromotion activation = activationRepository.findById(activationId)
+                .orElseThrow(() -> new IllegalArgumentException("Activation non trouvée avec l'ID: " + activationId));
+
+        // Vérifier que l'activation appartient bien au client
+        if (!activation.getClient().getId().equals(clientId)) {
+            throw new IllegalArgumentException("Cette activation ne correspond pas au client spécifié");
+        }
+
+        // Vérifier que la nouvelle date est après l'ancienne date de fin
+        if (!newDateFin.isAfter(activation.getDateExpiration())) {
+            throw new IllegalArgumentException("La nouvelle date de fin doit être après l'ancienne date de fin");
+        }
+
+        // Vérifier que la nouvelle date ne dépasse pas la date de fin de la promotion
+        if (newDateFin.isAfter(activation.getPromotion().getDateFin())) {
+            throw new IllegalArgumentException("La nouvelle date de fin ne peut pas dépasser la date de fin de la promotion");
+        }
+
+        activation.setDateExpiration(newDateFin);
+        activationRepository.save(activation);
+    }
+    @Override
+    @Transactional
     public void cancelAssignedPromotions(Long clientId, List<Long> activationIds) {
         if (activationIds == null || activationIds.isEmpty()) {
             throw new IllegalArgumentException("Aucune promotion sélectionnée pour annulation");

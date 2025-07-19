@@ -9,6 +9,8 @@ const ClientPromotionPage = ({ client, onBack }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
+
+
     // Assignment states
     const [assignmentDates, setAssignmentDates] = useState({
         date_debut: '',
@@ -137,6 +139,29 @@ const ClientPromotionPage = ({ client, onBack }) => {
             }
         });
     };
+    const extendPromotionValidity = async (activationId, currentEndDate) => {
+        const newDate = prompt("Entrez la nouvelle date de fin (YYYY-MM-DD):", currentEndDate);
+
+        if (!newDate) return; // L'utilisateur a annulé
+
+        try {
+            setLoading(true);
+            await authService.api.put(
+                `/clients/${client.id}/promotions/${activationId}/extend`,
+                null,
+                { params: { newDateFin: newDate } }
+            );
+
+            // Recharger les promotions assignées
+            await loadAssignedPromotions();
+            alert('Période de validité étendue avec succès !');
+        } catch (err) {
+            console.error("Erreur lors de l'extension:", err);
+            alert(err.response?.data?.message || "Erreur lors de l'extension de la période");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const cancelSelectedPromotions = async () => {
         if (selectedForCancellation.length === 0) {
@@ -245,7 +270,7 @@ const ClientPromotionPage = ({ client, onBack }) => {
                     <ArrowLeft className="button-icon" />
                     Retour
                 </button>
-                <h1>Gestion des promotions</h1>
+                <h1>plus de detail sur les promo</h1>
             </div>
 
             {/* Informations du client */}
@@ -507,19 +532,27 @@ const ClientPromotionPage = ({ client, onBack }) => {
                                             </div>
                                         </div>
 
-                                        {!showCancelMode && promotion.statut === 'ACTIVE' && promotion.joursRestants !== null && (
-                                            <div style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                color: promotion.joursRestants <= 7 ? '#e74c3c' : '#27ae60',
-                                                fontSize: '14px',
-                                                fontWeight: '500'
-                                            }}>
-                                                <Clock size={16} style={{ marginRight: '6px' }} />
-                                                {promotion.joursRestants === 0
-                                                    ? "Expire aujourd'hui"
-                                                    : `${promotion.joursRestants} jour${promotion.joursRestants > 1 ? 's' : ''} restant${promotion.joursRestants > 1 ? 's' : ''}`
-                                                }
+                                        {!showCancelMode && promotion.statut === 'ACTIVE' && (
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
+                                                {promotion.joursRestants !== null && (
+                                                    <div style={{ display: 'flex', alignItems: 'center', color: promotion.joursRestants <= 7 ? '#e74c3c' : '#27ae60', fontSize: '14px', fontWeight: '500' }}>
+                                                        <Clock size={16} style={{ marginRight: '6px' }} />
+                                                        {promotion.joursRestants === 0
+                                                            ? "Expire aujourd'hui"
+                                                            : `${promotion.joursRestants} jour${promotion.joursRestants > 1 ? 's' : ''} restant${promotion.joursRestants > 1 ? 's' : ''}`
+                                                        }
+                                                    </div>
+                                                )}
+                                                <button
+                                                    className="button button-primary"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        extendPromotionValidity(promotion.activationId, promotion.dateExpiration);
+                                                    }}
+                                                    style={{ padding: '5px 10px', fontSize: '12px' }}
+                                                >
+                                                    Modifier la validité
+                                                </button>
                                             </div>
                                         )}
                                     </div>
