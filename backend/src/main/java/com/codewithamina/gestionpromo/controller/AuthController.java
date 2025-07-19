@@ -48,10 +48,10 @@ public class AuthController {
         ));
     }
 
+
     @PostMapping("/logout")
     public ResponseEntity<?> logout() {
         return ResponseEntity.ok(new MessageResponse("Déconnexion réussie."));
     }
-
 
 }

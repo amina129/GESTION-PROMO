@@ -12,12 +12,13 @@ import java.util.Optional;
 
 public interface PromotionRepository extends JpaRepository<Promotion, Long> {
 
-    @Query("SELECT p FROM Promotion p JOIN p.categories c WHERE " +
-            "(:#{#nom == null} = true OR p.nom LIKE %:nom%) AND " +
+    @Query("SELECT DISTINCT p FROM Promotion p LEFT JOIN p.categories c WHERE " +
+            "p.statut = 'ACTIF' AND " +
+            "(:#{#nom == null} = true OR LOWER(p.nom) LIKE LOWER(CONCAT('%', :nom, '%'))) AND " +
             "(:#{#type == null} = true OR p.type = :type) AND " +
             "(:#{#sousType == null} = true OR p.sousType = :sousType) AND " +
-            "(:#{#dateDebut == null} = true OR p.dateDebut >= :dateDebut) AND " +
-            "(:#{#dateFin == null} = true OR p.dateFin <= :dateFin) AND " +
+            "(:#{#dateDebut == null} = true OR :#{#dateFin == null} = true OR " +
+            " (p.dateDebut <= :dateFin AND p.dateFin >= :dateDebut)) AND " +
             "(:#{#categorieClient == null} = true OR c.code = :categorieClient)")
     List<Promotion> searchPromotions(
             @Param("nom") String nom,

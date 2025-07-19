@@ -1,5 +1,6 @@
 package com.codewithamina.gestionpromo.service;
 
+import com.codewithamina.gestionpromo.dto.AssignedPromotionDto;
 import com.codewithamina.gestionpromo.model.ActivationPromotion;
 import com.codewithamina.gestionpromo.model.Client;
 import com.codewithamina.gestionpromo.model.Promotion;
@@ -10,7 +11,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class ClientServiceImpl implements ClientService {
@@ -46,6 +50,70 @@ public class ClientServiceImpl implements ClientService {
                 categorieClient
         );
     }
+    // Ajouter cette méthode dans votre ClientServiceImpl
+
+    @Override
+    public List<AssignedPromotionDto> getAssignedPromotions(Long clientId) {
+        // Vérifier que le client existe
+        Client client = clientRepository.findById(clientId)
+                .orElseThrow(() -> new IllegalArgumentException("Client non trouvé avec l'ID: " + clientId));
+
+        // Récupérer toutes les activations du client
+        List<ActivationPromotion> activations = activationRepository.findByClientId(clientId);
+
+        LocalDate today = LocalDate.now();
+
+        // Mapper vers DTO et trier
+        return activations.stream()
+                .map(activation -> {
+                    Promotion promotion = activation.getPromotion();
+
+                    // Déterminer le statut
+                    String statut;
+                    Integer joursRestants = null;
+
+                    if (activation.getDateActivation().isAfter(today)) {
+                        statut = "UPCOMING";
+                    } else if (activation.getDateExpiration().isBefore(today)) {
+                        statut = "EXPIRED";
+                    } else {
+                        statut = "ACTIVE";
+                        joursRestants = (int) ChronoUnit.DAYS.between(today, activation.getDateExpiration());
+                    }
+
+                    return new AssignedPromotionDto(
+                            activation.getId(),
+                            promotion.getId(),
+                            promotion.getNom(),
+                            promotion.getDescription(),
+                            promotion.getType(),
+                            promotion.getSousType(),
+                            promotion.getValeur(),
+                            promotion.getTypeUnite(),
+                            promotion.getUniteMesure(),
+                            activation.getDateActivation(),
+                            activation.getDateExpiration(),
+                            statut,
+                            joursRestants
+                    );
+                })
+                // Trier: ACTIVE en premier, puis UPCOMING, puis EXPIRED
+                .sorted((a, b) -> {
+                    if (a.getStatut().equals(b.getStatut())) {
+                        // Même statut: trier par date d'expiration
+                        return a.getDateExpiration().compareTo(b.getDateExpiration());
+                    }
+                    // Différent statut: ordre prioritaire
+                    Map<String, Integer> priorite = Map.of(
+                            "ACTIVE", 1,
+                            "UPCOMING", 2,
+                            "EXPIRED", 3
+                    );
+                    return priorite.get(a.getStatut()).compareTo(priorite.get(b.getStatut()));
+                })
+                .collect(Collectors.toList());
+    }
+
 
     @Override
     @Transactional

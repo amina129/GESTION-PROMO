@@ -1,6 +1,7 @@
 package com.codewithamina.gestionpromo.controller;
 
 import com.codewithamina.gestionpromo.config.AdminDetails;
+import com.codewithamina.gestionpromo.dto.AssignedPromotionDto;
 import com.codewithamina.gestionpromo.dto.PromotionAssignmentDto;
 import com.codewithamina.gestionpromo.model.Client;
 import com.codewithamina.gestionpromo.model.Fonction;
@@ -66,6 +67,43 @@ public class ClientController {
 
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
+        }
+    }
+    // Ajouter cette méthode dans votre ClientController
+
+    @GetMapping("/{clientId}/promotions/assigned")
+    public ResponseEntity<List<AssignedPromotionDto>> getAssignedPromotions(
+            Authentication authentication,
+            @PathVariable Long clientId) {
+
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            AdminDetails adminDetails = (AdminDetails) authentication.getPrincipal();
+
+            // Vérifier les permissions pour les conseillers
+            if (adminDetails.getFonction() != Fonction.ADMIN) {
+                Client client = clientService.getClientById(clientId);
+                if (client == null) {
+                    return ResponseEntity.notFound().build();
+                }
+
+                if (!client.getIdConseiller().equals(adminDetails.getId())) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+                }
+            }
+
+            List<AssignedPromotionDto> assignedPromotions = clientService.getAssignedPromotions(clientId);
+            return ResponseEntity.ok(assignedPromotions);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Erreur lors de la récupération des promotions assignées: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
     @GetMapping("/available")
