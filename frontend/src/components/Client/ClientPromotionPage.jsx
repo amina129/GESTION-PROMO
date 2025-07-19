@@ -285,15 +285,12 @@ const ClientPromotionPage = ({ client, onBack }) => {
                     <div>
                         <strong>Nom complet:</strong> {client.prenom} {client.nom}
                     </div>
-                    <div>
-                        <strong>Téléphone:</strong> {client.numero_telephone}
+                    <div >
                     </div>
                     <div>
                         <strong>Email:</strong> {client.email}
                     </div>
-                    <div>
-                        <strong>Catégorie:</strong> {client.categorieClient}
-                    </div>
+
                 </div>
             </div>
 
@@ -307,15 +304,6 @@ const ClientPromotionPage = ({ client, onBack }) => {
                 }}>
                     <h2 style={{ color: '#ff6600', margin: 0 }}>Promotions assignées</h2>
                     <div style={{ display: 'flex', gap: '10px' }}>
-                        <button
-                            className="button button-secondary"
-                            onClick={loadAssignedPromotions}
-                            disabled={loadingAssigned}
-                            style={{ padding: '8px 16px' }}
-                        >
-                            <RefreshCw className={`button-icon ${loadingAssigned ? 'spinning' : ''}`} />
-                            Actualiser
-                        </button>
                         {assignedPromotions.length > 0 && (
                             <button
                                 className={`button ${showCancelMode ? 'button-secondary' : 'button-danger'}`}
@@ -495,12 +483,6 @@ const ClientPromotionPage = ({ client, onBack }) => {
                                             {promotion.promotionType && (
                                                 <div style={{ marginBottom: '8px' }}>
                                                     <strong>Type:</strong> {promotion.promotionType}
-                                                    {promotion.promotionValeur && (
-                                                        <span style={{ marginLeft: '8px', color: '#ff6600' }}>
-                                                            ({promotion.promotionValeur}
-                                                            {promotion.promotionType === 'POURCENTAGE' ? '%' : '%'})
-                                                        </span>
-                                                    )}
                                                 </div>
                                             )}
                                         </div>

@@ -4,7 +4,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 @Component
-public abstract class StartupRunner implements CommandLineRunner {
+public abstract class StartupRunner implements CommandLineRunner { // Removed 'abstract'
 
     /*private final SimpleUserInserter inserter;
 

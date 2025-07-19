@@ -1,23 +1,44 @@
 package com.codewithamina.gestionpromo.service;
 
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-@Component
+@Service
+@Transactional
 public class SimpleUserInserter {
 
-    /*private final JdbcTemplate jdbcTemplate;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+   /* private final JdbcTemplate jdbcTemplate;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    public SimpleUserInserter(JdbcTemplate jdbcTemplate) {
+    public SimpleUserInserter(JdbcTemplate jdbcTemplate,
+                              BCryptPasswordEncoder passwordEncoder) {
         this.jdbcTemplate = jdbcTemplate;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public void insererConseillerVIP() {
-        String sql = "INSERT INTO admin (nom, prenom, email, mot_de_passe, fonction, categories_assignees) VALUES (?, ?, ?, ?, ?, ?)";
-        String motDePasseHash = passwordEncoder.encode("motdepasse123");
+        try {
+            String sql = "INSERT INTO admin (nom, prenom, email, mot_de_passe, fonction, categories_assignees) " +
+                    "VALUES (?, ?, ?, ?, ?, ?)";
 
-        jdbcTemplate.update(sql, "Moncer", "Zeineb", "zeineb.moncer@gmail.com", motDePasseHash, "CONSEILLER", "VIP");
+            String motDePasseHash = passwordEncoder.encode("amine123");
 
-        System.out.println("Conseiller VIP ajouté en base !");
+            int rowsAffected = jdbcTemplate.update(sql,
+                    "moncer",
+                    "amine",
+                    "amine.moncer@gmail.com",
+                    motDePasseHash,
+                    "CONSEILLER",
+                    "GP");
+
+            if (rowsAffected > 0) {
+                System.out.println("Conseiller GP ajouté avec succès !");
+            } else {
+                System.out.println("Aucune ligne affectée - insertion échouée");
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors de l'insertion du conseiller:");
+            e.printStackTrace();
+        }
     }*/
 }

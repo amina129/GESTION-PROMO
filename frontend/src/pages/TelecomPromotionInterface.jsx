@@ -4,6 +4,7 @@ import Navbar from "../components/common/Navbar";
 import PromotionsManagement from "../components/promotions/PromotionsManagement";
 import ClientsManagement from '../components/Client/ClientsManagement';
 import HomePage from "../components/HomePage/HomePage";
+import StatisticsDashboard from "../components/Dasboard/StatisticsDashboard";
 import { useAuth } from "../components/auth/AuthContext";
 
 const TelecomPromotionInterface = () => {
@@ -50,10 +51,7 @@ const TelecomPromotionInterface = () => {
                 )}
                 {activeTab === 'clients' && allowedTabs.includes('clients') && <ClientsManagement clients={clients} />}
                 {activeTab === 'statistiques' && allowedTabs.includes('statistiques') && (
-                    <div>
-                        <h3>Analytics Dashboard</h3>
-                        {/* Contenu analytique ici */}
-                    </div>
+                    <StatisticsDashboard />
                 )}
             </main>
         </div>
