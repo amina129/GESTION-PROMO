@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import Header from "../components/common/Header";
 import Navbar from "../components/common/Navbar";
 import PromotionsManagement from "../components/promotions/PromotionsManagement";
-import ClientsManagement from "../components/Client/ClientsManagement";
+import ClientsManagement from '../components/Client/ClientsManagement';
 import HomePage from "../components/HomePage/HomePage";
 import { useAuth } from "../components/auth/AuthContext";
+
 const TelecomPromotionInterface = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [activeTab, setActiveTab] = useState('HomePage');
@@ -14,15 +15,15 @@ const TelecomPromotionInterface = () => {
     const [clients] = useState([]);
     const [stats] = useState({});
     const [allowedTabs, setAllowedTabs] = useState(['HomePage']);
-    const { currentUser } = useAuth(); // Using auth context instead of direct service
+    const { currentUser } = useAuth();
 
     useEffect(() => {
         if (currentUser?.fonction === 'ADMIN') {
             setAllowedTabs(['HomePage', 'promotions', 'clients', 'statistiques']);
-        } else if (currentUser?.fonction === 'CONSULTANT') {
+        } else if (currentUser?.fonction === 'CONSEILLER') {
             setAllowedTabs(['HomePage', 'clients', 'statistiques']);
         }
-    }, [currentUser]); // Watch currentUser instead of userRole
+    }, [currentUser]);
 
     return (
         <div className="app-container" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>

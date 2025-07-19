@@ -27,7 +27,8 @@ public class Admin {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Fonction fonction; // Changed to enum
+    private Fonction fonction;
 
+    @Column(name = "categories_assignees") // Stocke les catégories que le conseiller peut gérer
+    private String categoriesAssignees; // Ex: "VIP,B2B" ou "GP,PRIVE"
 }
-

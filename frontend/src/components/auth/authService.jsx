@@ -6,6 +6,17 @@ const API_URL = 'http://localhost:8080/api';
 const api = axios.create({
     baseURL: API_URL
 });
+// authService.js
+api.interceptors.response.use(
+    response => response,
+    error => {
+        if (error.response?.status === 401) {
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+        }
+        return Promise.reject(error);
+    }
+);
 
 // Add request interceptor to inject token
 api.interceptors.request.use(config => {

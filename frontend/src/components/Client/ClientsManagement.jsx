@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Search, Check, X } from 'lucide-react';
-import './ClientsManagement.css'
+import authService from '../auth/authService';
+import './ClientsManagement.css';
+
 const ClientsManagement = () => {
-    // États pour la recherche
+    // Search states
     const [searchCriteria, setSearchCriteria] = useState({
         numero_telephone: '',
         prenom: '',
@@ -14,7 +16,7 @@ const ClientsManagement = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    // États pour l'affectation
+    // Assignment states
     const [selectedClient, setSelectedClient] = useState(null);
     const [assignmentDates, setAssignmentDates] = useState({
         date_debut: '',
@@ -22,8 +24,6 @@ const ClientsManagement = () => {
     });
     const [availablePromotions, setAvailablePromotions] = useState([]);
     const [selectedPromotion, setSelectedPromotion] = useState(null);
-
-    const API_BASE_URL = 'http://localhost:8080/api';
 
     const clientCategories = [
         { value: 'VIP', label: 'VIP' },
@@ -36,18 +36,17 @@ const ClientsManagement = () => {
         setLoading(true);
         setError(null);
         try {
-            const queryParams = new URLSearchParams();
-            Object.entries(searchCriteria).forEach(([key, value]) => {
-                if (value) queryParams.append(key, value);
+            const response = await authService.api.get('/clients/search', {
+                params: searchCriteria
             });
-
-            const response = await fetch(`${API_BASE_URL}/clients/search?${queryParams.toString()}`);
-            if (!response.ok) throw new Error("Erreur lors de la recherche");
-            const data = await response.json();
-            console.log("Données reçues:", data); // Ajoutez cette ligne
-            setClients(data.slice(0, 5)); // Affiche uniquement les 5 premiers clients
+            setClients(response.data.slice(0, 5));
         } catch (err) {
-            setError(err.message);
+            setError(err.response?.data?.message || "Erreur lors de la recherche");
+            if (err.response?.status === 401) {
+                // Handle unauthorized (token might be expired)
+                authService.logout();
+                window.location.href = '/login';
+            }
         } finally {
             setLoading(false);
         }
@@ -56,42 +55,36 @@ const ClientsManagement = () => {
     const loadAvailablePromotions = async () => {
         if (!selectedClient) return;
 
-        // Vérifier que les dates sont saisies
         if (!assignmentDates.date_debut || !assignmentDates.date_fin) {
             setError("Veuillez saisir les dates de début et de fin");
             return;
         }
 
         setLoading(true);
-        setError(null); // Réinitialiser l'erreur
+        setError(null);
 
         try {
-            // Construire l'URL avec les dates
-            const url = `${API_BASE_URL}/clients/available?clientId=${selectedClient.id}&dateDebut=${assignmentDates.date_debut}&dateFin=${assignmentDates.date_fin}`;
-
-            console.log("URL appelée:", url); // Pour debug
-
-            const response = await fetch(url);
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Erreur ${response.status}: ${errorText}`);
-            }
-
-            const data = await response.json();
-            setAvailablePromotions(data);
-
-            // Réinitialiser la sélection de promotion
+            const response = await authService.api.get('/clients/available', {
+                params: {
+                    clientId: selectedClient.id,
+                    dateDebut: assignmentDates.date_debut,
+                    dateFin: assignmentDates.date_fin
+                }
+            });
+            setAvailablePromotions(response.data);
             setSelectedPromotion(null);
-
         } catch (err) {
             console.error("Erreur lors du chargement des promotions:", err);
-            setError("Erreur lors du chargement des promotions: " + err.message);
-            setAvailablePromotions([]); // Vider la liste en cas d'erreur
+            setError(err.response?.data?.message || "Erreur lors du chargement des promotions");
+            if (err.response?.status === 401) {
+                authService.logout();
+                window.location.href = '/login';
+            }
         } finally {
             setLoading(false);
         }
     };
+
     const assignPromotion = async () => {
         if (!selectedClient || !selectedPromotion || !assignmentDates.date_debut || !assignmentDates.date_fin) {
             setError("Veuillez compléter tous les champs");
@@ -100,25 +93,27 @@ const ClientsManagement = () => {
 
         setLoading(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/clients/${selectedClient.id}/promotions`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+            await authService.api.post(
+                `/clients/${selectedClient.id}/promotions`,
+                {
                     promotion_id: selectedPromotion.id,
                     date_debut: assignmentDates.date_debut,
                     date_fin: assignmentDates.date_fin
-                }),
-            });
+                }
+            );
 
-            if (!response.ok) throw new Error("Erreur lors de l'affectation");
-
-            // Réinitialiser après succès
+            // Reset after success
             setSelectedClient(null);
-            setError(null);            setSelectedPromotion(null);
+            setSelectedPromotion(null);
             setAssignmentDates({ date_debut: '', date_fin: '' });
-            searchClients();
+            setError(null);
+            await searchClients();
         } catch (err) {
-            setError(err.message);
+            setError(err.response?.data?.message || "Erreur lors de l'affectation");
+            if (err.response?.status === 401) {
+                authService.logout();
+                window.location.href = '/login';
+            }
         } finally {
             setLoading(false);
         }
@@ -140,7 +135,6 @@ const ClientsManagement = () => {
             default: return 'default-badge';
         }
     };
-
     return (
         <div className="promotions-container">
 

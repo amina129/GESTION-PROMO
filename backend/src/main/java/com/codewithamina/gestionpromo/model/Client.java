@@ -45,4 +45,8 @@ public class Client {
         this.email = email;
         this.categorieClient = categorieClient;
         this.numeroTelephone = numeroTelephone;}
+
+
+    @Column(name = "id_conseiller")
+    private Long idConseiller;
 }

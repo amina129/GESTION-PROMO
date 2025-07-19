@@ -19,7 +19,6 @@ public class ClientServiceImpl implements ClientService {
     private final PromotionRepository promotionRepository;
     private final ActivationRepository activationRepository;
 
-
     public ClientServiceImpl(ClientRepository clientRepository,
                              PromotionRepository promotionRepository,
                              ActivationRepository activationRepository) {
@@ -29,27 +28,23 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public List<Client> searchClients(String numeroTelephone, String prenom,
-                                      String nom, String email, String categorieClient) {
-        return clientRepository.findByCriteria(
+    public Client getClientById(Long clientId) {
+        return clientRepository.findById(clientId)
+                .orElseThrow(() -> new RuntimeException("Client not found with ID: " + clientId));
+    }
+
+    @Override
+    public List<Client> searchClients(Long currentUserId, String userRole, String numeroTelephone,
+                                      String prenom, String nom, String email, String categorieClient) {
+        return clientRepository.findByCriteriaWithRoleCheck(
+                currentUserId,
+                userRole,
                 numeroTelephone,
                 prenom,
                 nom,
                 email,
                 categorieClient
         );
-    }
-
-    public String getCategorieClientById(Long clientId) {
-        return clientRepository.findById(clientId)
-                .map(Client::getCategorieClient)
-                .orElse(null);
-    }
-
-    @Override
-    public Client getClientById(Long clientId) {
-        return clientRepository.findById(clientId)
-                .orElseThrow(() -> new RuntimeException("Client not found with ID: " + clientId));
     }
 
     @Override
@@ -86,6 +81,7 @@ public class ClientServiceImpl implements ClientService {
 
         activationRepository.save(activation);
     }
+
     @Override
     public List<Promotion> getAvailablePromotionsForDateRange(Long clientId, LocalDate dateDebut, LocalDate dateFin) {
         if (dateDebut == null || dateFin == null) {
@@ -96,12 +92,9 @@ public class ClientServiceImpl implements ClientService {
             throw new IllegalArgumentException("La date de début ne peut pas être après la date de fin");
         }
 
-        // Récupérer la catégorie du client
-        String categorieClient = getCategorieClientById(clientId);
-
-        if (categorieClient == null) {
-            throw new RuntimeException("Client non trouvé avec l'ID: " + clientId);
-        }
+        String categorieClient = clientRepository.findById(clientId)
+                .map(Client::getCategorieClient)
+                .orElseThrow(() -> new RuntimeException("Client non trouvé avec l'ID: " + clientId));
 
         return promotionRepository.findAvailablePromotionsForClientAndDateRange(
                 categorieClient, clientId, dateDebut, dateFin);

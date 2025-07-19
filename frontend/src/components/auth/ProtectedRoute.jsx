@@ -1,11 +1,12 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from './AuthContext';
-
+// ProtectedRoute.js
 const ProtectedRoute = ({ children, requiredRole }) => {
-    const { currentUser } = useAuth();
+    const { currentUser, loading } = useAuth();
 
-    if (!currentUser) {
+    if (loading) {
+        return <div>Loading...</div>; // Or a spinner
+    }
+
+    if (!currentUser?.token) {
         return <Navigate to="/login" />;
     }
 
@@ -15,5 +16,3 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 
     return children;
 };
-
-export default ProtectedRoute;

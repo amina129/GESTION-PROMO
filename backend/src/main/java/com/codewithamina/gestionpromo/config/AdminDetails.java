@@ -18,8 +18,10 @@ public class AdminDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        // Convertit la fonction en rôle Spring Security
+        String role = "ROLE_" + admin.getFonction().name();
         return Collections.singletonList(
-                new SimpleGrantedAuthority("ROLE_" + admin.getFonction().name())
+                new SimpleGrantedAuthority(role)
         );
     }
 
