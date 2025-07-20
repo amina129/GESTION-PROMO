@@ -1,42 +1,71 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { Line } from 'react-chartjs-2';
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend
+} from 'chart.js';
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend
+);
 
 const StatisticsDashboard = () => {
     // États des filtres
-    const [selectedMonth, setSelectedMonth] = useState('');
     const [selectedClientCategory, setSelectedClientCategory] = useState('');
-    const [selectedPromoType, setSelectedPromoType] = useState('');
-
-    // États backend
-    const [rawData, setRawData] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [isInitialLoad, setIsInitialLoad] = useState(true);
+    const [promotionStats, setPromotionStats] = useState({});
+    const [trendsData, setTrendsData] = useState(null);
+    const [period, setPeriod] = useState('monthly');
+    const [metric, setMetric] = useState('activations');
 
     const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 
     // Options statiques
     const clientCategories = ['VIP', 'GP', 'Privé', 'B2B'];
     const promoTypes = ['relative', 'absolue'];
-    const months = [
-        { value: '2024-01', label: 'Janvier 2024' },
-        { value: '2024-02', label: 'Février 2024' },
-        { value: '2024-03', label: 'Mars 2024' },
-        { value: '2024-04', label: 'Avril 2024' },
-        { value: '2024-05', label: 'Mai 2024' },
-        { value: '2024-06', label: 'Juin 2024' }
+    const periodOptions = [
+        { value: 'daily', label: 'Journalier' },
+        { value: 'weekly', label: 'Hebdomadaire' },
+        { value: 'monthly', label: 'Mensuel' },
+        { value: 'yearly', label: 'Annuel' }
+    ];
+    const metricOptions = [
+        { value: 'activations', label: 'Activations' },
+        { value: 'revenue', label: 'Revenue' }
     ];
 
-    const fetchPromotionData = async (filters = {}) => {
+    // Mock data for trends (to be replaced with actual API call)
+    const mockTrendsData = {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [
+            {
+                label: 'Activations',
+                data: [65, 59, 80, 81, 56, 55],
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }
+        ]
+    };
+
+    const fetchPromotionData = async () => {
         setIsLoading(true);
         setError(null);
 
         try {
-            const params = new URLSearchParams();
-            if (filters.month) params.append('month', filters.month);
-            if (filters.clientCategory) params.append('clientCategory', filters.clientCategory);
-            if (filters.promoType) params.append('promoType', filters.promoType);
-
-            const response = await fetch(`${API_BASE_URL}/statistics/stats/promotions?${params}`, {
+            const response = await fetch(`${API_BASE_URL}/statistics/stats/promotions`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
@@ -48,18 +77,7 @@ const StatisticsDashboard = () => {
             }
 
             const data = await response.json();
-
-            const transformedData = Object.entries(data).map(([id, activations]) => ({
-                id: parseInt(id),
-                promoName: `Promotion ${id}`,
-                clientCategory: clientCategories[Math.floor(Math.random() * clientCategories.length)],
-                promoType: promoTypes[Math.floor(Math.random() * promoTypes.length)],
-                activations: activations,
-                month: filters.month || '2024-01'
-            }));
-
-            setRawData(transformedData);
-            setIsInitialLoad(false);
+            setPromotionStats(data);
         } catch (err) {
             console.error('Erreur lors de la récupération des données:', err);
             setError(err.message);
@@ -68,22 +86,50 @@ const StatisticsDashboard = () => {
         }
     };
 
+    const fetchTrendsData = async () => {
+        try {
+            const response = await fetch(
+                `${API_BASE_URL}/statistics/trends?period=${period}&metric=${metric}`
+            );
+
+            if (!response.ok) {
+                throw new Error(`Erreur API: ${response.status}`);
+            }
+
+            const data = await response.json();
+            // For now using mock data until backend is implemented
+            setTrendsData(mockTrendsData);
+        } catch (err) {
+            console.error('Erreur:', err);
+            setError(err.message);
+        }
+    };
+
     useEffect(() => {
-        fetchPromotionData({
-            month: selectedMonth,
-            clientCategory: selectedClientCategory,
-            promoType: selectedPromoType
-        });
-    }, [selectedMonth, selectedClientCategory, selectedPromoType]);
+        fetchPromotionData();
+        fetchTrendsData();
+    }, []);
+
+    useEffect(() => {
+        fetchTrendsData();
+    }, [period, metric]);
+
+    const transformedData = useMemo(() => {
+        return Object.entries(promotionStats).map(([id, activations]) => ({
+            id: parseInt(id),
+            promoName: `Promotion ${id}`,
+            clientCategory: clientCategories[Math.floor(Math.random() * clientCategories.length)],
+            promoType: promoTypes[Math.floor(Math.random() * promoTypes.length)],
+            activations: activations
+        }));
+    }, [promotionStats]);
 
     const filteredData = useMemo(() => {
-        return rawData.filter(item => {
-            const monthMatch = !selectedMonth || item.month === selectedMonth;
+        return transformedData.filter(item => {
             const categoryMatch = !selectedClientCategory || item.clientCategory === selectedClientCategory;
-            const promoMatch = !selectedPromoType || item.promoType === selectedPromoType;
-            return monthMatch && categoryMatch && promoMatch;
+            return categoryMatch;
         });
-    }, [selectedMonth, selectedClientCategory, selectedPromoType, rawData]);
+    }, [selectedClientCategory, transformedData]);
 
     const statistics = useMemo(() => {
         if (filteredData.length === 0) return null;
@@ -98,9 +144,9 @@ const StatisticsDashboard = () => {
     }, [filteredData]);
 
     const handleReset = () => {
-        setSelectedMonth('');
         setSelectedClientCategory('');
-        setSelectedPromoType('');
+        setPeriod('monthly');
+        setMetric('activations');
     };
 
     const handleExportEmail = () => {
@@ -109,9 +155,9 @@ const StatisticsDashboard = () => {
         const emailBody = `Rapport des statistiques de promotion
 
 Filtres:
-- Mois: ${selectedMonth ? months.find(m => m.value === selectedMonth)?.label : 'Tous'}
 - Catégorie client: ${selectedClientCategory || 'Toutes'}  
-- Type de promotion: ${selectedPromoType || 'Tous'}
+- Période: ${periodOptions.find(p => p.value === period)?.label || period}
+- Métrique: ${metricOptions.find(m => m.value === metric)?.label || metric}
 
 Résultats:
 - Total des activations: ${statistics.totalActivations}
@@ -129,7 +175,7 @@ ${statistics.topPromotions.map((promo, i) =>
             <div>
                 <div>
                     <h1>Statistiques des promotions</h1>
-                    <p>Analyse des performances par client, promotion et période</p>
+                    <p>Analyse des performances par client et promotion</p>
                 </div>
 
                 {/* Filtres de recherche */}
@@ -138,24 +184,7 @@ ${statistics.topPromotions.map((promo, i) =>
                         <h2>Filtres de recherche</h2>
                     </div>
 
-                    <div>
-                        {/* Sélecteur de mois */}
-                        <div>
-                            <label>Période (Mois)</label>
-                            <select
-                                value={selectedMonth}
-                                onChange={(e) => setSelectedMonth(e.target.value)}
-                                disabled={isLoading}
-                            >
-                                <option value="">Tous les mois</option>
-                                {months.map(month => (
-                                    <option key={month.value} value={month.value}>
-                                        {month.label}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
+                    <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
                         {/* Catégorie client */}
                         <div>
                             <label>Catégorie client</label>
@@ -173,28 +202,44 @@ ${statistics.topPromotions.map((promo, i) =>
                             </select>
                         </div>
 
-                        {/* Type de promotion */}
+                        {/* Période */}
                         <div>
-                            <label>Type de promotion</label>
+                            <label>Période</label>
                             <select
-                                value={selectedPromoType}
-                                onChange={(e) => setSelectedPromoType(e.target.value)}
+                                value={period}
+                                onChange={(e) => setPeriod(e.target.value)}
                                 disabled={isLoading}
                             >
-                                <option value="">Tous les types</option>
-                                {promoTypes.map(type => (
-                                    <option key={type} value={type}>
-                                        {type}
+                                {periodOptions.map(option => (
+                                    <option key={option.value} value={option.value}>
+                                        {option.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Métrique */}
+                        <div>
+                            <label>Métrique</label>
+                            <select
+                                value={metric}
+                                onChange={(e) => setMetric(e.target.value)}
+                                disabled={isLoading}
+                            >
+                                {metricOptions.map(option => (
+                                    <option key={option.value} value={option.value}>
+                                        {option.label}
                                     </option>
                                 ))}
                             </select>
                         </div>
                     </div>
 
-                    <div>
+                    <div style={{ marginTop: '20px' }}>
                         <button
                             onClick={handleReset}
                             disabled={isLoading}
+                            style={{ marginRight: '10px' }}
                         >
                             Réinitialiser
                         </button>
@@ -210,16 +255,15 @@ ${statistics.topPromotions.map((promo, i) =>
 
                 {/* Gestion des erreurs */}
                 {error && (
-                    <div>
+                    <div style={{ color: 'red', margin: '20px 0' }}>
                         <div>
                             <h3>Erreur de chargement des données</h3>
                             <p>{error}</p>
                             <button
-                                onClick={() => fetchPromotionData({
-                                    month: selectedMonth,
-                                    clientCategory: selectedClientCategory,
-                                    promoType: selectedPromoType
-                                })}
+                                onClick={() => {
+                                    fetchPromotionData();
+                                    fetchTrendsData();
+                                }}
                             >
                                 Réessayer
                             </button>
@@ -228,45 +272,67 @@ ${statistics.topPromotions.map((promo, i) =>
                 )}
 
                 {/* État de chargement */}
-                {isInitialLoad && isLoading && (
-                    <div>
+                {isLoading && (
+                    <div style={{ margin: '20px 0' }}>
                         <p>Chargement des données...</p>
+                    </div>
+                )}
+
+                {/* Trends Visualization */}
+                {trendsData && !isLoading && (
+                    <div style={{ margin: '40px 0', maxWidth: '800px' }}>
+                        <h2>Tendances des {metricOptions.find(m => m.value === metric)?.label.toLowerCase()}</h2>
+                        <div style={{ height: '400px' }}>
+                            <Line
+                                data={trendsData}
+                                options={{
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        title: {
+                                            display: true,
+                                            text: `Tendances ${periodOptions.find(p => p.value === period)?.label.toLowerCase()}`
+                                        }
+                                    }
+                                }}
+                            />
+                        </div>
                     </div>
                 )}
 
                 {/* Affichage des résultats */}
                 {statistics && !isLoading && (
-                    <div>
+                    <div style={{ marginTop: '40px' }}>
                         {/* Métriques clés */}
-                        <div>
-                            <div>
+                        <div style={{ display: 'flex', gap: '20px', marginBottom: '30px' }}>
+                            <div style={{ padding: '20px', border: '1px solid #ddd', borderRadius: '5px', minWidth: '200px' }}>
                                 <h3>Total des activations</h3>
-                                <p>{statistics.totalActivations}</p>
+                                <p style={{ fontSize: '24px', fontWeight: 'bold' }}>{statistics.totalActivations}</p>
                             </div>
                         </div>
 
                         {/* Tableau des meilleures promotions */}
                         <div>
-                            <h3>Top des promotions activées</h3>
-                            <div>
-                                <table>
+                            <h2>Top des promotions activées</h2>
+                            <div style={{ overflowX: 'auto' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                     <thead>
-                                    <tr>
-                                        <th>Rang</th>
-                                        <th>Promotion</th>
-                                        <th>Catégorie</th>
-                                        <th>Type</th>
-                                        <th>Activations</th>
+                                    <tr style={{ backgroundColor: '#f2f2f2' }}>
+                                        <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Rang</th>
+                                        <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Promotion</th>
+                                        <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Catégorie</th>
+                                        <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Type</th>
+                                        <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Activations</th>
                                     </tr>
                                     </thead>
                                     <tbody>
                                     {statistics.topPromotions.map((promo, index) => (
-                                        <tr key={promo.id}>
-                                            <td>#{index + 1}</td>
-                                            <td>{promo.promoName}</td>
-                                            <td>{promo.clientCategory}</td>
-                                            <td>{promo.promoType}</td>
-                                            <td>{promo.activations}</td>
+                                        <tr key={promo.id} style={{ borderBottom: '1px solid #ddd' }}>
+                                            <td style={{ padding: '12px' }}>#{index + 1}</td>
+                                            <td style={{ padding: '12px' }}>{promo.promoName}</td>
+                                            <td style={{ padding: '12px' }}>{promo.clientCategory}</td>
+                                            <td style={{ padding: '12px' }}>{promo.promoType}</td>
+                                            <td style={{ padding: '12px' }}>{promo.activations}</td>
                                         </tr>
                                     ))}
                                     </tbody>
@@ -277,8 +343,8 @@ ${statistics.topPromotions.map((promo, i) =>
                 )}
 
                 {/* État vide */}
-                {!statistics && !isLoading && !isInitialLoad && (
-                    <div>
+                {!statistics && !isLoading && (
+                    <div style={{ margin: '20px 0' }}>
                         <h3>Aucune donnée disponible</h3>
                         <p>Essayez d'ajuster vos filtres ou revenez plus tard</p>
                     </div>
