@@ -56,8 +56,7 @@ public interface ActivationRepository extends JpaRepository<ActivationPromotion,
     List<Object[]> findTopPromotions(Pageable pageable);
 
 
-    // Activations filtrées par mois, type et catégorie
-    @Query(value = "SELECT to_char(a.dateActivation, 'Month'), COUNT(a.id) " +
+    @Query(value = "SELECT to_char(a.dateActivation, 'DD'), COUNT(a.id) " +
             "FROM ActivationPromotion a " +
             "JOIN a.promotion p " +
             "JOIN a.client c " +
@@ -65,8 +64,8 @@ public interface ActivationRepository extends JpaRepository<ActivationPromotion,
             "AND p.type = :promoType " +
             "AND EXTRACT(YEAR FROM a.dateActivation) = :year " +
             "AND EXTRACT(MONTH FROM a.dateActivation) = :month " +
-            "GROUP BY to_char(a.dateActivation, 'Month'), EXTRACT(MONTH FROM a.dateActivation) " +
-            "ORDER BY EXTRACT(MONTH FROM a.dateActivation)")
+            "GROUP BY to_char(a.dateActivation, 'DD') " +
+            "ORDER BY to_char(a.dateActivation, 'DD')")
     List<Object[]> findMonthlyActivations(@Param("clientCategory") String clientCategory,
                                           @Param("promoType") String promoType,
                                           @Param("year") int year,

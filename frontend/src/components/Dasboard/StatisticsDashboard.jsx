@@ -50,6 +50,28 @@ const StatisticsDashboard = () => {
     useEffect(() => {
         fetchTopPromos();
     }, []);
+    function capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+
+    function formatLabel(dayString, monthYearString) {
+        // dayString exemple : "Day 11"
+        // monthYearString exemple : "07/2025"
+
+        const dayNumber = parseInt(dayString.replace('Day ', ''), 10);
+        if (isNaN(dayNumber)) return dayString; // Sécurité
+
+        const [month, year] = monthYearString.split('/');
+
+        // Crée une date JS (mois indexé à 0)
+        const date = new Date(year, parseInt(month, 10) - 1, dayNumber);
+
+        // Format en français : jour numérique + mois complet
+        const options = { day: 'numeric', month: 'long' };
+        const formattedDate = date.toLocaleDateString('fr-FR', options);
+
+        return `le ${capitalizeFirstLetter(formattedDate)}`;
+    }
 
     const fetchTopPromos = async () => {
         try {
@@ -107,18 +129,21 @@ const StatisticsDashboard = () => {
 
             if (json.success && json.data) {
                 const trends = json.data;
+                // In the fetchStatistics success handler:
                 setChartData({
-                    labels: trends.months,
+                    labels: trends.trends.map(t => formatLabel(t.month, selectedMonth)),
                     datasets: [
                         {
                             label: `Activations ${selectedClientCategory} - ${selectedPromoType}`,
-                            data: trends.activations,
+                            data: trends.trends.map(t => t.activations),
                             borderColor: 'rgb(75, 192, 192)',
                             backgroundColor: 'rgba(75, 192, 192, 0.2)',
                             tension: 0.1
                         }
                     ]
                 });
+
+
             } else {
                 setChartData(null);
                 setError('Pas de données disponibles pour ces filtres');
@@ -325,45 +350,6 @@ const StatisticsDashboard = () => {
                                         }}
                                     />
                                 </div>
-
-                                {/* Tableau récapitulatif */}
-                                {chartData?.labels?.length > 0 && (
-                                    <div style={{ marginTop: '40px' }}>
-                                        <h3>Détails par Mois</h3>
-                                        <table style={{
-                                            width: '100%',
-                                            borderCollapse: 'collapse',
-                                            marginTop: '15px'
-                                        }}>
-                                            <thead>
-                                            <tr style={{ backgroundColor: '#f0f0f0' }}>
-                                                <th style={{ padding: '12px', textAlign: 'left', border: '1px solid #ddd' }}>Mois</th>
-                                                <th style={{ padding: '12px', textAlign: 'left', border: '1px solid #ddd' }}>Activations</th>
-                                                <th style={{ padding: '12px', textAlign: 'left', border: '1px solid #ddd' }}>Variation</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            {chartData.labels.map((month, index) => (
-                                                <tr key={`${month}-${index}`} style={{ border: '1px solid #ddd' }}>
-                                                    <td style={{ padding: '12px' }}>{month}</td>
-                                                    <td style={{ padding: '12px' }}>{chartData.datasets[0].data[index]}</td>
-                                                    <td style={{
-                                                        padding: '12px',
-                                                        color: index > 0 && chartData.datasets[0].data[index] > chartData.datasets[0].data[index - 1] ?
-                                                            '#52c41a' : '#f5222d'
-                                                    }}>
-                                                        {index > 0 ?
-                                                            `${Math.round(
-                                                                ((chartData.datasets[0].data[index] - chartData.datasets[0].data[index - 1]) /
-                                                                    chartData.datasets[0].data[index - 1]) * 100
-                                                            )}%` : '-'}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                )}
                             </div>
                         )}
 

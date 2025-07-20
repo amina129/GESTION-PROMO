@@ -45,7 +45,7 @@ public class StatisticsService {
 
         List<TrendDataDto> trends = results.stream()
                 .map(row -> new TrendDataDto(
-                        (String) row[0], // e.g. "Jan", "Fév"
+                        "Day " + row[0], // e.g. "Day 01", "Day 02"
                         ((Number) row[1]).intValue()
                 ))
                 .collect(Collectors.toList());
