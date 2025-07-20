@@ -1,7 +1,11 @@
 package com.codewithamina.gestionpromo.request;
 
 import com.codewithamina.gestionpromo.model.Fonction;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class JWTResponse {
     private String token;
     private String type = "Bearer";
@@ -16,24 +20,4 @@ public class JWTResponse {
         this.fonction = fonction;
     }
 
-    // Getters
-    public String getToken() {
-        return token;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public Fonction getFonction() {
-        return fonction;
-    }
 }

@@ -40,7 +40,7 @@ public class PromotionDTO {
     private BigDecimal valeur;
 
     @NotEmpty(message = "La liste des catégories clients ne doit pas être vide")
-    private List<@Pattern(regexp = "VIP|B2B|JP|privé", message = "Catégorie invalide") String> categorieClient;
+    private List<@Pattern(regexp = "VIP|B2B|GP|privé", message = "Catégorie invalide") String> categorieClient;
 
     @Pattern(regexp = "DATA|SMS|APPEL", message = "Le type d'unité doit être 'DATA', 'SMS' ou 'APPEL'")
     private String typeUnite; // Peut être null

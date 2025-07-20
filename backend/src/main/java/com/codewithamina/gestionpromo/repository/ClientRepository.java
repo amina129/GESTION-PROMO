@@ -24,6 +24,4 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
             @Param("email") String email,
             @Param("categorieClient") String categorieClient
     );
-    @Query("SELECT COUNT(c) FROM Client c")
-    long countAllClients();
 }

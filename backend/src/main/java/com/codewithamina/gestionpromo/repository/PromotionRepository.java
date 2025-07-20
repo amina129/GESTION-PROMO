@@ -19,7 +19,8 @@ public interface PromotionRepository extends JpaRepository<Promotion, Long> {
             "(:#{#sousType == null} = true OR p.sousType = :sousType) AND " +
             "(:#{#dateDebut == null} = true OR :#{#dateFin == null} = true OR " +
             " (p.dateDebut <= :dateFin AND p.dateFin >= :dateDebut)) AND " +
-            "(:#{#categorieClient == null} = true OR c.code = :categorieClient)")
+            "(:#{#categorieClient == null} = true OR c.code = :categorieClient) AND " +
+            "CURRENT_DATE >= p.dateDebut")
     List<Promotion> searchPromotions(
             @Param("nom") String nom,
             @Param("type") String type,
@@ -27,33 +28,6 @@ public interface PromotionRepository extends JpaRepository<Promotion, Long> {
             @Param("dateDebut") LocalDate dateDebut,
             @Param("dateFin") LocalDate dateFin,
             @Param("categorieClient") String categorieClient);
-
-
-    @Query("SELECT p FROM Promotion p JOIN p.categories c " +
-            "WHERE p.statut = 'ACTIF' " +
-            "AND :today BETWEEN p.dateDebut AND p.dateFin " +
-            "AND p.dateDebut >= :intervalStart " +
-            "AND p.dateFin <= :intervalEnd " +
-            "AND (:categorieClient IS NULL OR c.code = :categorieClient)")
-    List<Promotion> findAvailableByCategorieClientAndInterval(
-            @Param("categorieClient") String categorieClient,
-            @Param("today") LocalDate today,
-            @Param("intervalStart") LocalDate intervalStart,
-            @Param("intervalEnd") LocalDate intervalEnd);
-
-    @Query("SELECT p FROM Promotion p JOIN p.categories c WHERE " +
-            "c.code = :categorieClient AND " +
-            "p.dateDebut <= CURRENT_DATE AND " +
-            "p.dateFin >= CURRENT_DATE AND " +
-            "p.statut = 'ACTIF' AND " +
-            "NOT EXISTS (" +
-            "  SELECT ap FROM ActivationPromotion ap " +
-            "  WHERE ap.promotion.id = p.id AND ap.client.id = :clientId" +
-            ")")
-    List<Promotion> findAvailableByCategorieClientAndClientId(
-            @Param("categorieClient") String categorieClient,
-            @Param("clientId") Long clientId);
-
 
     @Query("SELECT p FROM Promotion p JOIN p.categories c " +
             "WHERE p.statut = 'ACTIF' " +
@@ -68,6 +42,7 @@ public interface PromotionRepository extends JpaRepository<Promotion, Long> {
             "c.code = :categorieClient AND " +
             "p.dateDebut <= :dateFin AND " +
             "p.dateFin >= :dateDebut AND " +
+            "p.dateDebut <= CURRENT_DATE AND " + // exclude test period
             "NOT EXISTS (" +
             "  SELECT ap FROM ActivationPromotion ap " +
             "  WHERE ap.promotion.id = p.id AND ap.client.id = :clientId" +
@@ -80,40 +55,4 @@ public interface PromotionRepository extends JpaRepository<Promotion, Long> {
 
     @EntityGraph(attributePaths = "categories")
     Optional<Promotion> findWithCategoriesById(Long id);
-
-    // FIXED: Corrected the findWithFilters method
-    @Query("SELECT DISTINCT p FROM Promotion p LEFT JOIN p.categories c WHERE " +
-            "(:clientCategory IS NULL OR c.code = :clientCategory) AND " +
-            "(:promoType IS NULL OR p.type = :promoType) AND " +
-            "(:startDate IS NULL OR p.dateDebut >= :startDate) AND " +
-            "(:endDate IS NULL OR p.dateFin <= :endDate)")
-    List<Promotion> findWithFilters(
-            @Param("month") String month,  // Note: this parameter isn't used in the query
-            @Param("clientCategory") String clientCategory,
-            @Param("promoType") String promoType,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate
-    );
-
-    // Alternative version if you want to use the month parameter
-    @Query("SELECT DISTINCT p FROM Promotion p LEFT JOIN p.categories c WHERE " +
-            "(:month IS NULL OR FUNCTION('MONTH', p.dateDebut) = :month OR FUNCTION('MONTH', p.dateFin) = :month) AND " +
-            "(:clientCategory IS NULL OR c.code = :clientCategory) AND " +
-            "(:promoType IS NULL OR p.type = :promoType) AND " +
-            "(:startDate IS NULL OR p.dateDebut >= :startDate) AND " +
-            "(:endDate IS NULL OR p.dateFin <= :endDate)")
-    List<Promotion> findWithFiltersIncludingMonth(
-            @Param("month") Integer month,  // Changed to Integer for month number
-            @Param("clientCategory") String clientCategory,
-            @Param("promoType") String promoType,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate
-    );
-
-
-    @Query("SELECT COUNT(p) FROM Promotion p")
-    long countAllPromotions();
-
-    @Query("SELECT COUNT(p) FROM Promotion p WHERE p.statut = 'active'")
-    long countActivePromotions();
 }

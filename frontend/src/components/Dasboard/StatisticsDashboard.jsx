@@ -378,6 +378,14 @@ Cordialement`);
                                                     title: {
                                                         display: true,
                                                         text: "Nombre d'activations"
+                                                    },
+                                                    // Ajoutez cette configuration pour forcer les nombres entiers
+                                                    ticks: {
+                                                        stepSize: 1,
+                                                        precision: 0,
+                                                        callback: function(value) {
+                                                            return Number.isInteger(value) ? value : '';
+                                                        }
                                                     }
                                                 }
                                             }
@@ -416,6 +424,13 @@ Cordialement`);
                                                 title: {
                                                     display: true,
                                                     text: "Activations"
+                                                },
+                                                ticks: {
+                                                    stepSize: 1,
+                                                    precision: 0,
+                                                    callback: function(value) {
+                                                        return Number.isInteger(value) ? value : '';
+                                                    }
                                                 }
                                             },
                                             x: {
