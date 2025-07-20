@@ -45,16 +45,17 @@ public interface ActivationRepository extends JpaRepository<ActivationPromotion,
     @Query("SELECT COUNT(ap) FROM ActivationPromotion ap WHERE ap.dateActivation >= :startOfMonth")
     long countThisMonthActivations(@Param("startOfMonth") LocalDate startOfMonth);
 
+
     @Query("""
-    SELECT p.id, c.categorieClient, p.type, COUNT(a.id)
+    SELECT p.nom, COUNT(a.id)
     FROM ActivationPromotion a
     JOIN a.promotion p
     JOIN a.client c
-    GROUP BY p.id, c.categorieClient, p.type
+    WHERE p.type = 'absolu'
+    GROUP BY p.nom
     ORDER BY COUNT(a.id) DESC
     """)
     List<Object[]> findTopPromotions(Pageable pageable);
-
 
     @Query(value = "SELECT to_char(a.dateActivation, 'DD'), COUNT(a.id) " +
             "FROM ActivationPromotion a " +

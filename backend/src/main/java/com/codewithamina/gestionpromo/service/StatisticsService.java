@@ -26,12 +26,11 @@ public class StatisticsService {
 
         return rows.stream().map(row ->
                 new TopPromotionDto(
-                        // Ici on suppose que row[0] = p.id (Long) mais si tu préfères le nom, adapte la requête
-                        String.valueOf(row[0]), // promoId converti en String (à adapter si tu récupères le nom)
-                        (String) row[1],        // clientCategory
-                        (String) row[2],        // promoType
-                        ((Number) row[3]).intValue(),
-                        0.0                     // Pas de revenue dans ta table
+                        (String) row[0],        // nom de la promotion
+                        "absolu",               // type fixe puisqu'on filtre par type absolu
+                        "Toutes catégories",    // ou vous pouvez ajouter la catégorie si nécessaire
+                        ((Number) row[1]).intValue(), // nombre d'activations
+                        0.0                     // revenue (pas utilisé)
                 )
         ).collect(Collectors.toList());
     }
@@ -45,7 +44,7 @@ public class StatisticsService {
 
         List<TrendDataDto> trends = results.stream()
                 .map(row -> new TrendDataDto(
-                        "Day " + row[0], // e.g. "Day 01", "Day 02"
+                        "Day " + row[0],
                         ((Number) row[1]).intValue()
                 ))
                 .collect(Collectors.toList());
