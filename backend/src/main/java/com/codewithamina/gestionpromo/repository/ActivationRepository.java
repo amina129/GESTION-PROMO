@@ -57,18 +57,16 @@ public interface ActivationRepository extends JpaRepository<ActivationPromotion,
 
 
     // Activations filtrées par mois, type et catégorie
-    @Query("""
-        SELECT FUNCTION('MONTHNAME', a.dateActivation), COUNT(a)
-        FROM ActivationPromotion a
-        JOIN a.promotion p
-        JOIN a.client c
-        WHERE c.categorieClient = :clientCategory
-          AND p.type = :promoType
-          AND YEAR(a.dateActivation) = :year
-          AND MONTH(a.dateActivation) = :month
-        GROUP BY FUNCTION('MONTH', a.dateActivation)
-        ORDER BY FUNCTION('MONTH', a.dateActivation)
-        """)
+    @Query(value = "SELECT to_char(a.dateActivation, 'Month'), COUNT(a.id) " +
+            "FROM ActivationPromotion a " +
+            "JOIN a.promotion p " +
+            "JOIN a.client c " +
+            "WHERE c.categorieClient = :clientCategory " +
+            "AND p.type = :promoType " +
+            "AND EXTRACT(YEAR FROM a.dateActivation) = :year " +
+            "AND EXTRACT(MONTH FROM a.dateActivation) = :month " +
+            "GROUP BY to_char(a.dateActivation, 'Month'), EXTRACT(MONTH FROM a.dateActivation) " +
+            "ORDER BY EXTRACT(MONTH FROM a.dateActivation)")
     List<Object[]> findMonthlyActivations(@Param("clientCategory") String clientCategory,
                                           @Param("promoType") String promoType,
                                           @Param("year") int year,

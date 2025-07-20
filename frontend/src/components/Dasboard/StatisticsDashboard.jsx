@@ -27,85 +27,102 @@ ChartJS.register(
 const { MonthPicker } = DatePicker;
 
 const StatisticsDashboard = () => {
-    // États des filtres
+    // Filter states
     const [selectedClientCategory, setSelectedClientCategory] = useState('');
     const [selectedPromoType, setSelectedPromoType] = useState('');
     const [selectedMonth, setSelectedMonth] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState(null);
+
+    // Data states
     const [chartData, setChartData] = useState(null);
     const [topPromosData, setTopPromosData] = useState(null);
 
+    // Status states
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+
     const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 
-    // Options statiques
+    // Static options
     const clientCategories = ['VIP', 'GP', 'Privé', 'B2B'];
     const promoTypes = ['absolu', 'relatif'];
 
-    // Charger les promos les plus activées au montage du composant
+    // Fetch top promotions on component mount
     useEffect(() => {
         fetchTopPromos();
     }, []);
 
-    // Mock data pour les promos les plus activées
     const fetchTopPromos = async () => {
         try {
-            // Simulation de délai d'API
-            await new Promise(resolve => setTimeout(resolve, 800));
+            setIsLoading(true);
+            const response = await fetch(`${API_BASE_URL}/statistics/promotions/top?limit=5`);
+            if (!response.ok) throw new Error(`Erreur ${response.status}`);
 
-            // Données mock pour les top promos absolues
-            const topPromos = [
-                { promoName: 'Promo Été 2023', activations: 1250 },
-                { promoName: 'Black Friday', activations: 980 },
-                { promoName: 'Soldes Hiver', activations: 870 },
-                { promoName: 'Rentrée scolaire', activations: 750 },
-                { promoName: 'Fête des mères', activations: 620 },
-            ];
+            const json = await response.json();
 
-            setTopPromosData({
-                labels: topPromos.map(promo => promo.promoName),
-                datasets: [
-                    {
-                        label: 'Nombre d\'activations',
-                        data: topPromos.map(promo => promo.activations),
-                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1
-                    }
-                ]
-            });
-
+            if (json.success && json.data) {
+                const topPromos = json.data;
+                setTopPromosData({
+                    labels: topPromos.map(promo => promo.promoName),
+                    datasets: [
+                        {
+                            label: "Nombre d'activations",
+                            data: topPromos.map(promo => promo.activations),
+                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                });
+            } else {
+                setError('Erreur lors du chargement des promotions');
+            }
         } catch (err) {
             console.error('Erreur lors du chargement des top promos:', err);
+            setError(err.message);
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    // Mock data - À remplacer par votre appel API réel
     const fetchStatistics = async () => {
+        if (!selectedClientCategory || !selectedPromoType || !selectedMonth) {
+            setError('Veuillez sélectionner tous les filtres');
+            return;
+        }
+
         setIsLoading(true);
         setError(null);
 
         try {
-            // Simulation de délai d'API
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            // Génération de données aléatoires pour la démo
-            const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun'];
-            const dataPoints = months.map(() => Math.floor(Math.random() * 100) + 20);
-
-            setChartData({
-                labels: months,
-                datasets: [
-                    {
-                        label: `Activations ${selectedClientCategory} - ${selectedPromoType}`,
-                        data: dataPoints,
-                        borderColor: 'rgb(75, 192, 192)',
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        tension: 0.1
-                    }
-                ]
+            const params = new URLSearchParams({
+                clientCategory: selectedClientCategory,
+                promoType: selectedPromoType,
+                monthYear: selectedMonth,
             });
 
+            const response = await fetch(`${API_BASE_URL}/statistics/promotions/activations?${params.toString()}`);
+            if (!response.ok) throw new Error(`Erreur ${response.status}`);
+
+            const json = await response.json();
+
+            if (json.success && json.data) {
+                const trends = json.data;
+                setChartData({
+                    labels: trends.months,
+                    datasets: [
+                        {
+                            label: `Activations ${selectedClientCategory} - ${selectedPromoType}`,
+                            data: trends.activations,
+                            borderColor: 'rgb(75, 192, 192)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            tension: 0.1
+                        }
+                    ]
+                });
+            } else {
+                setChartData(null);
+                setError('Pas de données disponibles pour ces filtres');
+            }
         } catch (err) {
             console.error('Erreur:', err);
             setError(err.message);
@@ -115,10 +132,6 @@ const StatisticsDashboard = () => {
     };
 
     const handleSearch = () => {
-        if (!selectedClientCategory || !selectedPromoType || !selectedMonth) {
-            setError('Veuillez sélectionner tous les filtres');
-            return;
-        }
         fetchStatistics();
     };
 
@@ -138,7 +151,7 @@ const StatisticsDashboard = () => {
                     <p style={{ color: '#666' }}>Visualisation des performances par catégorie client et type de promotion</p>
                 </div>
 
-                {/* Filtres de recherche - Déplacé en haut */}
+                {/* Filtres de recherche */}
                 <div style={{
                     margin: '20px 0',
                     padding: '20px',
@@ -170,7 +183,7 @@ const StatisticsDashboard = () => {
                                 }}
                             >
                                 <option value="">Sélectionnez...</option>
-                                {clientCategories.map(category => (
+                                {clientCategories?.map(category => (
                                     <option key={category} value={category}>
                                         {category}
                                     </option>
@@ -194,7 +207,7 @@ const StatisticsDashboard = () => {
                                 }}
                             >
                                 <option value="">Sélectionnez...</option>
-                                {promoTypes.map(type => (
+                                {promoTypes?.map(type => (
                                     <option key={type} value={type}>
                                         {type}
                                     </option>
@@ -248,7 +261,7 @@ const StatisticsDashboard = () => {
                     </div>
                 </div>
 
-                {/* Section des top promos - Rendu plus petit et positionné */}
+                {/* Section des résultats */}
                 <div style={{
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -256,7 +269,7 @@ const StatisticsDashboard = () => {
                     gap: '20px',
                     marginBottom: '20px'
                 }}>
-                    {/* Conteneur principal pour les résultats */}
+                    {/* Résultats principaux */}
                     <div style={{ flex: 1 }}>
                         {/* Gestion des erreurs */}
                         {error && (
@@ -272,7 +285,7 @@ const StatisticsDashboard = () => {
                             </div>
                         )}
 
-                        {/* Visualisation des données */}
+                        {/* Graphique + tableau */}
                         {chartData && !isLoading && (
                             <div style={{
                                 padding: '20px',
@@ -314,41 +327,43 @@ const StatisticsDashboard = () => {
                                 </div>
 
                                 {/* Tableau récapitulatif */}
-                                <div style={{ marginTop: '40px' }}>
-                                    <h3>Détails par Mois</h3>
-                                    <table style={{
-                                        width: '100%',
-                                        borderCollapse: 'collapse',
-                                        marginTop: '15px'
-                                    }}>
-                                        <thead>
-                                        <tr style={{ backgroundColor: '#f0f0f0' }}>
-                                            <th style={{ padding: '12px', textAlign: 'left', border: '1px solid #ddd' }}>Mois</th>
-                                            <th style={{ padding: '12px', textAlign: 'left', border: '1px solid #ddd' }}>Activations</th>
-                                            <th style={{ padding: '12px', textAlign: 'left', border: '1px solid #ddd' }}>Variation</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        {chartData.labels.map((month, index) => (
-                                            <tr key={month} style={{ border: '1px solid #ddd' }}>
-                                                <td style={{ padding: '12px' }}>{month}</td>
-                                                <td style={{ padding: '12px' }}>{chartData.datasets[0].data[index]}</td>
-                                                <td style={{
-                                                    padding: '12px',
-                                                    color: index > 0 && chartData.datasets[0].data[index] > chartData.datasets[0].data[index-1] ?
-                                                        '#52c41a' : '#f5222d'
-                                                }}>
-                                                    {index > 0 ?
-                                                        `${Math.round(
-                                                            ((chartData.datasets[0].data[index] - chartData.datasets[0].data[index-1]) /
-                                                                chartData.datasets[0].data[index-1]) * 100
-                                                        )}%` : '-'}
-                                                </td>
+                                {chartData?.labels?.length > 0 && (
+                                    <div style={{ marginTop: '40px' }}>
+                                        <h3>Détails par Mois</h3>
+                                        <table style={{
+                                            width: '100%',
+                                            borderCollapse: 'collapse',
+                                            marginTop: '15px'
+                                        }}>
+                                            <thead>
+                                            <tr style={{ backgroundColor: '#f0f0f0' }}>
+                                                <th style={{ padding: '12px', textAlign: 'left', border: '1px solid #ddd' }}>Mois</th>
+                                                <th style={{ padding: '12px', textAlign: 'left', border: '1px solid #ddd' }}>Activations</th>
+                                                <th style={{ padding: '12px', textAlign: 'left', border: '1px solid #ddd' }}>Variation</th>
                                             </tr>
-                                        ))}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                            </thead>
+                                            <tbody>
+                                            {chartData.labels.map((month, index) => (
+                                                <tr key={`${month}-${index}`} style={{ border: '1px solid #ddd' }}>
+                                                    <td style={{ padding: '12px' }}>{month}</td>
+                                                    <td style={{ padding: '12px' }}>{chartData.datasets[0].data[index]}</td>
+                                                    <td style={{
+                                                        padding: '12px',
+                                                        color: index > 0 && chartData.datasets[0].data[index] > chartData.datasets[0].data[index - 1] ?
+                                                            '#52c41a' : '#f5222d'
+                                                    }}>
+                                                        {index > 0 ?
+                                                            `${Math.round(
+                                                                ((chartData.datasets[0].data[index] - chartData.datasets[0].data[index - 1]) /
+                                                                    chartData.datasets[0].data[index - 1]) * 100
+                                                            )}%` : '-'}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
                             </div>
                         )}
 
@@ -366,7 +381,7 @@ const StatisticsDashboard = () => {
                         )}
                     </div>
 
-                    {/* Section des top promos - Positionnée à droite */}
+                    {/* Top promos à droite */}
                     {topPromosData && (
                         <div style={{
                             width: '350px',
@@ -383,12 +398,8 @@ const StatisticsDashboard = () => {
                                         responsive: true,
                                         maintainAspectRatio: false,
                                         plugins: {
-                                            title: {
-                                                display: false
-                                            },
-                                            legend: {
-                                                display: false
-                                            }
+                                            title: { display: false },
+                                            legend: { display: false }
                                         },
                                         scales: {
                                             y: {
