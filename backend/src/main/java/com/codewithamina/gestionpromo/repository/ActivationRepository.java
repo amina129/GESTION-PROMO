@@ -1,6 +1,7 @@
 package com.codewithamina.gestionpromo.repository;
 
 import com.codewithamina.gestionpromo.model.ActivationPromotion;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -32,9 +33,6 @@ public interface ActivationRepository extends JpaRepository<ActivationPromotion,
             "AND ap.dateActivation <= CURRENT_DATE AND ap.dateExpiration >= CURRENT_DATE")
     List<ActivationPromotion> findCurrentActivePromotionsByClientId(@Param("clientId") Long clientId);
     void deleteAll(Iterable<? extends ActivationPromotion> entities);
-    // In ActivationRepository.java
-    @Query("SELECT ap.promotion.id, COUNT(ap) FROM ActivationPromotion ap GROUP BY ap.promotion.id")
-    List<Object[]> countActivationsPerPromotion();
 
 
 
@@ -46,4 +44,33 @@ public interface ActivationRepository extends JpaRepository<ActivationPromotion,
     long countThisWeekActivations(@Param("startOfWeek") LocalDate startOfWeek);
     @Query("SELECT COUNT(ap) FROM ActivationPromotion ap WHERE ap.dateActivation >= :startOfMonth")
     long countThisMonthActivations(@Param("startOfMonth") LocalDate startOfMonth);
+
+    @Query("""
+    SELECT p.id, c.categorieClient, p.type, COUNT(a.id)
+    FROM ActivationPromotion a
+    JOIN a.promotion p
+    JOIN a.client c
+    GROUP BY p.id, c.categorieClient, p.type
+    ORDER BY COUNT(a.id) DESC
+    """)
+    List<Object[]> findTopPromotions(Pageable pageable);
+
+
+    // Activations filtrées par mois, type et catégorie
+    @Query("""
+        SELECT FUNCTION('MONTHNAME', a.dateActivation), COUNT(a)
+        FROM ActivationPromotion a
+        JOIN a.promotion p
+        JOIN a.client c
+        WHERE c.categorieClient = :clientCategory
+          AND p.type = :promoType
+          AND YEAR(a.dateActivation) = :year
+          AND MONTH(a.dateActivation) = :month
+        GROUP BY FUNCTION('MONTH', a.dateActivation)
+        ORDER BY FUNCTION('MONTH', a.dateActivation)
+        """)
+    List<Object[]> findMonthlyActivations(@Param("clientCategory") String clientCategory,
+                                          @Param("promoType") String promoType,
+                                          @Param("year") int year,
+                                          @Param("month") int month);
 }
