@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Line, Bar } from 'react-chartjs-2';
 import { DatePicker } from 'antd';
 import {
@@ -12,6 +12,7 @@ import {
     Tooltip,
     Legend
 } from 'chart.js';
+import './StatisticsDashboard.css';
 
 ChartJS.register(
     CategoryScale,
@@ -30,7 +31,7 @@ const StatisticsDashboard = () => {
     // Filter states
     const [selectedClientCategory, setSelectedClientCategory] = useState('');
     const [selectedPromoType, setSelectedPromoType] = useState('');
-    const [selectedMonth, setSelectedMonth] = useState(null);
+    const [selectedMonth, setSelectedMonth] = useState('');
 
     // Data states
     const [chartData, setChartData] = useState(null);
@@ -39,6 +40,10 @@ const StatisticsDashboard = () => {
     // Status states
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [isEmailLoading, setIsEmailLoading] = useState(false);
+
+    // Chart reference for email functionality
+    const chartRef = useRef(null);
 
     const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 
@@ -50,23 +55,17 @@ const StatisticsDashboard = () => {
     useEffect(() => {
         fetchTopPromos();
     }, []);
+
     function capitalizeFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
 
     function formatLabel(dayString, monthYearString) {
-        // dayString exemple : "Day 11"
-        // monthYearString exemple : "07/2025"
-
         const dayNumber = parseInt(dayString.replace('Day ', ''), 10);
-        if (isNaN(dayNumber)) return dayString; // Sécurité
+        if (isNaN(dayNumber)) return dayString;
 
         const [month, year] = monthYearString.split('/');
-
-        // Crée une date JS (mois indexé à 0)
         const date = new Date(year, parseInt(month, 10) - 1, dayNumber);
-
-        // Format en français : jour numérique + mois complet
         const options = { day: 'numeric', month: 'long' };
         const formattedDate = date.toLocaleDateString('fr-FR', options);
 
@@ -129,7 +128,6 @@ const StatisticsDashboard = () => {
 
             if (json.success && json.data) {
                 const trends = json.data;
-                // In the fetchStatistics success handler:
                 setChartData({
                     labels: trends.trends.map(t => formatLabel(t.month, selectedMonth)),
                     datasets: [
@@ -142,8 +140,6 @@ const StatisticsDashboard = () => {
                         }
                     ]
                 });
-
-
             } else {
                 setChartData(null);
                 setError('Pas de données disponibles pour ces filtres');
@@ -156,6 +152,82 @@ const StatisticsDashboard = () => {
         }
     };
 
+    const handleEmailChart = async () => {
+        if (!chartRef.current || !chartData) {
+            setError('Aucun graphique disponible à envoyer');
+            return;
+        }
+
+        setIsEmailLoading(true);
+
+        try {
+            // Get the chart canvas and convert to blob
+            const canvas = chartRef.current.canvas;
+
+            // Convert canvas to blob
+            canvas.toBlob((blob) => {
+                if (blob) {
+                    // Create a file from the blob
+                    const file = new File([blob], `statistiques_${selectedClientCategory}_${selectedPromoType}_${selectedMonth}.png`, {
+                        type: 'image/png'
+                    });
+
+                    // Create email content
+                    const subject = encodeURIComponent(`Statistiques - ${selectedClientCategory} ${selectedPromoType} (${selectedMonth})`);
+                    const body = encodeURIComponent(`Bonjour,
+
+Veuillez trouver ci-joint le graphique des statistiques d'activations de promotions pour :
+- Catégorie client : ${selectedClientCategory}
+- Type de promotion : ${selectedPromoType}
+- Période : ${selectedMonth}
+
+Cordialement`);
+
+                    // For Gmail web interface with attachment, we need to use a different approach
+                    // Since we can't directly attach files via URL, we'll copy the image to clipboard
+                    // and provide instructions to the user
+
+                    canvas.toBlob((blob) => {
+                        navigator.clipboard.write([
+                            new ClipboardItem({
+                                'image/png': blob
+                            })
+                        ]).then(() => {
+                            // Open Gmail compose window
+                            const gmailUrl = `https://mail.google.com/mail/u/0/#compose?subject=${subject}&body=${body}`;
+                            window.open(gmailUrl, '_blank');
+
+                            // Show success message with instructions
+                            alert('Le graphique a été copié dans le presse-papiers. Gmail va s\'ouvrir dans un nouvel onglet. Vous pouvez coller l\'image (Ctrl+V) dans votre email.');
+                        }).catch((err) => {
+                            console.error('Erreur lors de la copie:', err);
+                            // Fallback: download the image
+                            const url = canvas.toDataURL('image/png');
+                            const link = document.createElement('a');
+                            link.download = `statistiques_${selectedClientCategory}_${selectedPromoType}_${selectedMonth}.png`;
+                            link.href = url;
+                            link.click();
+
+                            // Open Gmail
+                            const gmailUrl = `https://mail.google.com/mail/u/0/#compose?subject=${subject}&body=${body}`;
+                            window.open(gmailUrl, '_blank');
+
+                            alert('Le graphique a été téléchargé. Gmail va s\'ouvrir dans un nouvel onglet. Vous pouvez attacher le fichier téléchargé à votre email.');
+                        });
+                    }, 'image/png');
+                } else {
+                    setError('Erreur lors de la génération de l\'image');
+                }
+                setIsEmailLoading(false);
+            }, 'image/png');
+
+        } catch (err) {
+            console.error('Erreur lors de l\'envoi par email:', err);
+            setError('Erreur lors de la préparation de l\'email');
+            setIsEmailLoading(false);
+        }
+    };
+
     const handleSearch = () => {
         fetchStatistics();
     };
@@ -163,49 +235,28 @@ const StatisticsDashboard = () => {
     const handleReset = () => {
         setSelectedClientCategory('');
         setSelectedPromoType('');
-        setSelectedMonth(null);
+        setSelectedMonth('');
         setChartData(null);
         setError(null);
     };
 
     return (
-        <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+        <div className="dashboard-container">
             <div>
-                <div style={{ marginBottom: '30px' }}>
-                    <h1 style={{ color: '#333' }}>Statistiques des Promotions</h1>
-                    <p style={{ color: '#666' }}>Visualisation des performances par catégorie client et type de promotion</p>
-                </div>
-
                 {/* Filtres de recherche */}
-                <div style={{
-                    margin: '20px 0',
-                    padding: '20px',
-                    backgroundColor: '#f8f9fa',
-                    borderRadius: '8px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                }}>
-                    <h2 style={{ marginTop: 0 }}>Filtres de Recherche</h2>
+                <div className="filters-section">
+                    <h2 className="filters-title">Filtres de Recherche</h2>
 
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-                        gap: '20px',
-                        marginBottom: '20px'
-                    }}>
+                    <div className="filters-grid">
                         {/* Catégorie client */}
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+                        <div className="filter-field">
+                            <label className="filter-label">
                                 Catégorie Client
                             </label>
                             <select
                                 value={selectedClientCategory}
                                 onChange={(e) => setSelectedClientCategory(e.target.value)}
-                                style={{
-                                    width: '100%',
-                                    padding: '10px',
-                                    borderRadius: '4px',
-                                    border: '1px solid #ced4da'
-                                }}
+                                className="filter-select"
                             >
                                 <option value="">Sélectionnez...</option>
                                 {clientCategories?.map(category => (
@@ -217,19 +268,14 @@ const StatisticsDashboard = () => {
                         </div>
 
                         {/* Type de promotion */}
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+                        <div className="filter-field">
+                            <label className="filter-label">
                                 Type de Promotion
                             </label>
                             <select
                                 value={selectedPromoType}
                                 onChange={(e) => setSelectedPromoType(e.target.value)}
-                                style={{
-                                    width: '100%',
-                                    padding: '10px',
-                                    borderRadius: '4px',
-                                    border: '1px solid #ced4da'
-                                }}
+                                className="filter-select"
                             >
                                 <option value="">Sélectionnez...</option>
                                 {promoTypes?.map(type => (
@@ -241,12 +287,12 @@ const StatisticsDashboard = () => {
                         </div>
 
                         {/* Période */}
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+                        <div className="filter-field">
+                            <label className="filter-label">
                                 Mois et Année
                             </label>
                             <MonthPicker
-                                style={{ width: '100%', padding: '8px' }}
+                                className="month-picker"
                                 placeholder="Sélectionnez mois/année"
                                 format="MM/YYYY"
                                 onChange={(date, dateString) => setSelectedMonth(dateString)}
@@ -254,32 +300,18 @@ const StatisticsDashboard = () => {
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '10px' }}>
+                    <div className="buttons-container">
                         <button
                             onClick={handleSearch}
                             disabled={isLoading}
-                            style={{
-                                padding: '10px 20px',
-                                backgroundColor: '#1890ff',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                                fontWeight: '500'
-                            }}
+                            className="search-button"
                         >
                             {isLoading ? 'Recherche en cours...' : 'Rechercher'}
                         </button>
 
                         <button
                             onClick={handleReset}
-                            style={{
-                                padding: '10px 20px',
-                                backgroundColor: '#f0f0f0',
-                                border: '1px solid #d9d9d9',
-                                borderRadius: '4px',
-                                cursor: 'pointer'
-                            }}
+                            className="reset-button"
                         >
                             Réinitialiser
                         </button>
@@ -287,43 +319,45 @@ const StatisticsDashboard = () => {
                 </div>
 
                 {/* Section des résultats */}
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                    gap: '20px',
-                    marginBottom: '20px'
-                }}>
+                <div className="results-section">
                     {/* Résultats principaux */}
-                    <div style={{ flex: 1 }}>
+                    <div className="main-results">
                         {/* Gestion des erreurs */}
                         {error && (
-                            <div style={{
-                                color: '#721c24',
-                                backgroundColor: '#f8d7da',
-                                borderColor: '#f5c6cb',
-                                padding: '15px',
-                                borderRadius: '4px',
-                                marginBottom: '20px'
-                            }}>
+                            <div className="error-message">
                                 {error}
                             </div>
                         )}
 
                         {/* Graphique + tableau */}
                         {chartData && !isLoading && (
-                            <div style={{
-                                padding: '20px',
-                                backgroundColor: 'white',
-                                borderRadius: '8px',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                            }}>
-                                <h2 style={{ marginTop: 0 }}>
-                                    Statistiques pour {selectedClientCategory} - {selectedPromoType} ({selectedMonth})
-                                </h2>
+                            <div className="chart-container">
+                                <div className="chart-header">
+                                    <h2 className="chart-title">
+                                        Statistiques pour {selectedClientCategory} - {selectedPromoType} ({selectedMonth})
+                                    </h2>
 
-                                <div style={{ height: '400px', marginTop: '30px' }}>
+                                    <button
+                                        onClick={handleEmailChart}
+                                        disabled={isEmailLoading}
+                                        className="email-button"
+                                    >
+                                        {isEmailLoading ? (
+                                            <>
+                                                <span>⏳</span>
+                                                Préparation...
+                                            </>
+                                        ) : (
+                                            <>
+                                                Envoyer par Email
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+
+                                <div className="chart-wrapper">
                                     <Line
+                                        ref={chartRef}
                                         data={chartData}
                                         options={{
                                             responsive: true,
@@ -355,12 +389,7 @@ const StatisticsDashboard = () => {
 
                         {/* État vide */}
                         {!chartData && !isLoading && !error && (
-                            <div style={{
-                                textAlign: 'center',
-                                padding: '40px',
-                                backgroundColor: '#f8f9fa',
-                                borderRadius: '8px'
-                            }}>
+                            <div className="empty-state">
                                 <h3>Aucune donnée à afficher</h3>
                                 <p>Veuillez sélectionner des critères de recherche et cliquer sur "Rechercher"</p>
                             </div>
@@ -369,15 +398,9 @@ const StatisticsDashboard = () => {
 
                     {/* Top promos à droite */}
                     {topPromosData && (
-                        <div style={{
-                            width: '350px',
-                            padding: '15px',
-                            backgroundColor: 'white',
-                            borderRadius: '8px',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                        }}>
-                            <h3 style={{ marginTop: 0, fontSize: '16px' }}>Promotions Absolues les Plus Activées</h3>
-                            <div style={{ height: '250px', marginTop: '15px' }}>
+                        <div className="top-promos-sidebar">
+                            <h3 className="top-promos-title">Promotions Absolues les Plus Activées</h3>
+                            <div className="top-promos-chart">
                                 <Bar
                                     data={topPromosData}
                                     options={{
