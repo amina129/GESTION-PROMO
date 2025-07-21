@@ -9,7 +9,13 @@ const ClientPromotionPage = ({ client, onBack }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-
+    // Nouveaux états pour le modal d'extension
+    const [showExtendModal, setShowExtendModal] = useState(false);
+    const [extensionData, setExtensionData] = useState({
+        activationId: null,
+        currentEndDate: '',
+        newEndDate: ''
+    });
 
     // Assignment states
     const [assignmentDates, setAssignmentDates] = useState({
@@ -139,25 +145,45 @@ const ClientPromotionPage = ({ client, onBack }) => {
             }
         });
     };
-    const extendPromotionValidity = async (activationId, currentEndDate) => {
-        const newDate = prompt("Entrez la nouvelle date de fin (YYYY-MM-DD):", currentEndDate);
 
-        if (!newDate) return; // L'utilisateur a annulé
+    // Nouvelle version de extendPromotionValidity avec modal
+    const handleExtendClick = (activationId, currentEndDate) => {
+        setExtensionData({
+            activationId,
+            currentEndDate,
+            newEndDate: currentEndDate
+        });
+        setShowExtendModal(true);
+    };
+
+    const handleExtensionSubmit = async () => {
+        if (!extensionData.newEndDate) {
+            setError("Veuillez saisir une date valide");
+            return;
+        }
+
+        // Trouver la promotion concernée pour vérifier sa date de début
+        const promotion = assignedPromotions.find(p => p.activationId === extensionData.activationId);
+
+        if (promotion && new Date(extensionData.newEndDate) < new Date(promotion.dateActivation)) {
+            setError("La date de fin doit être après la date de début");
+            return;
+        }
 
         try {
             setLoading(true);
             await authService.api.put(
-                `/clients/${client.id}/promotions/${activationId}/extend`,
+                `/clients/${client.id}/promotions/${extensionData.activationId}/extend`,
                 null,
-                { params: { newDateFin: newDate } }
+                { params: { newDateFin: extensionData.newEndDate } }
             );
 
-            // Recharger les promotions assignées
             await loadAssignedPromotions();
-            alert('Période de validité étendue avec succès !');
+            setShowExtendModal(false);
+            alert('Validité prolongée avec succès !');
         } catch (err) {
             console.error("Erreur lors de l'extension:", err);
-            alert(err.response?.data?.message || "Erreur lors de l'extension de la période");
+            setError(err.response?.data?.message || "Erreur lors de l'extension de la période");
         } finally {
             setLoading(false);
         }
@@ -178,18 +204,13 @@ const ClientPromotionPage = ({ client, onBack }) => {
         setError(null);
 
         try {
-            // Appel API pour annuler les assignements sélectionnés
             await authService.api.delete(`/clients/${client.id}/promotions/assignments`, {
                 data: selectedForCancellation
             });
 
-            // Recharger les promotions assignées
             await loadAssignedPromotions();
-
-            // Reset
             setSelectedForCancellation([]);
             setShowCancelMode(false);
-
             alert(`${selectedForCancellation.length} promotion(s) annulée(s) avec succès !`);
         } catch (err) {
             console.error("Erreur lors de l'annulation:", err);
@@ -258,6 +279,60 @@ const ClientPromotionPage = ({ client, onBack }) => {
         }
     };
 
+    // Composant modal pour l'extension
+    const ExtensionModal = () => (
+        <div className="modal-overlay" onClick={() => setShowExtendModal(false)}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                    <h3>Prolonger la validité</h3>
+                    <button className="modal-close" onClick={() => setShowExtendModal(false)}>
+                        ×
+                    </button>
+                </div>
+
+                <div className="modal-body">
+                    <div className="form-group">
+                        <label>Date de fin actuelle</label>
+                        <input
+                            type="text"
+                            value={formatDate(extensionData.currentEndDate)}
+                            disabled
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label>Nouvelle date de fin</label>
+                        <input
+                            type="date"
+                            value={extensionData.newEndDate}
+                            onChange={(e) => setExtensionData(prev => ({
+                                ...prev,
+                                newEndDate: e.target.value
+                            }))}
+                            min={extensionData.currentEndDate}
+                        />
+                    </div>
+                </div>
+
+                <div className="modal-footer">
+                    <button
+                        className="button button-secondary"
+                        onClick={() => setShowExtendModal(false)}
+                    >
+                        Annuler
+                    </button>
+                    <button
+                        className="button button-primary"
+                        onClick={handleExtensionSubmit}
+                        disabled={!extensionData.newEndDate || loading}
+                    >
+                        {loading ? 'En cours...' : 'Confirmer'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+
     return (
         <div className="promotions-container">
             {/* Header avec bouton retour */}
@@ -270,7 +345,7 @@ const ClientPromotionPage = ({ client, onBack }) => {
                     <ArrowLeft className="button-icon" />
                     Retour
                 </button>
-                <h1>plus de detail sur les promo</h1>
+                <h1>Gestion des promotions</h1>
             </div>
 
             {/* Informations du client */}
@@ -285,12 +360,9 @@ const ClientPromotionPage = ({ client, onBack }) => {
                     <div>
                         <strong>Nom complet:</strong> {client.prenom} {client.nom}
                     </div>
-                    <div >
-                    </div>
                     <div>
                         <strong>Email:</strong> {client.email}
                     </div>
-
                 </div>
             </div>
 
@@ -317,8 +389,7 @@ const ClientPromotionPage = ({ client, onBack }) => {
                                     </>
                                 ) : (
                                     <>
-                                        <Trash2 className="button-icon" />
-                                        Annuler assignements
+                                        Désactiver promo
                                     </>
                                 )}
                             </button>
@@ -514,7 +585,7 @@ const ClientPromotionPage = ({ client, onBack }) => {
                                             </div>
                                         </div>
 
-                                        {!showCancelMode && promotion.statut === 'ACTIVE' && (
+                                        {!showCancelMode && (promotion.statut === 'ACTIVE' || promotion.statut === 'UPCOMING') && (
                                             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
                                                 {promotion.joursRestants !== null && (
                                                     <div style={{ display: 'flex', alignItems: 'center', color: promotion.joursRestants <= 7 ? '#e74c3c' : '#27ae60', fontSize: '14px', fontWeight: '500' }}>
@@ -529,11 +600,11 @@ const ClientPromotionPage = ({ client, onBack }) => {
                                                     className="button button-primary"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        extendPromotionValidity(promotion.activationId, promotion.dateExpiration);
+                                                        handleExtendClick(promotion.activationId, promotion.dateExpiration);
                                                     }}
                                                     style={{ padding: '5px 10px', fontSize: '12px' }}
                                                 >
-                                                    Modifier la validité
+                                                    Prolonger la validité
                                                 </button>
                                             </div>
                                         )}
@@ -585,6 +656,9 @@ const ClientPromotionPage = ({ client, onBack }) => {
                     error={error}
                 />
             )}
+
+            {/* Modal d'extension de validité */}
+            {showExtendModal && <ExtensionModal />}
         </div>
     );
 };

@@ -172,8 +172,8 @@ const ClientsManagement = () => {
                                 {client.categorieClient}
                             </td>
                             <td>
-                                <button className="button button-secondary" onClick={() => handleClientSelect(client)}>
-                                    Rechercher promo
+                                <button className="buttonpromo" onClick={() => handleClientSelect(client)}>
+                                    promo
                                 </button>
                             </td>
                         </tr>

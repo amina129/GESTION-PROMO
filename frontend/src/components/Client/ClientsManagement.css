@@ -620,3 +620,68 @@
     align-items: center;
     gap: 5px;
 }
+.buttonpromo {
+    /* Reset button styles */
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+
+    /* Link-like styling */
+    color: #ff6600; /* Orange color */
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: all 0.2s ease;
+
+    /* Add some spacing if needed */
+    margin: 0 5px;
+    display: inline-block;
+}
+
+/* Hover state */
+.buttonpromo:hover {
+    color: #e65c00; /* Darker orange */
+    text-decoration-thickness: 2px;
+}
+
+/* Active state */
+.buttonpromo:active {
+    color: #cc5200; /* Even darker orange */
+}
+
+/* Focus state for accessibility */
+.buttonpromo:focus {
+    outline: 2px solid #ff6600;
+    outline-offset: 2px;
+}
+
+/* White variant */
+.buttonpromo.white {
+    color: white;
+    text-decoration-color: rgba(255,255,255,0.5);
+}
+.buttonpromo.white:hover {
+    color: white;
+    text-decoration-color: white;
+}
+
+/* Black variant */
+.buttonpromo.black {
+    color: black;
+    text-decoration-color: rgba(0,0,0,0.3);
+}
+.buttonpromo.black:hover {
+    color: black;
+    text-decoration-color: black;
+}
+
+/* Orange variant (default) */
+.buttonpromo.orange {
+    color: #ff6600;
+    text-decoration-color: rgba(255,102,0,0.3);
+}
+.buttonpromo.orange:hover {
+    color: #ff6600;
+    text-decoration-color: #ff6600;
+}
