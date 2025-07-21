@@ -27,11 +27,154 @@ ChartJS.register(
 
 const { MonthPicker } = DatePicker;
 
+const modalStyles = `
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 8px;
+    padding: 0;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #333;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    color: #333;
+    background-color: #f0f0f0;
+    border-radius: 50%;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-body ul {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    margin: 15px 0;
+}
+
+.modal-body li {
+    margin: 5px 0;
+}
+
+.email-input-container {
+    margin-top: 20px;
+}
+
+.email-input-container label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+}
+
+.email-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.email-input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 20px;
+    border-top: 1px solid #e0e0e0;
+    background-color: #f8f9fa;
+}
+
+.cancel-button, .send-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.cancel-button {
+    background-color: #6c757d;
+    color: white;
+}
+
+.cancel-button:hover {
+    background-color: #5a6268;
+}
+
+.send-button {
+    background-color: #007bff;
+    color: white;
+}
+
+.send-button:hover:not(:disabled) {
+    background-color: #0056b3;
+}
+
+.send-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+`;
+
 const StatisticsDashboard = () => {
     // Filter states
     const [selectedClientCategory, setSelectedClientCategory] = useState('');
     const [selectedPromoType, setSelectedPromoType] = useState('');
     const [selectedMonth, setSelectedMonth] = useState('');
+    const [emailAddress, setEmailAddress] = useState('');
+    const [showEmailModal, setShowEmailModal] = useState(false);
 
     // Data states
     const [chartData, setChartData] = useState(null);
@@ -152,80 +295,122 @@ const StatisticsDashboard = () => {
         }
     };
 
+    const sendEmailToBackend = async (email) => {
+        if (!email) {
+            setError('Veuillez saisir une adresse email');
+            return;
+        }
+
+        setIsEmailLoading(true);
+        setShowEmailModal(false);
+
+        try {
+            const canvas = chartRef.current.canvas;
+            const blob = await new Promise((resolve) => {
+                canvas.toBlob(resolve, 'image/png', 1.0);
+            });
+
+            if (!blob) {
+                throw new Error('Erreur lors de la génération de l\'image');
+            }
+
+            const formData = new FormData();
+            const fileName = `statistiques_${selectedClientCategory}_${selectedPromoType}_${selectedMonth}.png`;
+            const file = new File([blob], fileName, { type: 'image/png' });
+
+            formData.append('file', file);
+            formData.append('email', email);
+            formData.append('clientCategory', selectedClientCategory);
+            formData.append('promoType', selectedPromoType);
+            formData.append('period', selectedMonth);
+
+            const response = await fetch(`${API_BASE_URL}/email/send-chart`, {
+                method: 'POST',
+                body: formData,
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                alert('Email envoyé avec succès !');
+                setEmailAddress('');
+            } else {
+                throw new Error(result.message || 'Erreur lors de l\'envoi de l\'email');
+            }
+
+        } catch (err) {
+            console.error('Erreur lors de l\'envoi par email:', err);
+            setError(`Erreur lors de l'envoi de l'email: ${err.message}`);
+        } finally {
+            setIsEmailLoading(false);
+        }
+    };
+
     const handleEmailChart = async () => {
         if (!chartRef.current || !chartData) {
             setError('Aucun graphique disponible à envoyer');
             return;
         }
+        setShowEmailModal(true);
+    };
 
-        setIsEmailLoading(true);
+    const EmailModal = () => {
+        if (!showEmailModal) return null;
 
-        try {
-            // Get the chart canvas and convert to blob
-            const canvas = chartRef.current.canvas;
+        return (
+            <div className="modal-overlay" onClick={() => setShowEmailModal(false)}>
+                <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                    <div className="modal-header">
+                        <h3>Envoyer le graphique par email</h3>
+                        <button
+                            className="modal-close"
+                            onClick={() => setShowEmailModal(false)}
+                        >
+                            ×
+                        </button>
+                    </div>
 
-            // Convert canvas to blob
-            canvas.toBlob((blob) => {
-                if (blob) {
-                    // Create a file from the blob
-                    const file = new File([blob], `statistiques_${selectedClientCategory}_${selectedPromoType}_${selectedMonth}.png`, {
-                        type: 'image/png'
-                    });
+                    <div className="modal-body">
+                        <p>Le graphique sera envoyé avec les informations suivantes :</p>
+                        <ul>
+                            <li><strong>Catégorie :</strong> {selectedClientCategory}</li>
+                            <li><strong>Type de promotion :</strong> {selectedPromoType}</li>
+                            <li><strong>Période :</strong> {selectedMonth}</li>
+                        </ul>
 
-                    // Create email content
-                    const subject = encodeURIComponent(`Statistiques - ${selectedClientCategory} ${selectedPromoType} (${selectedMonth})`);
-                    const body = encodeURIComponent(`Bonjour,
+                        <div className="email-input-container">
+                            <label htmlFor="email-input">Adresse email du destinataire :</label>
+                            <input
+                                id="email-input"
+                                type="email"
+                                value={emailAddress}
+                                onChange={(e) => setEmailAddress(e.target.value)}
+                                placeholder="exemple@domain.com"
+                                className="email-input"
+                                autoFocus
+                            />
+                        </div>
+                    </div>
 
-Veuillez trouver ci-joint le graphique des statistiques d'activations de promotions pour :
-- Catégorie client : ${selectedClientCategory}
-- Type de promotion : ${selectedPromoType}
-- Période : ${selectedMonth}
-
-Cordialement`);
-
-                    // For Gmail web interface with attachment, we need to use a different approach
-                    // Since we can't directly attach files via URL, we'll copy the image to clipboard
-                    // and provide instructions to the user
-
-                    canvas.toBlob((blob) => {
-                        navigator.clipboard.write([
-                            new ClipboardItem({
-                                'image/png': blob
-                            })
-                        ]).then(() => {
-                            // Open Gmail compose window
-                            const gmailUrl = `https://mail.google.com/mail/u/0/#compose?subject=${subject}&body=${body}`;
-                            window.open(gmailUrl, '_blank');
-
-                            // Show success message with instructions
-                            alert('Le graphique a été copié dans le presse-papiers. Gmail va s\'ouvrir dans un nouvel onglet. Vous pouvez coller l\'image (Ctrl+V) dans votre email.');
-                        }).catch((err) => {
-                            console.error('Erreur lors de la copie:', err);
-                            // Fallback: download the image
-                            const url = canvas.toDataURL('image/png');
-                            const link = document.createElement('a');
-                            link.download = `statistiques_${selectedClientCategory}_${selectedPromoType}_${selectedMonth}.png`;
-                            link.href = url;
-                            link.click();
-
-                            // Open Gmail
-                            const gmailUrl = `https://mail.google.com/mail/u/0/#compose?subject=${subject}&body=${body}`;
-                            window.open(gmailUrl, '_blank');
-
-                            alert('Le graphique a été téléchargé. Gmail va s\'ouvrir dans un nouvel onglet. Vous pouvez attacher le fichier téléchargé à votre email.');
-                        });
-                    }, 'image/png');
-                } else {
-                    setError('Erreur lors de la génération de l\'image');
-                }
-                setIsEmailLoading(false);
-            }, 'image/png');
-
-        } catch (err) {
-            console.error('Erreur lors de l\'envoi par email:', err);
-            setError('Erreur lors de la préparation de l\'email');
-            setIsEmailLoading(false);
-        }
+                    <div className="modal-footer">
+                        <button
+                            onClick={() => setShowEmailModal(false)}
+                            className="cancel-button"
+                        >
+                            Annuler
+                        </button>
+                        <button
+                            onClick={() => sendEmailToBackend(emailAddress)}
+                            disabled={isEmailLoading || !emailAddress}
+                            className="send-button"
+                        >
+                            {isEmailLoading ? 'Envoi...' : 'Envoyer'}
+                        </button>
+                    </div>
+                </div>
+                <style>{modalStyles}</style>
+            </div>
+        );
     };
 
     const handleSearch = () => {
@@ -243,12 +428,10 @@ Cordialement`);
     return (
         <div className="dashboard-container">
             <div>
-                {/* Filtres de recherche */}
                 <div className="filters-section">
                     <h2 className="filters-title">Filtres de Recherche</h2>
 
                     <div className="filters-grid">
-                        {/* Catégorie client */}
                         <div className="filter-field">
                             <label className="filter-label">
                                 Catégorie Client
@@ -267,7 +450,6 @@ Cordialement`);
                             </select>
                         </div>
 
-                        {/* Type de promotion */}
                         <div className="filter-field">
                             <label className="filter-label">
                                 Type de Promotion
@@ -286,7 +468,6 @@ Cordialement`);
                             </select>
                         </div>
 
-                        {/* Période */}
                         <div className="filter-field">
                             <label className="filter-label">
                                 Mois et Année
@@ -318,18 +499,14 @@ Cordialement`);
                     </div>
                 </div>
 
-                {/* Section des résultats */}
                 <div className="results-section">
-                    {/* Résultats principaux */}
                     <div className="main-results">
-                        {/* Gestion des erreurs */}
                         {error && (
                             <div className="error-message">
                                 {error}
                             </div>
                         )}
 
-                        {/* Graphique + tableau */}
                         {chartData && !isLoading && (
                             <div className="chart-container">
                                 <div className="chart-header">
@@ -379,7 +556,6 @@ Cordialement`);
                                                         display: true,
                                                         text: "Nombre d'activations"
                                                     },
-                                                    // Ajoutez cette configuration pour forcer les nombres entiers
                                                     ticks: {
                                                         stepSize: 1,
                                                         precision: 0,
@@ -395,7 +571,6 @@ Cordialement`);
                             </div>
                         )}
 
-                        {/* État vide */}
                         {!chartData && !isLoading && !error && (
                             <div className="empty-state">
                                 <h3>Aucune donnée à afficher</h3>
@@ -404,7 +579,6 @@ Cordialement`);
                         )}
                     </div>
 
-                    {/* Top promos à droite */}
                     {topPromosData && (
                         <div className="top-promos-sidebar">
                             <h3 className="top-promos-title">Promotions Absolues les Plus Activées</h3>
@@ -448,6 +622,7 @@ Cordialement`);
                     )}
                 </div>
             </div>
+            <EmailModal />
         </div>
     );
 };
