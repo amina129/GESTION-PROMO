@@ -23,8 +23,9 @@ public class PromotionAssignmentDto {
     @Future(message = "La date de fin doit être dans le futur")
     private LocalDate date_fin;
 
-    // Assertion personnalisée pour vérifier date_debut < date_fin
     @AssertTrue(message = "La date de début doit être avant la date de fin")
+
+
     public boolean isDateRangeValid() {
         return date_debut == null || date_fin == null || date_debut.isBefore(date_fin);
     }

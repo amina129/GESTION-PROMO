@@ -5,7 +5,6 @@ import ClientPromotionPage from './ClientPromotionPage';
 import './ClientsManagement.css';
 
 const ClientsManagement = () => {
-    // Search states
     const [searchCriteria, setSearchCriteria] = useState({
         numero_telephone: '',
         prenom: '',
@@ -17,14 +16,13 @@ const ClientsManagement = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    // Page navigation states
-    const [currentView, setCurrentView] = useState('search'); // 'search' or 'promotion'
+    const [currentView, setCurrentView] = useState('search');
     const [selectedClient, setSelectedClient] = useState(null);
 
     const clientCategories = [
         { value: 'VIP', label: 'VIP' },
         { value: 'B2B', label: 'B2B' },
-        { value: 'JP', label: 'JP' },
+        { value: 'GP', label: 'GP' },
         { value: 'privé', label: 'Privé' }
     ];
 
@@ -35,11 +33,14 @@ const ClientsManagement = () => {
             const response = await authService.api.get('/clients/search', {
                 params: searchCriteria
             });
+
+            console.log('Response data:', response.data);
+            console.log('Premier client:', response.data[0]);
+
             setClients(response.data.slice(0, 5));
         } catch (err) {
             setError(err.response?.data?.message || "Erreur lors de la recherche");
             if (err.response?.status === 401) {
-                // Handle unauthorized (token might be expired)
                 authService.logout();
                 window.location.href = '/login';
             }
@@ -63,18 +64,6 @@ const ClientsManagement = () => {
         setSearchCriteria(prev => ({ ...prev, [field]: value }));
     };
 
-
-
-    const getClientCategoryBadge = (category) => {
-        switch (category) {
-            case 'VIP': return 'vip-badge';
-            case 'B2B': return 'b2b-badge';
-            case 'JP': return 'jp-badge';
-            default: return 'default-badge';
-        }
-    };
-
-    // Render different views based on current state
     if (currentView === 'promotion' && selectedClient) {
         return (
             <ClientPromotionPage
@@ -166,7 +155,7 @@ const ClientsManagement = () => {
                         <tr key={client.id}>
                             <td>{client.id}</td>
                             <td>{client.prenom} {client.nom}</td>
-                            <td>{client.numero_telephone}</td>
+                            <td>{client.numeroTelephone}</td>
                             <td>{client.email}</td>
                             <td>
                                 {client.categorieClient}

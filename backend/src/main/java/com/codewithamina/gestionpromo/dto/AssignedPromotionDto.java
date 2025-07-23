@@ -20,10 +20,8 @@ public class AssignedPromotionDto {
     private String uniteMesure;
     private LocalDate dateActivation;
     private LocalDate dateExpiration;
-    private String statut; // ACTIVE, EXPIRED, UPCOMING
-    private Integer joursRestants; // Nombre de jours avant expiration (null si expiré)
-
-    public AssignedPromotionDto() {}
+    private String statut;
+    private Integer joursRestants;
 
     public AssignedPromotionDto(Long activationId, Long promotionId, String promotionNom,
                                 String promotionDescription, String promotionType, String promotionSousType,

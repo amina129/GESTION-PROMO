@@ -16,7 +16,6 @@ public class TopPromotionDto {
     private Integer activations;
     private Double revenue;
 
-    // Constructor pour les requêtes JPQL
     public TopPromotionDto(String promoName, String clientCategory, String promoType, Long activations, Double revenue) {
         this.promoName = promoName;
         this.clientCategory = clientCategory;

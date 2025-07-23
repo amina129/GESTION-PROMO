@@ -1,5 +1,6 @@
 package com.codewithamina.gestionpromo.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,7 +26,12 @@ public class Client {
 
     @Column(unique = true, nullable = false)
     private String email;
+
+
+    @Column(name = "numero_telephone")
+    @JsonProperty("numero_telephone")
     private String numeroTelephone;
+
     private String categorieClient;
     @ManyToMany
     @JoinTable(

@@ -43,10 +43,10 @@ public class PromotionDTO {
     private List<@Pattern(regexp = "VIP|B2B|GP|privé", message = "Catégorie invalide") String> categorieClient;
 
     @Pattern(regexp = "DATA|SMS|APPEL", message = "Le type d'unité doit être 'DATA', 'SMS' ou 'APPEL'")
-    private String typeUnite; // Peut être null
+    private String typeUnite;
 
     @Pattern(regexp = "MO|GO|minutes|heures", message = "L'unité de mesure doit être 'MO', 'GO', 'minutes' ou 'heures'")
-    private String uniteMesure; // Peut être null
+    private String uniteMesure;
 
     @Pattern(regexp = "ACTIF|INACTIF|EXPIRÉ", message = "Le statut doit être 'ACTIF', 'INACTIF' ou 'EXPIRÉ'")
     private String statut;
