@@ -2,12 +2,15 @@ package com.codewithamina.gestionpromo.controller;
 
 import com.codewithamina.gestionpromo.config.AdminDetails;
 import com.codewithamina.gestionpromo.dto.AssignedPromotionDto;
+import com.codewithamina.gestionpromo.dto.CategorieClientDTO;
 import com.codewithamina.gestionpromo.dto.PromotionAssignmentDto;
 import com.codewithamina.gestionpromo.model.Client;
 import com.codewithamina.gestionpromo.model.Fonction;
 import com.codewithamina.gestionpromo.model.Promotion;
+import com.codewithamina.gestionpromo.service.CategorieClientService;
 import com.codewithamina.gestionpromo.service.ClientService;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -246,6 +249,26 @@ public class ClientController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Erreur lors de l'assignation de la promotion");
+        }
+    }
+
+    // Controller Class
+    @RestController
+    @RequestMapping("/api")
+    @CrossOrigin(origins = "http://localhost:3000") // Adjust based on your React app port
+    public class CategorieClientController {
+
+        @Autowired
+        private CategorieClientService categorieClientService;
+
+        @GetMapping("/categories-client")
+        public ResponseEntity<List<CategorieClientDTO>> getAllCategories() {
+            try {
+                List<CategorieClientDTO> categories = categorieClientService.getAllCategories();
+                return ResponseEntity.ok(categories);
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            }
         }
     }
 }
