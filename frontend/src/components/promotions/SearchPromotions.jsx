@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React  from 'react';
 import { Search, Plus, RotateCcw } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
 import './PromotionsManagement.css';
 
 const SearchPromotions = ({ onSearchResults, onCancel, setError, setLoading, API_BASE_URL }) => {
@@ -12,25 +14,70 @@ const SearchPromotions = ({ onSearchResults, onCancel, setError, setLoading, API
         categorieClient: ''
     });
 
-    const categoriesClient = [
-        { value: 'VIP', label: 'VIP' },
-        { value: 'B2B', label: 'B2B' },
-        { value: 'GP', label: 'GP' },
-        { value: 'privé', label: 'Privé' }
-    ];
+    const [categoriesClient, setCategoriesClient] = useState([]);
+    const [typesPromotion, setTypesPromotion] = useState([]);
+    const [sousTypesPromotion, setSousTypesPromotion] = useState([]);
 
-    const typesPromotion = [
-        { value: 'relatif', label: 'Relatif' },
-        { value: 'absolu', label: 'Absolu' }
-    ];
+    useEffect(() => {
+        const fetchTypes = async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/promotion-types`);
+                if (!response.ok) throw new Error("Erreur lors du chargement des types");
+                const data = await response.json();
+                setTypesPromotion(data);
+            } catch (error) {
+                console.error("Erreur:", error);
+                setError?.("Erreur lors du chargement des types de promotion");
+            }
+        };
 
-    const sousTypesPromotion = {
-        relatif: [{ value: 'remise', label: 'Remise' }],
-        absolu: [
-            { value: 'unite_gratuite', label: 'Unité gratuite' },
-            { value: 'point_bonus', label: 'Point bonus' }
-        ]
-    };
+        fetchTypes();
+    }, [API_BASE_URL]);
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/categories-client`);
+                if (!response.ok) throw new Error("Erreur lors du chargement des catégories");
+                const data = await response.json();
+
+                // Convert to format: { value, label }
+                const formatted = data.map(cat => ({
+                    value: cat.code,
+                    label: cat.libelle
+                }));
+
+                setCategoriesClient(formatted);
+            } catch (error) {
+                console.error("Erreur:", error);
+                setError?.("Erreur lors du chargement des catégories");
+            }
+        };
+
+        fetchCategories();
+    }, [API_BASE_URL]);
+    useEffect(() => {
+        if (!searchFields.type) {
+            setSousTypesPromotion([]);
+            return;
+        }
+
+        const fetchSousTypes = async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/promotion-types/${searchFields.type}/sous-types`);
+                if (!response.ok) throw new Error("Erreur lors du chargement des sous-types");
+                const data = await response.json();
+                setSousTypesPromotion(data);
+            } catch (error) {
+                console.error("Erreur:", error);
+                setError?.("Erreur lors du chargement des sous-types");
+            }
+        };
+
+        fetchSousTypes();
+    }, [searchFields.type, API_BASE_URL]);
+
+
 
     const searchPromotions = async () => {
         setLoading(true);
@@ -111,9 +158,10 @@ const SearchPromotions = ({ onSearchResults, onCancel, setError, setLoading, API
                             >
                                 <option value="">Tous les types</option>
                                 {typesPromotion.map(type => (
-                                    <option key={type.value} value={type.value}>{type.label}</option>
+                                    <option key={type.code} value={type.code}>{type.libelle}</option>
                                 ))}
                             </select>
+
                         </div>
                         <div className="search-field">
                             <label>Sous-type</label>
@@ -123,12 +171,11 @@ const SearchPromotions = ({ onSearchResults, onCancel, setError, setLoading, API
                                 disabled={!searchFields.type}
                             >
                                 <option value="">Tous les sous-types</option>
-                                {searchFields.type && sousTypesPromotion[searchFields.type] &&
-                                    sousTypesPromotion[searchFields.type].map(sousType => (
-                                        <option key={sousType.value} value={sousType.value}>{sousType.label}</option>
-                                    ))
-                                }
+                                {sousTypesPromotion.map(sous => (
+                                    <option key={sous.code} value={sous.code}>{sous.libelle}</option>
+                                ))}
                             </select>
+
                         </div>
                     </div>
                 </div>

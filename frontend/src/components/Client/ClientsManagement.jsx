@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useEffect } from 'react';
 import { Search } from 'lucide-react';
 import authService from '../auth/authService';
 import ClientPromotionPage from './ClientPromotionPage';
@@ -15,16 +16,28 @@ const ClientsManagement = () => {
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [clientCategories, setClientCategories] = useState([]);
 
     const [currentView, setCurrentView] = useState('search');
     const [selectedClient, setSelectedClient] = useState(null);
 
-    const clientCategories = [
-        { value: 'VIP', label: 'VIP' },
-        { value: 'B2B', label: 'B2B' },
-        { value: 'GP', label: 'GP' },
-        { value: 'privé', label: 'Privé' }
-    ];
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await authService.api.get('/categories-client');
+                // Transform response if needed
+                const options = response.data.map(cat => ({
+                    value: cat.code,
+                    label: cat.libelle
+                }));
+                setClientCategories(options);
+            } catch (error) {
+                console.error("Erreur lors du chargement des catégories:", error);
+            }
+        };
+
+        fetchCategories();
+    }, []);
 
     const searchClients = async () => {
         setLoading(true);
@@ -123,6 +136,7 @@ const ClientsManagement = () => {
                                 <option key={cat.value} value={cat.value}>{cat.label}</option>
                             ))}
                         </select>
+
                     </div>
                 </div>
 

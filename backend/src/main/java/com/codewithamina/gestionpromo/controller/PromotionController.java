@@ -1,11 +1,14 @@
 package com.codewithamina.gestionpromo.controller;
 
 import com.codewithamina.gestionpromo.dto.PromotionDTO;
+import com.codewithamina.gestionpromo.dto.SousTypePromotionDTO;
 import com.codewithamina.gestionpromo.mapper.PromotionMapper;
 import com.codewithamina.gestionpromo.model.Category;
 import com.codewithamina.gestionpromo.model.Promotion;
+import com.codewithamina.gestionpromo.model.SousTypePromotion;
 import com.codewithamina.gestionpromo.repository.CategoryRepository;
 import com.codewithamina.gestionpromo.repository.PromotionRepository;
+import com.codewithamina.gestionpromo.repository.SousTypePromotionRepository;
 import com.codewithamina.gestionpromo.service.PromotionService;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -24,21 +27,39 @@ import java.util.stream.Collectors;
 public class PromotionController {
 
     private final PromotionService promotionService;
-    private final CategoryRepository categoryRepository; // Ajoutez ceci
+    private final CategoryRepository categoryRepository;
     private final PromotionRepository promotionRepository;
     private final PromotionMapper promotionMapper;
+    private final SousTypePromotionRepository sousTypePromotionRepository;
 
     public PromotionController(PromotionService promotionService,
-                               CategoryRepository categoryRepository, // Ajoutez ce paramètre
+                               CategoryRepository categoryRepository,
                                PromotionRepository promotionRepository,
-                               PromotionMapper promotionMapper) {
+                               PromotionMapper promotionMapper,
+                               SousTypePromotionRepository sousTypePromotionRepository) { // Add this parameter
         this.promotionService = promotionService;
-        this.categoryRepository = categoryRepository; // Initialisez-le
+        this.categoryRepository = categoryRepository;
         this.promotionRepository = promotionRepository;
         this.promotionMapper = promotionMapper;
+        this.sousTypePromotionRepository = sousTypePromotionRepository; // Initialize it
     }
 
+    @GetMapping("/sous-types-promotion")
+    public ResponseEntity<List<SousTypePromotionDTO>> getSousTypesByType(
+            @RequestParam String typeCode) {
 
+        List<SousTypePromotion> sousTypes = sousTypePromotionRepository.findByTypePromotionCode(typeCode);
+
+        List<SousTypePromotionDTO> dtos = sousTypes.stream()
+                .map(sousType -> new SousTypePromotionDTO(
+                        sousType.getId(),
+                        sousType.getCode(),
+                        sousType.getLibelle()
+                ))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(dtos);
+    }
 
     @GetMapping("/search")
     public ResponseEntity<List<PromotionDTO>> searchPromotions(
@@ -72,7 +93,6 @@ public class PromotionController {
             @PathVariable Long id,
             @RequestBody ProlongationRequest request) {
         try {
-            // Use the injected promotionService (interface) instead of promotionServiceImp (implementation)
             Promotion updatedPromotion = promotionService.prolongerPromotion(id, request.getNouvelleDateFin());
             PromotionDTO updatedDto = promotionMapper.toDto(updatedPromotion);
             return ResponseEntity.ok(updatedDto);
