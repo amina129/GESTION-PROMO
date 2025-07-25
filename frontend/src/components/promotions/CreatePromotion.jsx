@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './PromotionsManagement.css';
 
 const CreatePromotion = ({ onPromotionCreated, onCancel, setError, setLoading, API_BASE_URL, loading }) => {
@@ -15,51 +15,170 @@ const CreatePromotion = ({ onPromotionCreated, onCancel, setError, setLoading, A
         typeUnite: ''
     });
 
-    // Définitions des constantes
-    const typesPromotion = [
-        { value: 'relatif', label: 'Relatif' },
-        { value: 'absolu', label: 'Absolu' }
-    ];
+    // États pour les données dynamiques
+    const [typesPromotion, setTypesPromotion] = useState([]);
+    const [sousTypesPromotion, setSousTypesPromotion] = useState([]);
+    const [categoriesClient, setCategoriesClient] = useState([]);
+    const [typesUnite, setTypesUnite] = useState([]);
+    const [unitesMesure, setUnitesMesure] = useState([]);
+    const [pourcentagesRemise, setPourcentagesRemise] = useState([]);
 
-    const sousTypesPromotion = {
-        relatif: [{ value: 'remise', label: 'Remise' }],
-        absolu: [
-            { value: 'unite_gratuite', label: 'Unité gratuite' },
-            { value: 'point_bonus', label: 'Point bonus' }
-        ]
-    };
+    // Chargement des types de promotion
+    useEffect(() => {
+        const fetchTypesPromotion = async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/promotion-types`);
+                if (!response.ok) throw new Error("Erreur lors du chargement des types");
+                const data = await response.json();
+                setTypesPromotion(data.map(item => ({
+                    value: item.code,
+                    label: item.libelle
+                })));
+            } catch (error) {
+                console.error("Erreur:", error);
+                setError?.("Erreur lors du chargement des types de promotion");
+            }
+        };
 
-    const typesUnite = [
-        { value: 'DATA', label: 'DATA' },
-        { value: 'SMS', label: 'SMS' },
-        { value: 'APPEL', label: 'APPEL' }
-    ];
+        fetchTypesPromotion();
+    }, [API_BASE_URL, setError]);
 
-    const unitesMesureParType = {
-        DATA: [
-            { value: 'MO', label: 'MO' },
-            { value: 'GO', label: 'GO' }
-        ],
-        APPEL: [
-            { value: 'minutes', label: 'Minutes' },
-            { value: 'heures', label: 'Heures' }
-        ]
-    };
+    // Chargement des sous-types basé sur le type sélectionné
+    useEffect(() => {
+        if (!formData.type) {
+            setSousTypesPromotion([]);
+            return;
+        }
 
-    const pourcentagesRemise = [
-        { value: '10', label: '10%' },
-        { value: '20', label: '20%' },
-        { value: '30', label: '30%' },
-        { value: '40', label: '40%' },
-        { value: '50', label: '50%' }
-    ];
+        const fetchSousTypes = async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/promotion-types/${formData.type}/sous-types`);
+                if (!response.ok) throw new Error("Erreur lors du chargement des sous-types");
+                const data = await response.json();
+                setSousTypesPromotion(data.map(item => ({
+                    value: item.code,
+                    label: item.libelle
+                })));
+            } catch (error) {
+                console.error("Erreur:", error);
+                setError?.("Erreur lors du chargement des sous-types");
+            }
+        };
 
-    const categoriesClient = [
-        { value: 'VIP', label: 'VIP' },
-        { value: 'B2B', label: 'B2B' },
-        { value: 'GP', label: 'GP' },
-        { value: 'privé', label: 'Privé' }
-    ];
+        fetchSousTypes();
+    }, [formData.type, API_BASE_URL, setError]);
+
+    // Chargement des catégories client
+    useEffect(() => {
+        const fetchCategoriesClient = async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/categories-client`);
+                if (!response.ok) throw new Error("Erreur lors du chargement des catégories");
+                const data = await response.json();
+                setCategoriesClient(data.map(item => ({
+                    value: item.code,
+                    label: item.libelle
+                })));
+            } catch (error) {
+                console.error("Erreur:", error);
+                setError?.("Erreur lors du chargement des catégories client");
+            }
+        };
+
+        fetchCategoriesClient();
+    }, [API_BASE_URL, setError]);
+
+    // Chargement des types d'unité
+    useEffect(() => {
+        const fetchTypesUnite = async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/types-unite`);
+                if (!response.ok) throw new Error("Erreur lors du chargement des types d'unité");
+                const data = await response.json();
+                setTypesUnite(data.map(item => ({
+                    value: item.code,
+                    label: item.libelle
+                })));
+            } catch (error) {
+                console.error("Erreur:", error);
+                // Fallback sur des valeurs par défaut si l'API n'existe pas
+                setTypesUnite([
+                    { value: 'DATA', label: 'DATA' },
+                    { value: 'SMS', label: 'SMS' },
+                    { value: 'APPEL', label: 'APPEL' }
+                ]);
+                setError?.("Erreur lors du chargement des types d'unité - utilisation des valeurs par défaut");
+            }
+        };
+
+        fetchTypesUnite();
+    }, [API_BASE_URL, setError]);
+
+    // Chargement des unités de mesure basé sur le type d'unité
+    useEffect(() => {
+        if (!formData.typeUnite) {
+            setUnitesMesure([]);
+            return;
+        }
+
+        const fetchUnitesMesure = async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/types-unite/${formData.typeUnite}/unites-mesure`);
+                if (!response.ok) throw new Error("Erreur lors du chargement des unités de mesure");
+                const data = await response.json();
+                setUnitesMesure(data.map(item => ({
+                    value: item.code,
+                    label: item.libelle
+                })));
+            } catch (error) {
+                console.error("Erreur:", error);
+                // Fallback sur des valeurs par défaut basées sur le type d'unité
+                const defaultUnites = {
+                    'DATA': [
+                        { value: 'MO', label: 'MO' },
+                        { value: 'GO', label: 'GO' }
+                    ],
+                    'APPEL': [
+                        { value: 'minutes', label: 'Minutes' },
+                        { value: 'heures', label: 'Heures' }
+                    ],
+                    'SMS': [] // SMS n'a pas d'unité de mesure
+                };
+
+                setUnitesMesure(defaultUnites[formData.typeUnite] || []);
+                setError?.("Erreur lors du chargement des unités de mesure - utilisation des valeurs par défaut");
+            }
+        };
+
+        fetchUnitesMesure();
+    }, [formData.typeUnite, API_BASE_URL, setError]);
+
+    // Chargement des pourcentages de remise
+    useEffect(() => {
+        const fetchPourcentagesRemise = async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/pourcentages-remise`);
+                if (!response.ok) throw new Error("Erreur lors du chargement des pourcentages");
+                const data = await response.json();
+                setPourcentagesRemise(data.map(item => ({
+                    value: item.valeur.toString(),
+                    label: `${item.valeur}%`
+                })));
+            } catch (error) {
+                console.error("Erreur:", error);
+                // Fallback sur des valeurs par défaut si l'API n'existe pas
+                setPourcentagesRemise([
+                    { value: '10', label: '10%' },
+                    { value: '20', label: '20%' },
+                    { value: '30', label: '30%' },
+                    { value: '40', label: '40%' },
+                    { value: '50', label: '50%' }
+                ]);
+            }
+        };
+
+        fetchPourcentagesRemise();
+    }, [API_BASE_URL, setError]);
 
     const createPromotion = async (promotionData) => {
         setLoading(true);
@@ -122,10 +241,19 @@ const CreatePromotion = ({ onPromotionCreated, onCancel, setError, setLoading, A
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        setFormData(prev => {
+            const newData = { ...prev, [name]: value };
+
+            // Reset des champs dépendants
+            if (name === 'type') {
+                newData.sousType = '';
+            }
+            if (name === 'typeUnite') {
+                newData.uniteMesure = '';
+            }
+
+            return newData;
+        });
     };
 
     const shouldShowTypeUniteField = () => {
@@ -251,11 +379,9 @@ const CreatePromotion = ({ onPromotionCreated, onCancel, setError, setLoading, A
                                 disabled={!formData.type}
                             >
                                 <option value="">Sélectionner un sous-type</option>
-                                {formData.type && sousTypesPromotion[formData.type] &&
-                                    sousTypesPromotion[formData.type].map(sousType => (
-                                        <option key={sousType.value} value={sousType.value}>{sousType.label}</option>
-                                    ))
-                                }
+                                {sousTypesPromotion.map(sousType => (
+                                    <option key={sousType.value} value={sousType.value}>{sousType.label}</option>
+                                ))}
                             </select>
                         </div>
                     </div>
@@ -337,11 +463,9 @@ const CreatePromotion = ({ onPromotionCreated, onCancel, setError, setLoading, A
                                     onChange={handleInputChange}
                                 >
                                     <option value="">Sélectionner une unité</option>
-                                    {unitesMesureParType[formData.typeUnite] &&
-                                        unitesMesureParType[formData.typeUnite].map(unite => (
-                                            <option key={unite.value} value={unite.value}>{unite.label}</option>
-                                        ))
-                                    }
+                                    {unitesMesure.map(unite => (
+                                        <option key={unite.value} value={unite.value}>{unite.label}</option>
+                                    ))}
                                 </select>
                             </div>
                         </div>
