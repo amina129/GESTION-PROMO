@@ -166,6 +166,32 @@ const modalStyles = `
     background-color: #ccc;
     cursor: not-allowed;
 }
+
+.chart-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.download-button {
+    padding: 8px 16px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.download-button:hover {
+    background-color: #218838;
+}
+
+.download-button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
 `;
 
 const StatisticsDashboard = () => {
@@ -292,6 +318,28 @@ const StatisticsDashboard = () => {
             setError(err.message);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleDownloadChart = async () => {
+        if (!chartRef.current) {
+            setError('Aucun graphique disponible à télécharger');
+            return;
+        }
+
+        try {
+            const canvas = chartRef.current.canvas;
+            const dataUrl = canvas.toDataURL('image/png');
+
+            const link = document.createElement('a');
+            link.download = `statistiques_${selectedClientCategory}_${selectedPromoType}_${selectedMonth}.png`;
+            link.href = dataUrl;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (err) {
+            console.error('Erreur lors du téléchargement:', err);
+            setError('Erreur lors du téléchargement du graphique');
         }
     };
 
@@ -513,23 +561,31 @@ const StatisticsDashboard = () => {
                                     <h2 className="chart-title">
                                         Statistiques pour {selectedClientCategory} - {selectedPromoType} ({selectedMonth})
                                     </h2>
-
-                                    <button
-                                        onClick={handleEmailChart}
-                                        disabled={isEmailLoading}
-                                        className="email-button"
-                                    >
-                                        {isEmailLoading ? (
-                                            <>
-                                                <span>⏳</span>
-                                                Préparation...
-                                            </>
-                                        ) : (
-                                            <>
-                                                Envoyer par Email
-                                            </>
-                                        )}
-                                    </button>
+                                    <div className="chart-actions">
+                                        <button
+                                            onClick={handleEmailChart}
+                                            disabled={isEmailLoading}
+                                            className="email-button"
+                                        >
+                                            {isEmailLoading ? (
+                                                <>
+                                                    <span>⏳</span>
+                                                    Préparation...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    Envoyer par Email
+                                                </>
+                                            )}
+                                        </button>
+                                        <button
+                                            onClick={handleDownloadChart}
+                                            disabled={!chartData}
+                                            className="download-button"
+                                        >
+                                            Télécharger
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <div className="chart-wrapper">
