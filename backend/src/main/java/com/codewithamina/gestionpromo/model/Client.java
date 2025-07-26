@@ -32,7 +32,10 @@ public class Client {
     @JsonProperty("numero_telephone")
     private String numeroTelephone;
 
-    private String categorieClient;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "categorie_client_id")
+    private CategorieClient categorieClient;
+
     @ManyToMany
     @JoinTable(
             name = "activations_promotion",
@@ -55,4 +58,14 @@ public class Client {
 
     @Column(name = "id_conseiller")
     private Long idConseiller;
+
+    // ✅ MÉTHODE HELPER pour obtenir le code de catégorie
+    public String getCategorieCode() {
+        return categorieClient != null ? categorieClient.getCode() : null;
+    }
+
+    // ✅ MÉTHODE HELPER pour obtenir le libellé de catégorie
+    public String getCategorieLibelle() {
+        return categorieClient != null ? categorieClient.getLibelle() : null;
+    }
 }

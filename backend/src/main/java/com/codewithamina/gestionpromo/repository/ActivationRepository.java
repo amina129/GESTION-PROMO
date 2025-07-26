@@ -33,18 +33,25 @@ public interface ActivationRepository extends JpaRepository<ActivationPromotion,
     """)
     List<Object[]> findTopPromotions(Pageable pageable);
 
-    @Query(value = "SELECT to_char(a.dateActivation, 'DD'), COUNT(a.id) " +
-            "FROM ActivationPromotion a " +
-            "JOIN a.promotion p " +
-            "JOIN a.client c " +
-            "WHERE c.categorieClient = :clientCategory " +
-            "AND p.type = :promoType " +
-            "AND EXTRACT(YEAR FROM a.dateActivation) = :year " +
-            "AND EXTRACT(MONTH FROM a.dateActivation) = :month " +
-            "GROUP BY to_char(a.dateActivation, 'DD') " +
-            "ORDER BY to_char(a.dateActivation, 'DD')")
-    List<Object[]> findMonthlyActivations(@Param("clientCategory") String clientCategory,
-                                          @Param("promoType") String promoType,
-                                          @Param("year") int year,
-                                          @Param("month") int month);
+    @Query(value = """
+    SELECT to_char(a.dateActivation, 'DD') as day, COUNT(a.id) as count 
+    FROM ActivationPromotion a 
+    JOIN a.promotion p 
+    JOIN a.client c 
+    JOIN c.categorieClient cat 
+    WHERE cat.code = :clientCategory 
+    AND p.type = :promoType 
+    AND EXTRACT(YEAR FROM a.dateActivation) = :year 
+    AND EXTRACT(MONTH FROM a.dateActivation) = :month 
+    GROUP BY to_char(a.dateActivation, 'DD') 
+    ORDER BY to_char(a.dateActivation, 'DD')
+    """)
+    List<Object[]> findMonthlyActivations(
+            @Param("clientCategory") String clientCategory,
+            @Param("promoType") String promoType,
+            @Param("year") int year,
+            @Param("month") int month
+    );
+
 }
+

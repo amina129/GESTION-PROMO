@@ -40,12 +40,17 @@ public class StatisticsService {
         int year = yearMonth.getYear();
         int month = yearMonth.getMonthValue();
 
-        List<Object[]> results = activationRepository.findMonthlyActivations(clientCategory, promoType, year, month);
+        List<Object[]> results = activationRepository.findMonthlyActivations(
+                clientCategory,
+                promoType,
+                year,
+                month
+        );
 
         List<TrendDataDto> trends = results.stream()
                 .map(row -> new TrendDataDto(
-                        "Day " + row[0],
-                        ((Number) row[1]).intValue()
+                        "Day " + row[0],  // day
+                        ((Number) row[1]).intValue()  // count
                 ))
                 .collect(Collectors.toList());
 

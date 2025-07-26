@@ -61,9 +61,14 @@ public class ClientServiceImpl implements ClientService {
             throw new IllegalArgumentException("Cette activation ne correspond pas au client spécifié");
         }
 
-        // Vérifier que la nouvelle date est après l'ancienne date de fin
-        if (!newDateFin.isAfter(activation.getDateExpiration())) {
-            throw new IllegalArgumentException("La nouvelle date de fin doit être après l'ancienne date de fin");
+        // Vérifier que la nouvelle date est différente de l'actuelle
+        if (newDateFin.equals(activation.getDateExpiration())) {
+            throw new IllegalArgumentException("La nouvelle date doit être différente de la date actuelle");
+        }
+
+        // Vérifier que la nouvelle date est après la date d'activation
+        if (newDateFin.isBefore(activation.getDateActivation())) {
+            throw new IllegalArgumentException("La nouvelle date de fin ne peut pas être avant la date d'activation");
         }
 
         // Vérifier que la nouvelle date ne dépasse pas la date de fin de la promotion
@@ -88,9 +93,13 @@ public class ClientServiceImpl implements ClientService {
             if (!activation.getClient().getId().equals(clientId)) {
                 throw new IllegalArgumentException("Une ou plusieurs promotions ne sont pas liées à ce client");
             }
+
+            // Au lieu de supprimer, on met à jour la date d'expiration
+            activation.setDateExpiration(LocalDate.now());
         }
 
-        activationRepository.deleteAll(activations);
+        // Sauvegarder les modifications
+        activationRepository.saveAll(activations);
     }
 
     @Override
@@ -200,9 +209,11 @@ public class ClientServiceImpl implements ClientService {
             throw new IllegalArgumentException("La date de début ne peut pas être après la date de fin");
         }
 
-        String categorieClient = clientRepository.findById(clientId)
-                .map(Client::getCategorieClient)
+        Client client = clientRepository.findById(clientId)
                 .orElseThrow(() -> new RuntimeException("Client non trouvé avec l'ID: " + clientId));
+
+        // Get the libelle from CategorieClient entity
+        String categorieClient = client.getCategorieClient().getLibelle();
 
         return promotionRepository.findAvailablePromotionsForClientAndDateRange(
                 categorieClient, clientId, dateDebut, dateFin);

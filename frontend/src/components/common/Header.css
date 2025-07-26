@@ -1,28 +1,28 @@
 /* Update your Header.css */
 .orange-header {
     position: fixed;
-    top: 60px; /* Adjust this to be below your Navbar height */
+    top: 60px; /* Ajuste selon la hauteur de la navbar */
     left: 0;
     right: 0;
     height: 64px;
     background-color: #000 !important;
     color: white;
-    z-index: 800; /* Lower than Navbar */
+    z-index: 800;
     border-bottom: 1px solid #333;
     display: flex;
     align-items: center;
-    padding: 0 200px 0 120px !important;
     font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
-    padding-top: 7px !important;
-    padding-bottom: 5px !important;
+    padding: 15px 200px 10px 120px !important;
+    margin-bottom: 0; /* ✅ Assure-toi qu'il n'y a pas d'espace après */
 }
 
 .header-container {
+    margin-top: 20px;
     width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0;
+
 }
 
 .header-left {

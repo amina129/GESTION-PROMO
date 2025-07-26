@@ -2,37 +2,31 @@ package com.codewithamina.gestionpromo.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
+@Setter
 @Getter
 @Entity
 @Table(name = "categories_client")
 public class CategorieClient {
-    // Getters and Setters
+    // Getters et Setters
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "code")
+    @Column(unique = true, nullable = false)
     private String code;
 
-    @Column(name = "libelle")
+    @Column(nullable = false)
     private String libelle;
 
-    // Constructors
+    private String description;
+
+    @OneToMany(mappedBy = "categorieClient", fetch = FetchType.LAZY)
+    private List<Client> clients = new ArrayList<>();
+
     public CategorieClient() {}
-
-    public CategorieClient(String code, String libelle) {
-        this.code = code;
-        this.libelle = libelle;
-    }
-
-    public void setId(Long id) { this.id = id; }
-
-    public void setCode(String code) { this.code = code; }
-
-    public void setLibelle(String libelle) { this.libelle = libelle; }
 }
-
-
-
-

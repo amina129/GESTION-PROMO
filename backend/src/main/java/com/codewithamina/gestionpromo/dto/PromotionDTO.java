@@ -31,8 +31,6 @@ public class PromotionDTO {
     private String type;
 
     @NotBlank(message = "Le sous-type est obligatoire")
-    @Pattern(regexp = "remise|unite_gratuite|point_bonus",
-            message = "Le sous-type doit être 'remise', 'unite_gratuite' ou 'point_bonus'")
     private String sousType;
 
     @NotNull(message = "La valeur est obligatoire")
@@ -40,16 +38,13 @@ public class PromotionDTO {
     private BigDecimal valeur;
 
     @NotEmpty(message = "La liste des catégories clients ne doit pas être vide")
-    private List<@Pattern(regexp = "VIP|B2B|GP|privé", message = "Catégorie invalide") String> categorieClient;
+    private List<String> categorieClient;  // Removed @Pattern validation
 
     @Pattern(regexp = "DATA|SMS|APPEL", message = "Le type d'unité doit être 'DATA', 'SMS' ou 'APPEL'")
     private String typeUnite;
 
-    @Pattern(regexp = "MO|GO|minutes|heures", message = "L'unité de mesure doit être 'MO', 'GO', 'minutes' ou 'heures'")
     private String uniteMesure;
 
     @Pattern(regexp = "ACTIF|INACTIF|EXPIRÉ", message = "Le statut doit être 'ACTIF', 'INACTIF' ou 'EXPIRÉ'")
     private String statut;
-
-
 }

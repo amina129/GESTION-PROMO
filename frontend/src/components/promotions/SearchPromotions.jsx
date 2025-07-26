@@ -1,8 +1,6 @@
-import React  from 'react';
+import React from 'react';
 import { Search, Plus, RotateCcw } from 'lucide-react';
 import { useEffect, useState } from 'react';
-
-import './PromotionsManagement.css';
 
 const SearchPromotions = ({ onSearchResults, onCancel, setError, setLoading, API_BASE_URL }) => {
     const [searchFields, setSearchFields] = useState({
@@ -40,13 +38,10 @@ const SearchPromotions = ({ onSearchResults, onCancel, setError, setLoading, API
                 const response = await fetch(`${API_BASE_URL}/categories-client`);
                 if (!response.ok) throw new Error("Erreur lors du chargement des catégories");
                 const data = await response.json();
-
-                // Convert to format: { value, label }
                 const formatted = data.map(cat => ({
                     value: cat.code,
                     label: cat.libelle
                 }));
-
                 setCategoriesClient(formatted);
             } catch (error) {
                 console.error("Erreur:", error);
@@ -56,6 +51,7 @@ const SearchPromotions = ({ onSearchResults, onCancel, setError, setLoading, API
 
         fetchCategories();
     }, [API_BASE_URL]);
+
     useEffect(() => {
         if (!searchFields.type) {
             setSousTypesPromotion([]);
@@ -76,8 +72,6 @@ const SearchPromotions = ({ onSearchResults, onCancel, setError, setLoading, API
 
         fetchSousTypes();
     }, [searchFields.type, API_BASE_URL]);
-
-
 
     const searchPromotions = async () => {
         setLoading(true);
@@ -123,17 +117,12 @@ const SearchPromotions = ({ onSearchResults, onCancel, setError, setLoading, API
         });
     };
 
-
     return (
-        <div className="search-section">
-            <div className="search-header">
-                <h2>Rechercher une promotion</h2>
-            </div>
-
+        <div className="search-section1">
             <div className="search-container">
                 {/* Section Informations générales */}
                 <div className="search-group">
-                    <h3 className="group-title">Nom de la promotion</h3>
+                    <h3 className="group-title">🔍 Nom de la promotion</h3>
                     <div className="search-row">
                         <div className="search-field search-field-full">
                             <input
@@ -148,10 +137,10 @@ const SearchPromotions = ({ onSearchResults, onCancel, setError, setLoading, API
 
                 {/* Section Types de promotion */}
                 <div className="search-group">
-                    <h3 className="group-title">Types de promotion</h3>
+                    <h3 className="group-title">🏷️ Types de promotion</h3>
                     <div className="search-row">
                         <div className="search-field">
-                            <label>Type principal</label>
+                            <label >Type principal</label>
                             <select
                                 value={searchFields.type}
                                 onChange={(e) => handleSearchChange('type', e.target.value)}
@@ -161,7 +150,6 @@ const SearchPromotions = ({ onSearchResults, onCancel, setError, setLoading, API
                                     <option key={type.code} value={type.code}>{type.libelle}</option>
                                 ))}
                             </select>
-
                         </div>
                         <div className="search-field">
                             <label>Sous-type</label>
@@ -175,14 +163,13 @@ const SearchPromotions = ({ onSearchResults, onCancel, setError, setLoading, API
                                     <option key={sous.code} value={sous.code}>{sous.libelle}</option>
                                 ))}
                             </select>
-
                         </div>
                     </div>
                 </div>
 
                 {/* Section Période */}
                 <div className="search-group">
-                    <h3 className="group-title">Période de validité</h3>
+                    <h3 className="group-title">📅 Période de validité</h3>
                     <div className="search-row">
                         <div className="search-field">
                             <label>Date de début</label>
@@ -205,7 +192,7 @@ const SearchPromotions = ({ onSearchResults, onCancel, setError, setLoading, API
 
                 {/* Section Catégorie client */}
                 <div className="search-group">
-                    <h3 className="group-title">Catégorie client</h3>
+                    <h3 className="group-title">👥 Catégorie client</h3>
                     <div className="search-row">
                         <div className="search-field search-field-full">
                             <label>Catégorie client ciblée</label>

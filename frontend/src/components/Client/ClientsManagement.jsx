@@ -172,7 +172,9 @@ const ClientsManagement = () => {
                             <td>{client.numeroTelephone}</td>
                             <td>{client.email}</td>
                             <td>
-                                {client.categorieClient}
+                                {client.categorieClient?.libelle || 'N/A'}
+                                {/* Or display code if preferred: */}
+                                {/* {client.categorieClient?.code || 'N/A'} */}
                             </td>
                             <td>
                                 <button className="buttonpromo" onClick={() => handleClientSelect(client)}>

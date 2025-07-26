@@ -6,13 +6,13 @@ import PromotionsList from './PromotionsList';
 import './PromotionsManagement.css';
 
 const PromotionsManagement = () => {
-    const [activeView, setActiveView] = useState('list'); // 'list', 'search', 'create', 'edit'
+    const [activeView, setActiveView] = useState('list');
     const [promotions, setPromotions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [previousView, setPreviousView] = useState(null);
     const [editingPromotion, setEditingPromotion] = useState(null);
-    const [editMode, setEditMode] = useState(null); // 'period' or 'category'
+    const [editMode, setEditMode] = useState(null);
 
     const API_BASE_URL = 'http://localhost:8080/api';
 
@@ -46,20 +46,8 @@ const PromotionsManagement = () => {
     };
 
     const handlePromotionUpdated = (updatedPromotion) => {
-        console.log('Updated promotion received:', updatedPromotion);
-        console.log('Current promotions:', promotions);
-
-        const newPromotions = promotions.map(p => {
-            if (p.id === updatedPromotion.id) {
-                console.log('Updating promotion:', p.id);
-                return updatedPromotion;
-            }
-            return p;
-        });
-
-        console.log('New promotions array:', newPromotions);
+        const newPromotions = promotions.map(p => p.id === updatedPromotion.id ? updatedPromotion : p);
         setPromotions(newPromotions);
-
         setActiveView('list');
         setPreviousView('edit');
         setEditingPromotion(null);
@@ -108,8 +96,6 @@ const PromotionsManagement = () => {
         setLoading(true);
         setError(null);
 
-        console.log('Sending categories:', nouvellesCategories);
-
         try {
             const response = await fetch(`${API_BASE_URL}/promotions/${promotionId}/etendre-categories`, {
                 method: 'PUT',
@@ -127,11 +113,9 @@ const PromotionsManagement = () => {
             }
 
             const updatedPromotion = await response.json();
-            console.log('Response from backend:', updatedPromotion);
             handlePromotionUpdated(updatedPromotion);
 
         } catch (err) {
-            console.error('Error:', err);
             setError(err.message);
         } finally {
             setLoading(false);
@@ -143,8 +127,10 @@ const PromotionsManagement = () => {
 
         if (editMode === 'period') {
             return (
-                <div className="edit-form-container">
-                    <h3>Prolonger la période - {editingPromotion.nom}</h3>
+                <div className="search-section">
+                    <div className="search-header">
+                        <h2>Prolonger la période - {editingPromotion.nom}</h2>
+                    </div>
                     <ProlongationForm
                         promotion={editingPromotion}
                         onSubmit={prolongerPeriode}
@@ -155,8 +141,10 @@ const PromotionsManagement = () => {
             );
         } else if (editMode === 'category') {
             return (
-                <div className="edit-form-container">
-                    <h3>Étendre les catégories - {editingPromotion.nom}</h3>
+                <div className="search-section">
+                    <div className="search-header">
+                        <h2>Étendre les catégories - {editingPromotion.nom}</h2>
+                    </div>
                     <ExtensionCategoriesForm
                         promotion={editingPromotion}
                         onSubmit={etendreCategories}
@@ -212,28 +200,31 @@ const PromotionsManagement = () => {
 
     return (
         <div className="promotions-container">
-            <nav className="orange-navbar">
-                <ul className="nav-menu">
-                    <li className={`nav-item ${activeView === 'search' ? 'active' : ''}`}>
-                        <button onClick={() => {
+            <div className="header-container">
+                <div className="action-buttons-container">
+                    <button
+                        className={`orange-button ${activeView === 'search' ? 'active' : ''}`}
+                        onClick={() => {
                             setActiveView('search');
                             setPreviousView('list');
-                        }}>
-                            <Search size={18} />
-                            Rechercher
-                        </button>
-                    </li>
-                    <li className={`nav-item ${activeView === 'create' ? 'active' : ''}`}>
-                        <button onClick={() => {
+                        }}
+                    >
+                        <Search size={18} className="button-icon" />
+                        <span>Rechercher</span>
+                    </button>
+
+                    <button
+                        className={`orange-button primary ${activeView === 'create' ? 'active' : ''}`}
+                        onClick={() => {
                             setActiveView('create');
                             setPreviousView('list');
-                        }}>
-                            <Plus size={18} />
-                            Créer
-                        </button>
-                    </li>
-                </ul>
-            </nav>
+                        }}
+                    >
+                        <Plus size={18} className="button-icon" />
+                        <span>Créer</span>
+                    </button>
+                </div>
+            </div>
 
             {error && (
                 <div className="error-message">
@@ -246,7 +237,6 @@ const PromotionsManagement = () => {
     );
 };
 
-// Composant pour le formulaire de prolongation
 const ProlongationForm = ({ promotion, onSubmit, onCancel, loading }) => {
     const [nouvelleDateFin, setNouvelleDateFin] = useState('');
 
@@ -258,12 +248,17 @@ const ProlongationForm = ({ promotion, onSubmit, onCancel, loading }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="edit-form">
-            <div className="form-group">
+        <form onSubmit={handleSubmit} className="search-fields">
+            <div className="search-field">
                 <label>Date de fin actuelle:</label>
-                <input type="date" value={promotion.dateFin} disabled />
+                <input
+                    type="date"
+                    value={promotion.dateFin}
+                    disabled
+                    className="form-field"
+                />
             </div>
-            <div className="form-group">
+            <div className="search-field">
                 <label>Nouvelle date de fin:</label>
                 <input
                     type="date"
@@ -271,32 +266,41 @@ const ProlongationForm = ({ promotion, onSubmit, onCancel, loading }) => {
                     onChange={(e) => setNouvelleDateFin(e.target.value)}
                     min={promotion.dateFin}
                     required
+                    className="form-field"
                 />
             </div>
-            <div className="form-actions">
-                <button type="button" onClick={onCancel} disabled={loading}>
-                    Annuler
-                </button>
-                <button type="submit" disabled={loading || !nouvelleDateFin}>
-                    {loading ? 'Prolongation...' : 'Prolonger'}
-                </button>
+            <div className="search-actions">
+                <div className="action-buttons">
+                    <button
+                        type="button"
+                        onClick={onCancel}
+                        disabled={loading}
+                        className="button button-secondary"
+                    >
+                        Annuler
+                    </button>
+                    <button
+                        type="submit"
+                        disabled={loading || !nouvelleDateFin}
+                        className="button button-primary"
+                    >
+                        {loading ? 'Prolongation...' : 'Prolonger'}
+                    </button>
+                </div>
             </div>
         </form>
     );
 };
 
-// Composant pour le formulaire d'extension des catégories - FIXED VERSION
 const ExtensionCategoriesForm = ({ promotion, onSubmit, onCancel, loading }) => {
     const [selectedCategories, setSelectedCategories] = useState([]);
     const availableCategories = ['GP', 'privé', 'VIP', 'B2B'];
 
-    // Get current categories (could be from categories array or categorieClient string)
     const getCurrentCategories = () => {
         if (promotion.categories && promotion.categories.length > 0) {
             return promotion.categories.map(cat => cat.code);
         }
         if (promotion.categorieClient) {
-            // Since categorieClient is already an array, just return it
             return Array.isArray(promotion.categorieClient)
                 ? promotion.categorieClient
                 : [promotion.categorieClient];
@@ -317,14 +321,13 @@ const ExtensionCategoriesForm = ({ promotion, onSubmit, onCancel, loading }) => 
     const handleSubmit = (e) => {
         e.preventDefault();
         if (selectedCategories.length > 0) {
-            // Only send the NEW categories to be added
             onSubmit(promotion.id, selectedCategories);
         }
     };
 
     return (
-        <form onSubmit={handleSubmit} className="edit-form">
-            <div className="form-group">
+        <form onSubmit={handleSubmit} className="search-fields">
+            <div className="search-field">
                 <label>Catégories actuelles:</label>
                 <div className="current-categories">
                     {currentCategories.map(cat => (
@@ -334,7 +337,7 @@ const ExtensionCategoriesForm = ({ promotion, onSubmit, onCancel, loading }) => 
                     ))}
                 </div>
             </div>
-            <div className="form-group">
+            <div className="search-field">
                 <label>Ajouter les catégories:</label>
                 <div className="categories-grid">
                     {availableCategories
@@ -347,19 +350,30 @@ const ExtensionCategoriesForm = ({ promotion, onSubmit, onCancel, loading }) => 
                                     onChange={() => handleCategoryToggle(category)}
                                 />
                                 <span className={`category-badge ${category.toLowerCase()}`}>
-                                     {category}
+                                    {category}
                                 </span>
                             </label>
                         ))}
                 </div>
             </div>
-            <div className="form-actions">
-                <button type="button" onClick={onCancel} disabled={loading}>
-                    Annuler
-                </button>
-                <button type="submit" disabled={loading || selectedCategories.length === 0}>
-                    {loading ? 'Extension...' : 'Étendre'}
-                </button>
+            <div className="search-actions">
+                <div className="action-buttons">
+                    <button
+                        type="button"
+                        onClick={onCancel}
+                        disabled={loading}
+                        className="button button-secondary"
+                    >
+                        Annuler
+                    </button>
+                    <button
+                        type="submit"
+                        disabled={loading || selectedCategories.length === 0}
+                        className="button button-primary"
+                    >
+                        {loading ? 'Extension...' : 'Étendre'}
+                    </button>
+                </div>
             </div>
         </form>
     );
