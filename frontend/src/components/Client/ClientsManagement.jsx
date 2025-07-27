@@ -27,9 +27,10 @@ const ClientsManagement = () => {
                 const response = await authService.api.get('/categories-client');
                 // Transform response if needed
                 const options = response.data.map(cat => ({
-                    value: cat.code,
+                    value: cat.id,   // <-- envoyer l'id numérique (ex: 4)
                     label: cat.libelle
                 }));
+
                 setClientCategories(options);
             } catch (error) {
                 console.error("Erreur lors du chargement des catégories:", error);

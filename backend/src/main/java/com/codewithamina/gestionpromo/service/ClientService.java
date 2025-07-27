@@ -20,14 +20,15 @@ public interface ClientService {
 
     // Single search method that handles both admin and advisor cases
     List<Client> searchClients(
-            Long currentUserId,    // ID of the logged-in user
-            String userRole,       // "ADMIN" or "ADVISOR"
+            Long currentUserId,
+            String userRole,
             String numeroTelephone,
             String prenom,
             String nom,
             String email,
-            String categorieClient
+            Long categorieClient
     );
+
     void cancelAssignedPromotions(Long clientId, List<Long> activationIds);
     void extendPromotionValidity(Long clientId, Long activationId, LocalDate newDateFin);
 

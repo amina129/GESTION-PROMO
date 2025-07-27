@@ -35,8 +35,8 @@ public class ClientController {
             @RequestParam(required = false) String prenom,
             @RequestParam(required = false) String nom,
             @RequestParam(required = false) String email,
-            @RequestParam(required = false) String categorie_client) {
-
+            @RequestParam(required = false) Long categorie_client  // déjà nullable Long
+    ) {
         if (authentication == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -46,12 +46,12 @@ public class ClientController {
             Long currentUserId = adminDetails.getId();
             String userRole = (adminDetails.getFonction() == Fonction.ADMIN) ? "ADMIN" : "ADVISOR";
 
-            // Clean empty parameters
+            // Nettoyer les Strings (pas le Long)
             numero_telephone = StringUtils.hasText(numero_telephone) ? numero_telephone : null;
             prenom = StringUtils.hasText(prenom) ? prenom : null;
             nom = StringUtils.hasText(nom) ? nom : null;
             email = StringUtils.hasText(email) ? email : null;
-            categorie_client = StringUtils.hasText(categorie_client) ? categorie_client : null;
+            // NE PAS TESTER categorie_client, il est déjà null si absent
 
             List<Client> clients = clientService.searchClients(
                     currentUserId,
@@ -66,9 +66,11 @@ public class ClientController {
             return ResponseEntity.ok(clients);
 
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
     }
+
     // Ajouter cette méthode dans votre ClientController
 
     @GetMapping("/{clientId}/promotions/assigned")

@@ -355,3 +355,35 @@
 ::-webkit-scrollbar-thumb:hover {
     background: #ff6600;
 }
+.download-button {
+    padding: 12px 20px;
+    background-color: #ff6600;
+    color: #0b0a0a;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.download-button:hover {
+    background-color: #e65c00;
+    transform: translateY(-1px);
+}
+
+.download-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+.chart-actions {
+    display: flex;
+    gap: 12px; /* espace horizontal entre les boutons */
+    align-items: center;
+    flex-wrap: wrap; /* utile si tu veux que les boutons aillent à la ligne en mobile */
+}
+

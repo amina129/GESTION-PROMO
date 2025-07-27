@@ -39,7 +39,7 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     public List<Client> searchClients(Long currentUserId, String userRole, String numeroTelephone,
-                                      String prenom, String nom, String email, String categorieClient) {
+                                      String prenom, String nom, String email, Long categorieClient) {
         return clientRepository.findByCriteriaWithRoleCheck(
                 currentUserId,
                 userRole,
