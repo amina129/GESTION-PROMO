@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import './PromotionsManagement.css';
+import './base.css';
+import './header.css';
+import './buttons.css';
+import './forms.css';
+import './tables.css';
+import './loading-empty.css';
+import './responsive.css';
 
 const CreatePromotion = ({ onPromotionCreated, onCancel, setError, setLoading, API_BASE_URL, loading }) => {
     const [formData, setFormData] = useState({

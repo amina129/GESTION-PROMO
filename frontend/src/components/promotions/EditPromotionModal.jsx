@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { X, Calendar, Users, Edit, Save, AlertCircle } from 'lucide-react';
-import './PromotionsManagement.css';
+import './base.css';
+import './buttons.css';
+import './forms.css';
+import './responsive.css';
+import './EditPromotionModal.css';  // ton CSS dédié modal
+
 
 const EditPromotionModal = ({
                                 promotion,

@@ -1,0 +1,95 @@
+/* Styles spécifiques pour le formulaire de prolongation */
+.prolongation-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+}
+
+.prolongation-form .date-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.prolongation-form .date-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.prolongation-form .date-field label {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #555;
+}
+
+.prolongation-form .date-field input {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.prolongation-form .date-field input:focus {
+    border-color: #ff7900;
+    box-shadow: 0 0 0 2px rgba(255, 121, 0, 0.2);
+    outline: none;
+}
+
+.prolongation-form .date-comparison {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    margin-top: 10px;
+}
+
+.prolongation-form .date-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.prolongation-form .date-item strong {
+    font-weight: 600;
+}
+
+.prolongation-form .date-item .old-date {
+    color: #666;
+    text-decoration: line-through;
+}
+
+.prolongation-form .date-item .new-date {
+    color: #ff7900;
+    font-weight: 600;
+}
+
+/* Styles pour les messages d'erreur */
+.prolongation-form .error-message {
+    color: #d32f2f;
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+/* Boutons spécifiques */
+.prolongation-form .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* Amélioration responsive */
+@media (max-width: 768px) {
+    .prolongation-form .date-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .prolongation-form .form-actions {
+        flex-direction: column;
+    }
+
+    .prolongation-form .form-actions button {
+        width: 100%;
+    }
+}

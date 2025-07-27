@@ -3,7 +3,13 @@ import { Search, Plus, RotateCcw } from 'lucide-react';
 import SearchPromotions from './SearchPromotions';
 import CreatePromotion from './CreatePromotion';
 import PromotionsList from './PromotionsList';
-import './PromotionsManagement.css';
+import './base.css';
+import './header.css';
+import './buttons.css';
+import './forms.css';
+import './tables.css';
+import './loading-empty.css';
+import './responsive.css';
 
 const PromotionsManagement = () => {
     const [activeView, setActiveView] = useState('list');
@@ -238,7 +244,7 @@ const PromotionsManagement = () => {
     );
 };
 
-const ProlongationForm = ({ promotion, onSubmit, onCancel, loading }) => {
+ const ProlongationForm = ({ promotion, onSubmit, onCancel, loading }) => {
     const [nouvelleDateFin, setNouvelleDateFin] = useState('');
 
     const handleSubmit = (e) => {

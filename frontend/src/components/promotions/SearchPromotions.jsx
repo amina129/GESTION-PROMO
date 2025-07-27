@@ -1,6 +1,13 @@
 import React from 'react';
 import { Search, Plus, RotateCcw } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import './base.css';
+import './header.css';
+import './buttons.css';
+import './forms.css';
+import './tables.css';
+import './loading-empty.css';
+import './responsive.css';
 
 const SearchPromotions = ({ onSearchResults, onCancel, setError, setLoading, API_BASE_URL }) => {
     const [searchFields, setSearchFields] = useState({

@@ -1,0 +1,65 @@
+.button,
+.nav-button,
+.button-primary,
+.button-secondary,
+.nav-button.primary {
+    min-width: 140px;
+    height: 42px;
+    padding: 0 16px;
+    font-size: 14px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+/* Base Orange-style button */
+.orange-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 20px;
+    height: 44px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Open Sans', sans-serif;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.25s ease-in-out;
+    min-width: 140px;
+    background-color: #fff;
+    color: #ff7900;
+    border-color: #ff7900;
+}
+
+.orange-button.primary {
+    background-color: #ff7900;
+    color: white;
+}
+
+.orange-button:hover {
+    background-color: #ffe8d9;
+    border-color: #ff7900;
+    box-shadow: 0 2px 4px rgba(255, 121, 0, 0.2);
+}
+
+.orange-button.primary:hover {
+    background-color: #e65c00;
+    box-shadow: 0 2px 4px rgba(255, 121, 0, 0.2);
+}
+
+.orange-button.active {
+    box-shadow: 0 0 0 3px rgba(255, 121, 0, 0.3);
+}
+
+.orange-button .button-icon {
+    margin-right: 6px;
+}
+
+@media (max-width: 480px) {
+    .orange-button {
+        width: 100%;
+    }
+}

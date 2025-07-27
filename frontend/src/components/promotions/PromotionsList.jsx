@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, Edit, Calendar, Users, ChevronDown } from 'lucide-react';
-import './PromotionsManagement.css';
+import './base.css';
+import './header.css';
+import './buttons.css';
+import './forms.css';
+import './tables.css';
+import './loading-empty.css';
+import './responsive.css';
 
 const PromotionsList = ({ promotions, loading, onBack, onEditPromotion }) => {
     const listRef = useRef(null);
