@@ -206,6 +206,10 @@ const StatisticsDashboard = () => {
     const [chartData, setChartData] = useState(null);
     const [topPromosData, setTopPromosData] = useState(null);
 
+    // Dynamic options states
+    const [clientCategories, setClientCategories] = useState([]);
+    const [promoTypes, setPromoTypes] = useState([]);
+
     // Status states
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -216,9 +220,43 @@ const StatisticsDashboard = () => {
 
     const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 
-    // Static options
-    const clientCategories = ['VIP', 'GP', 'Privé', 'B2B'];
-    const promoTypes = ['absolu', 'relatif'];
+    // Fetch client categories on component mount
+    useEffect(() => {
+        const fetchClientCategories = async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/categories-client`);
+                if (!response.ok) throw new Error("Erreur lors du chargement des catégories");
+                const data = await response.json();
+                const formatted = data.map(cat => ({
+                    code: cat.code,
+                    libelle: cat.libelle
+                }));
+                setClientCategories(formatted);
+            } catch (error) {
+                console.error("Erreur lors du chargement des catégories client:", error);
+                setError("Erreur lors du chargement des catégories client");
+            }
+        };
+
+        fetchClientCategories();
+    }, [API_BASE_URL]);
+
+    // Fetch promotion types on component mount
+    useEffect(() => {
+        const fetchPromoTypes = async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/promotion-types`);
+                if (!response.ok) throw new Error("Erreur lors du chargement des types");
+                const data = await response.json();
+                setPromoTypes(data);
+            } catch (error) {
+                console.error("Erreur lors du chargement des types de promotion:", error);
+                setError("Erreur lors du chargement des types de promotion");
+            }
+        };
+
+        fetchPromoTypes();
+    }, [API_BASE_URL]);
 
     // Fetch top promotions on component mount
     useEffect(() => {
@@ -491,8 +529,8 @@ const StatisticsDashboard = () => {
                             >
                                 <option value="">Sélectionnez...</option>
                                 {clientCategories?.map(category => (
-                                    <option key={category} value={category}>
-                                        {category}
+                                    <option key={category.code} value={category.code}>
+                                        {category.libelle}
                                     </option>
                                 ))}
                             </select>
@@ -509,8 +547,8 @@ const StatisticsDashboard = () => {
                             >
                                 <option value="">Sélectionnez...</option>
                                 {promoTypes?.map(type => (
-                                    <option key={type} value={type}>
-                                        {type}
+                                    <option key={type.code} value={type.code}>
+                                        {type.libelle}
                                     </option>
                                 ))}
                             </select>
@@ -666,7 +704,7 @@ const StatisticsDashboard = () => {
                                             x: {
                                                 ticks: {
                                                     autoSkip: false,
-                                                    maxRotation: 45,
+                                                    maxrotation: 45,
                                                     minRotation: 45
                                                 }
                                             }

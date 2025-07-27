@@ -22,14 +22,34 @@ const EditPromotionModal = ({
 
     const [validationErrors, setValidationErrors] = useState({});
     const [selectedCategories, setSelectedCategories] = useState([]);
+    const [categoriesClient, setCategoriesClient] = useState([]);
 
-    // Catégories corrigées pour correspondre exactement au service Java
-    const categoriesClient = [
-        { value: 'GP', label: 'GP' },
-        { value: 'privé', label: 'Privé' },
-        { value: 'VIP', label: 'VIP' },
-        { value: 'B2B', label: 'B2B' }
-    ];
+    // Charger les catégories client dynamiquement
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/categories-client`);
+                if (!response.ok) throw new Error("Erreur lors du chargement des catégories");
+                const data = await response.json();
+                const formatted = data.map(cat => ({
+                    value: cat.code,
+                    label: cat.libelle
+                }));
+                setCategoriesClient(formatted);
+            } catch (error) {
+                console.error("Erreur:", error);
+                // Utiliser les catégories par défaut en cas d'erreur
+                setCategoriesClient([
+                    { value: 'GP', label: 'GP' },
+                    { value: 'privé', label: 'Privé' },
+                    { value: 'VIP', label: 'VIP' },
+                    { value: 'B2B', label: 'B2B' }
+                ]);
+            }
+        };
+
+        fetchCategories();
+    }, [API_BASE_URL]);
 
     useEffect(() => {
         if (promotion) {
@@ -46,6 +66,8 @@ const EditPromotionModal = ({
             const existingCategories = Array.isArray(promotion.categorieClient)
                 ? promotion.categorieClient
                 : (promotion.categorieClient ? promotion.categorieClient.split(',').map(cat => cat.trim()) : []);
+
+            setSelectedCategories(existingCategories);
         }
     }, [promotion]);
 
@@ -76,8 +98,6 @@ const EditPromotionModal = ({
         if (!validateForm()) return;
 
         try {
-            let updateData;
-
             if (editMode === 'category') {
                 // Dans handleSubmit (mode category):
                 const nouvellesCategories = selectedCategories
@@ -87,33 +107,20 @@ const EditPromotionModal = ({
                     id: promotion.id,
                     categories: nouvellesCategories
                 }, editMode);
-            } else if (editMode === 'category') {
-                // Create the properly formatted request body
-                const requestBody = {
-                    categories: selectedCategories
-                };
-
-                const response = await fetch(`${API_BASE_URL}/promotions/${promotion.id}/etendre-categories`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(requestBody)
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || 'Erreur lors de la mise à jour');
-                }
-
-                const updatedPromotion = await response.json();
-                onSave(updatedPromotion, editMode);
+            } else if (editMode === 'period') {
+                // Mode period - mise à jour des dates
+                await onSave({
+                    id: promotion.id,
+                    dateDebut: formData.dateDebut,
+                    dateFin: formData.dateFin
+                }, editMode);
             }
 
         } catch (err) {
-            setError(err.message);
+            console.error('Erreur lors de la sauvegarde:', err);
         }
     };
+
     const handleCategoryChange = (category) => {
         setSelectedCategories(prev => {
             if (prev.includes(category)) {

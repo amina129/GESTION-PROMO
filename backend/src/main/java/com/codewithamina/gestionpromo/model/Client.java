@@ -1,5 +1,6 @@
 package com.codewithamina.gestionpromo.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -27,13 +28,13 @@ public class Client {
     @Column(unique = true, nullable = false)
     private String email;
 
-
     @Column(name = "numero_telephone")
     @JsonProperty("numero_telephone")
     private String numeroTelephone;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categorie_client_id")
+    @JsonManagedReference("client-categorieClient")  // Côté "parent" - sera sérialisé
     private CategorieClient categorieClient;
 
     @ManyToMany
@@ -44,20 +45,19 @@ public class Client {
     )
     private Set<Promotion> promotions = new HashSet<>();
 
+    @Column(name = "id_conseiller")
+    private Long idConseiller;
 
     public Client() {
     }
 
-    public Client(String nom, String prenom, String email, String motDePasse, String fonction) {
+    public Client(String nom, String prenom, String email, String numeroTelephone, CategorieClient categorieClient) {
         this.nom = nom;
         this.prenom = prenom;
         this.email = email;
+        this.numeroTelephone = numeroTelephone;
         this.categorieClient = categorieClient;
-        this.numeroTelephone = numeroTelephone;}
-
-
-    @Column(name = "id_conseiller")
-    private Long idConseiller;
+    }
 
     // ✅ MÉTHODE HELPER pour obtenir le code de catégorie
     public String getCategorieCode() {

@@ -1,5 +1,6 @@
 package com.codewithamina.gestionpromo.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,7 +13,7 @@ import java.util.List;
 @Entity
 @Table(name = "categories_client")
 public class CategorieClient {
-    // Getters et Setters
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,7 +27,14 @@ public class CategorieClient {
     private String description;
 
     @OneToMany(mappedBy = "categorieClient", fetch = FetchType.LAZY)
+    @JsonBackReference("client-categorieClient")  // Côté "enfant" - ne sera PAS sérialisé
     private List<Client> clients = new ArrayList<>();
 
     public CategorieClient() {}
+
+    public CategorieClient(String code, String libelle, String description) {
+        this.code = code;
+        this.libelle = libelle;
+        this.description = description;
+    }
 }

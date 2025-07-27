@@ -183,6 +183,7 @@ const ClientPromotionPage = ({ client, onBack }) => {
         }
     };
 
+    // Updated cancel function using DELETE method
     const cancelSelectedPromotions = async () => {
         if (selectedForCancellation.length === 0) {
             setError("Veuillez sélectionner au moins une promotion à désactiver");
@@ -198,9 +199,13 @@ const ClientPromotionPage = ({ client, onBack }) => {
         setError(null);
 
         try {
-            await authService.api.put(`/clients/${client.id}/promotions/assignments/cancel`, {
-                activationIds: selectedForCancellation
-            });
+            // Using DELETE method (recommended REST approach)
+            await authService.api.delete(
+                `/clients/${client.id}/promotions/assignments`,
+                {
+                    data: selectedForCancellation // For DELETE with data payload
+                }
+            );
 
             await loadAssignedPromotions();
             setSelectedForCancellation([]);
@@ -339,6 +344,7 @@ const ClientPromotionPage = ({ client, onBack }) => {
             </div>
         </div>
     );
+
     return (
         <div className="promotions-container">
             {/* Header avec bouton retour */}
@@ -611,10 +617,11 @@ const ClientPromotionPage = ({ client, onBack }) => {
                                                             promotion.dateExpiration,
                                                             promotion.dateActivation,
                                                             promotion.promotionDateFin
-                                                        )                                                    }}
+                                                        )
+                                                    }}
                                                     style={{ padding: '5px 10px', fontSize: '12px' }}
                                                 >
-                                                    Mise à jour promo
+                                                    Mettre à jour promo
                                                 </button>
                                             </div>
                                         )}
@@ -668,7 +675,17 @@ const ClientPromotionPage = ({ client, onBack }) => {
             )}
 
             {/* Modal d'extension de validité */}
-            {showExtendModal && <ExtensionModal />}
+            {showExtendModal && (
+                <ExtensionModal
+                    promotion={{
+                        dateActivation: extensionData.dateActivation,
+                        promotionDateFin: extensionData.promotionDateFin
+                    }}
+                    onClose={() => setShowExtendModal(false)}
+                    onSubmit={handleExtensionSubmit}
+                    loading={loading}
+                />
+            )}
         </div>
     );
 };

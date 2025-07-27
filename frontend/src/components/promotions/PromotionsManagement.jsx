@@ -150,6 +150,7 @@ const PromotionsManagement = () => {
                         onSubmit={etendreCategories}
                         onCancel={() => setActiveView('list')}
                         loading={loading}
+                        API_BASE_URL={API_BASE_URL}
                     />
                 </div>
             );
@@ -292,9 +293,36 @@ const ProlongationForm = ({ promotion, onSubmit, onCancel, loading }) => {
     );
 };
 
-const ExtensionCategoriesForm = ({ promotion, onSubmit, onCancel, loading }) => {
+const ExtensionCategoriesForm = ({ promotion, onSubmit, onCancel, loading, API_BASE_URL }) => {
     const [selectedCategories, setSelectedCategories] = useState([]);
-    const availableCategories = ['GP', 'privé', 'VIP', 'B2B'];
+    const [categoriesClient, setCategoriesClient] = useState([]);
+
+    // Charger les catégories dynamiquement
+    React.useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/categories-client`);
+                if (!response.ok) throw new Error("Erreur lors du chargement des catégories");
+                const data = await response.json();
+                const formatted = data.map(cat => ({
+                    value: cat.code,
+                    label: cat.libelle
+                }));
+                setCategoriesClient(formatted);
+            } catch (error) {
+                console.error("Erreur:", error);
+                // Fallback avec catégories par défaut
+                setCategoriesClient([
+                    { value: 'GP', label: 'GP' },
+                    { value: 'privé', label: 'Privé' },
+                    { value: 'VIP', label: 'VIP' },
+                    { value: 'B2B', label: 'B2B' }
+                ]);
+            }
+        };
+
+        fetchCategories();
+    }, [API_BASE_URL]);
 
     const getCurrentCategories = () => {
         if (promotion.categories && promotion.categories.length > 0) {
@@ -325,6 +353,9 @@ const ExtensionCategoriesForm = ({ promotion, onSubmit, onCancel, loading }) => 
         }
     };
 
+    // Filtrer les catégories disponibles pour ne montrer que celles qui ne sont pas déjà assignées
+    const availableCategories = categoriesClient.filter(cat => !currentCategories.includes(cat.value));
+
     return (
         <form onSubmit={handleSubmit} className="search-fields">
             <div className="search-field">
@@ -339,22 +370,26 @@ const ExtensionCategoriesForm = ({ promotion, onSubmit, onCancel, loading }) => 
             </div>
             <div className="search-field">
                 <label>Ajouter les catégories:</label>
-                <div className="categories-grid">
-                    {availableCategories
-                        .filter(cat => !currentCategories.includes(cat))
-                        .map(category => (
-                            <label key={category} className="category-checkbox">
+                {availableCategories.length === 0 ? (
+                    <div className="no-categories">
+                        Toutes les catégories sont déjà assignées à cette promotion.
+                    </div>
+                ) : (
+                    <div className="categories-grid">
+                        {availableCategories.map(category => (
+                            <label key={category.value} className="category-checkbox">
                                 <input
                                     type="checkbox"
-                                    checked={selectedCategories.includes(category)}
-                                    onChange={() => handleCategoryToggle(category)}
+                                    checked={selectedCategories.includes(category.value)}
+                                    onChange={() => handleCategoryToggle(category.value)}
                                 />
-                                <span className={`category-badge ${category.toLowerCase()}`}>
-                                    {category}
+                                <span className={`category-badge ${category.value.toLowerCase()}`}>
+                                    {category.label}
                                 </span>
                             </label>
                         ))}
-                </div>
+                    </div>
+                )}
             </div>
             <div className="search-actions">
                 <div className="action-buttons">
